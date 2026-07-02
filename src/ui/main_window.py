@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -31,9 +32,9 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # ==========================
+        # ======================
         # MENU
-        # ==========================
+        # ======================
 
         menu = QFrame()
         menu.setFixedWidth(220)
@@ -63,6 +64,7 @@ class MainWindow(QMainWindow):
         self.btn_planejamento = SidebarButton("📅 Planejamento")
         self.btn_arsenal = SidebarButton("📚 Arsenal")
         self.btn_evolucao = SidebarButton("📈 Evolução")
+        self.btn_config = SidebarButton("⚙ Configurações")
 
         menu_layout.addWidget(self.btn_dashboard)
         menu_layout.addWidget(self.btn_atletas)
@@ -72,15 +74,20 @@ class MainWindow(QMainWindow):
 
         menu_layout.addStretch()
 
-        menu_layout.addWidget(
-            SidebarButton("⚙ Configurações")
-        )
+        menu_layout.addWidget(self.btn_config)
 
-        # ==========================
-        # CONTEÚDO
-        # ==========================
+        # ======================
+        # STACK
+        # ======================
 
-        self.dashboard = DashboardPage()
+        self.stack = QStackedWidget()
+
+        self.dashboard_page = DashboardPage()
+
+        self.stack.addWidget(self.dashboard_page)
 
         layout.addWidget(menu)
-        layout.addWidget(self.dashboard)
+        layout.addWidget(self.stack)
+
+        # Página inicial
+        self.stack.setCurrentWidget(self.dashboard_page)

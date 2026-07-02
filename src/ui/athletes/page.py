@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QMessageBox,
     QVBoxLayout,
     QWidget,
 )
@@ -50,6 +51,10 @@ class AthletesPage(QWidget):
             self.open_new_athlete_dialog
         )
 
+        self.toolbar.btn_delete.clicked.connect(
+            self.delete_selected_athlete
+        )
+
         self.table.doubleClicked.connect(
             self.edit_selected_athlete
         )
@@ -82,3 +87,39 @@ class AthletesPage(QWidget):
         if dialog.exec():
 
             self.load_athletes()
+
+    def delete_selected_athlete(self):
+
+        athlete = self.table.selected_athlete()
+
+        if athlete is None:
+
+            QMessageBox.information(
+                self,
+                "Excluir atleta",
+                "Selecione um atleta.",
+            )
+
+            return
+
+        resposta = QMessageBox.question(
+            self,
+            "Excluir atleta",
+            f'Deseja excluir "{athlete.name}"?',
+            QMessageBox.Yes | QMessageBox.No,
+        )
+
+        if resposta != QMessageBox.Yes:
+            return
+
+        self.repository.delete(
+            athlete.id
+        )
+
+        self.load_athletes()
+
+        QMessageBox.information(
+            self,
+            "Sucesso",
+            "Atleta excluído com sucesso.",
+        )

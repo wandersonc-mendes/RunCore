@@ -1,41 +1,55 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout
+from PySide6.QtWidgets import (
+    QFrame,
+    QLabel,
+    QVBoxLayout,
+)
+
+from theme import (
+    BORDER,
+    CARD,
+    CARD_HEIGHT,
+    CARD_RADIUS,
+    TEXT,
+    TEXT_SECONDARY,
+)
 
 
 class InfoCard(QFrame):
 
-    def __init__(self, titulo: str, valor: str):
+    def __init__(self, title: str, value: str):
         super().__init__()
 
-        self.setMinimumSize(180, 120)
+        self.setMinimumHeight(CARD_HEIGHT)
 
-        self.setStyleSheet("""
-            QFrame{
-                background:white;
-                border:1px solid #d8d8d8;
-                border-radius:10px;
-            }
+        self.setStyleSheet(f"""
+            QFrame {{
+                background: {CARD};
+                border: 1px solid {BORDER};
+                border-radius: {CARD_RADIUS}px;
+            }}
         """)
 
         layout = QVBoxLayout(self)
 
-        titulo_label = QLabel(titulo)
-        titulo_label.setAlignment(Qt.AlignCenter)
+        self.title = QLabel(title)
+        self.title.setAlignment(Qt.AlignCenter)
 
-        titulo_label.setStyleSheet("""
-            font-size:14px;
-            color:#666666;
+        self.title.setStyleSheet(f"""
+            color: {TEXT_SECONDARY};
+            font-size: 14px;
         """)
 
-        valor_label = QLabel(valor)
-        valor_label.setAlignment(Qt.AlignCenter)
+        self.value = QLabel(value)
+        self.value.setAlignment(Qt.AlignCenter)
 
-        valor_label.setStyleSheet("""
-            font-size:32px;
-            font-weight:bold;
+        self.value.setStyleSheet(f"""
+            color: {TEXT};
+            font-size: 34px;
+            font-weight: bold;
         """)
 
-        layout.addWidget(titulo_label)
+        layout.addWidget(self.title)
         layout.addStretch()
-        layout.addWidget(valor_label)
+        layout.addWidget(self.value)
         layout.addStretch()

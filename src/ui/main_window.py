@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 
 from ui.dashboard.page import DashboardPage
+from ui.athletes.page import AthletesPage
 from ui.widgets.sidebar_button import SidebarButton
 
 
@@ -22,6 +23,7 @@ class MainWindow(QMainWindow):
         self.resize(1400, 850)
 
         self.build_ui()
+        self.create_connections()
 
     def build_ui(self):
 
@@ -32,9 +34,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # ======================
         # MENU
-        # ======================
 
         menu = QFrame()
         menu.setFixedWidth(220)
@@ -76,18 +76,27 @@ class MainWindow(QMainWindow):
 
         menu_layout.addWidget(self.btn_config)
 
-        # ======================
         # STACK
-        # ======================
 
         self.stack = QStackedWidget()
 
         self.dashboard_page = DashboardPage()
+        self.athletes_page = AthletesPage()
 
         self.stack.addWidget(self.dashboard_page)
+        self.stack.addWidget(self.athletes_page)
 
         layout.addWidget(menu)
         layout.addWidget(self.stack)
 
-        # Página inicial
         self.stack.setCurrentWidget(self.dashboard_page)
+
+    def create_connections(self):
+
+        self.btn_dashboard.clicked.connect(
+            lambda: self.stack.setCurrentWidget(self.dashboard_page)
+        )
+
+        self.btn_atletas.clicked.connect(
+            lambda: self.stack.setCurrentWidget(self.athletes_page)
+        )

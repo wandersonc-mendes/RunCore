@@ -15,12 +15,16 @@ from repositories.athlete_repository import AthleteRepository
 
 class NewAthleteDialog(QDialog):
 
-    def __init__(self):
+    def __init__(self, athlete=None):
         super().__init__()
 
         self.repository = AthleteRepository()
+        self.athlete = athlete
 
-        self.setWindowTitle("Novo Atleta")
+        self.setWindowTitle(
+            "Editar Atleta" if athlete else "Novo Atleta"
+        )
+
         self.resize(520, 520)
 
         layout = QVBoxLayout(self)
@@ -72,6 +76,22 @@ class NewAthleteDialog(QDialog):
         self.cancel.clicked.connect(self.reject)
         self.save.clicked.connect(self.save_athlete)
 
+        if self.athlete:
+            self.load_data()
+
+    def load_data(self):
+
+        self.name.setText(self.athlete.name)
+        self.phone.setText(self.athlete.phone)
+        self.email.setText(self.athlete.email)
+        self.notes.setPlainText(self.athlete.notes)
+
+        self.goal.setCurrentText(self.athlete.goal)
+
+        self.status.setCurrentText(
+            "Ativo" if self.athlete.active else "Inativo"
+        )
+
     def save_athlete(self):
 
         if self.name.text().strip() == "":
@@ -84,19 +104,27 @@ class NewAthleteDialog(QDialog):
 
             return
 
-        self.repository.create(
-            name=self.name.text(),
-            phone=self.phone.text(),
-            email=self.email.text(),
-            goal=self.goal.currentText(),
-            active=self.status.currentText() == "Ativo",
-            notes=self.notes.toPlainText(),
-        )
+        if self.athlete is None:
 
-        QMessageBox.information(
-            self,
-            "Sucesso",
-            "Atleta cadastrado com sucesso!",
-        )
+            self.repository.create(
+                name=self.name.text(),
+                phone=self.phone.text(),
+                email=self.email.text(),
+                goal=self.goal.currentText(),
+                active=self.status.currentText() == "Ativo",
+                notes=self.notes.toPlainText(),
+            )
 
-        self.done(1)
+        else:
+
+            self.repository.update(
+                athlete_id=self.athlete.id,
+                name=self.name.text(),
+                phone=self.phone.text(),
+                email=self.email.text(),
+                goal=self.goal.currentText(),
+                active=self.status.currentText() == "Ativo",
+                notes=self.notes.toPlainText(),
+            )
+
+        self.accept()

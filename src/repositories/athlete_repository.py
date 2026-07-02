@@ -13,7 +13,6 @@ class AthleteRepository:
         active,
         notes,
     ):
-
         session = SessionLocal()
 
         athlete = Athlete(
@@ -26,10 +25,11 @@ class AthleteRepository:
         )
 
         session.add(athlete)
-
         session.commit()
-
+        session.refresh(athlete)
         session.close()
+
+        return athlete
 
     def list_all(self):
 
@@ -44,3 +44,72 @@ class AthleteRepository:
         session.close()
 
         return athletes
+
+    def get_by_id(self, athlete_id):
+
+        session = SessionLocal()
+
+        athlete = (
+            session.query(Athlete)
+            .filter(Athlete.id == athlete_id)
+            .first()
+        )
+
+        session.close()
+
+        return athlete
+
+    def update(
+        self,
+        athlete_id,
+        name,
+        phone,
+        email,
+        goal,
+        active,
+        notes,
+    ):
+
+        session = SessionLocal()
+
+        athlete = (
+            session.query(Athlete)
+            .filter(Athlete.id == athlete_id)
+            .first()
+        )
+
+        if athlete is None:
+            session.close()
+            return False
+
+        athlete.name = name
+        athlete.phone = phone
+        athlete.email = email
+        athlete.goal = goal
+        athlete.active = active
+        athlete.notes = notes
+
+        session.commit()
+        session.close()
+
+        return True
+
+    def delete(self, athlete_id):
+
+        session = SessionLocal()
+
+        athlete = (
+            session.query(Athlete)
+            .filter(Athlete.id == athlete_id)
+            .first()
+        )
+
+        if athlete is None:
+            session.close()
+            return False
+
+        session.delete(athlete)
+        session.commit()
+        session.close()
+
+        return True

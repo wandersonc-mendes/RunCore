@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 
 from theme import BACKGROUND, PAGE_MARGIN
 
+from repositories.athlete_repository import AthleteRepository
 from ui.athletes.dialogs.new_athlete_dialog import NewAthleteDialog
 from ui.widgets.primary_button import PrimaryButton
 from ui.widgets.search_box import SearchBox
@@ -19,6 +20,8 @@ class AthletesPage(QWidget):
 
     def __init__(self):
         super().__init__()
+
+        self.repository = AthleteRepository()
 
         self.setStyleSheet(f"""
             background: {BACKGROUND};
@@ -54,11 +57,13 @@ class AthletesPage(QWidget):
 
         self.table.setColumnCount(3)
 
-        self.table.setHorizontalHeaderLabels([
-            "Nome",
-            "Objetivo",
-            "Status",
-        ])
+        self.table.setHorizontalHeaderLabels(
+            [
+                "Nome",
+                "Objetivo",
+                "Status",
+            ]
+        )
 
         header = self.table.horizontalHeader()
 
@@ -77,22 +82,46 @@ class AthletesPage(QWidget):
             QHeaderView.ResizeToContents,
         )
 
-        self.table.setRowCount(1)
-
-        self.table.setItem(
-            0,
-            0,
-            QTableWidgetItem("Nenhum atleta cadastrado"),
-        )
-
         layout.addWidget(self.table)
 
         self.btn_new.clicked.connect(
             self.open_new_athlete_dialog
         )
 
+        self.load_athletes()
+
+    def load_athletes(self):
+
+        athletes = self.repository.list_all()
+
+        self.table.setRowCount(len(athletes))
+
+        for row, athlete in enumerate(athletes):
+
+            self.table.setItem(
+                row,
+                0,
+                QTableWidgetItem(athlete.name),
+            )
+
+            self.table.setItem(
+                row,
+                1,
+                QTableWidgetItem(athlete.goal),
+            )
+
+            status = "Ativo" if athlete.active else "Inativo"
+
+            self.table.setItem(
+                row,
+                2,
+                QTableWidgetItem(status),
+            )
+
     def open_new_athlete_dialog(self):
 
         dialog = NewAthleteDialog()
 
-        dialog.exec()
+        if dialog.exec():
+
+            self.load_athletes()

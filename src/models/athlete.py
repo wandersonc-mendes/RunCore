@@ -4,6 +4,7 @@ from sqlalchemy import Boolean
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
+
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
@@ -25,9 +26,29 @@ class Athlete(Base):
         nullable=False,
     )
 
+    phone: Mapped[str] = mapped_column(
+        String(30),
+        default="",
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(120),
+        default="",
+    )
+
+    goal: Mapped[str] = mapped_column(
+        String(50),
+        default="",
+    )
+
     active: Mapped[bool] = mapped_column(
         Boolean,
         default=True,
+    )
+
+    notes: Mapped[str] = mapped_column(
+        String(1000),
+        default="",
     )
 
     created_at: Mapped[datetime] = mapped_column(

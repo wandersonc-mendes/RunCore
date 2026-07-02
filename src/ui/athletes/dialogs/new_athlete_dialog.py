@@ -1,0 +1,102 @@
+from PySide6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QFormLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+)
+
+from repositories.athlete_repository import AthleteRepository
+
+
+class NewAthleteDialog(QDialog):
+
+    def __init__(self):
+        super().__init__()
+
+        self.repository = AthleteRepository()
+
+        self.setWindowTitle("Novo Atleta")
+        self.resize(520, 520)
+
+        layout = QVBoxLayout(self)
+
+        form = QFormLayout()
+
+        self.name = QLineEdit()
+        self.phone = QLineEdit()
+        self.email = QLineEdit()
+
+        self.goal = QComboBox()
+        self.goal.addItems([
+            "5 km",
+            "10 km",
+            "21 km",
+            "42 km",
+            "Trail",
+            "Outro",
+        ])
+
+        self.status = QComboBox()
+        self.status.addItems([
+            "Ativo",
+            "Inativo",
+        ])
+
+        self.notes = QTextEdit()
+
+        form.addRow("Nome *", self.name)
+        form.addRow("Telefone", self.phone)
+        form.addRow("E-mail", self.email)
+        form.addRow("Objetivo", self.goal)
+        form.addRow("Status", self.status)
+        form.addRow("Observações", self.notes)
+
+        layout.addLayout(form)
+
+        botoes = QHBoxLayout()
+
+        self.cancel = QPushButton("Cancelar")
+        self.save = QPushButton("Salvar")
+
+        botoes.addStretch()
+        botoes.addWidget(self.cancel)
+        botoes.addWidget(self.save)
+
+        layout.addLayout(botoes)
+
+        self.cancel.clicked.connect(self.reject)
+        self.save.clicked.connect(self.save_athlete)
+
+    def save_athlete(self):
+
+        if self.name.text().strip() == "":
+
+            QMessageBox.warning(
+                self,
+                "Atenção",
+                "Informe o nome do atleta.",
+            )
+
+            return
+
+        self.repository.create(
+            name=self.name.text(),
+            phone=self.phone.text(),
+            email=self.email.text(),
+            goal=self.goal.currentText(),
+            active=self.status.currentText() == "Ativo",
+            notes=self.notes.toPlainText(),
+        )
+
+        QMessageBox.information(
+            self,
+            "Sucesso",
+            "Atleta cadastrado com sucesso!",
+        )
+
+        self.done(1)

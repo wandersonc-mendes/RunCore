@@ -1,4 +1,5 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
@@ -10,6 +11,8 @@ from models.athlete import Athlete
 
 
 class AthletesTable(QTableWidget):
+
+    enterPressed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -90,3 +93,11 @@ class AthletesTable(QTableWidget):
             return None
 
         return item.data(Qt.UserRole)
+
+    def keyPressEvent(self, event: QKeyEvent):
+
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            self.enterPressed.emit()
+            return
+
+        super().keyPressEvent(event)

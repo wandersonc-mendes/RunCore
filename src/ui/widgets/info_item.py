@@ -1,4 +1,10 @@
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PySide6.QtWidgets import (
+    QLabel,
+    QHBoxLayout,
+    QWidget,
+)
+
+from theme import TEXT, TEXT_SECONDARY
 
 
 class InfoItem(QWidget):
@@ -8,35 +14,39 @@ class InfoItem(QWidget):
 
         layout = QHBoxLayout(self)
 
-        layout.setContentsMargins(0, 2, 0, 2)
-        layout.setSpacing(10)
+        layout.setContentsMargins(0, 4, 0, 4)
+        layout.setSpacing(12)
 
-        self.title = QLabel(title)
+        self.title = QLabel(title.upper())
 
-        self.title.setMinimumWidth(120)
+        self.title.setMinimumWidth(110)
 
-        self.title.setStyleSheet("""
-            QLabel {
+        self.title.setStyleSheet(f"""
+            QLabel {{
+                color: {TEXT_SECONDARY};
+                font-size: 11px;
                 font-weight: bold;
-                color: #666;
-            }
+                letter-spacing: 1px;
+            }}
         """)
 
         self.value = QLabel(value)
 
-        self.value.setStyleSheet("""
-            QLabel {
-                color: #222;
-            }
+        self.value.setWordWrap(True)
+
+        self.value.setStyleSheet(f"""
+            QLabel {{
+                color: {TEXT};
+                font-size: 14px;
+            }}
         """)
 
         layout.addWidget(self.title)
-        layout.addWidget(self.value)
-        layout.addStretch()
+        layout.addWidget(self.value, 1)
 
     def set_value(self, value):
 
-        if value is None or value == "":
+        if not value:
             value = "-"
 
         self.value.setText(str(value))

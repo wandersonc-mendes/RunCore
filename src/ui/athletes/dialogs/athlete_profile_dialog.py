@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -55,7 +56,7 @@ class AthleteProfileDialog(QDialog):
 
         layout.addLayout(buttons)
 
-        self.btn_close.clicked.connect(self.close)
+        self.btn_close.clicked.connect(self.reject)
         self.btn_edit.clicked.connect(self.edit_athlete)
 
         self.load_data()
@@ -76,3 +77,11 @@ class AthleteProfileDialog(QDialog):
             )
 
             self.load_data()
+
+    def keyPressEvent(self, event):
+
+        if event.key() == Qt.Key_Escape:
+            self.reject()
+            return
+
+        super().keyPressEvent(event)

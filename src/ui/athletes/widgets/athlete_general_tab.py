@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QGridLayout,
     QVBoxLayout,
     QWidget,
 )
@@ -16,6 +17,16 @@ class AthleteGeneralTab(QWidget):
         layout.setContentsMargins(0, 10, 0, 0)
         layout.setSpacing(15)
 
+        grid = QGridLayout()
+        grid.setHorizontalSpacing(15)
+        grid.setVerticalSpacing(15)
+
+        layout.addLayout(grid)
+
+        # ==========================
+        # Dados pessoais
+        # ==========================
+
         self.personal_card = SectionCard("Dados pessoais")
 
         self.phone = InfoItem("Telefone")
@@ -23,8 +34,11 @@ class AthleteGeneralTab(QWidget):
 
         self.personal_card.add_widget(self.phone)
         self.personal_card.add_widget(self.email)
+        self.personal_card.add_stretch()
 
-        layout.addWidget(self.personal_card)
+        # ==========================
+        # Dados esportivos
+        # ==========================
 
         self.sport_card = SectionCard("Dados esportivos")
 
@@ -33,8 +47,14 @@ class AthleteGeneralTab(QWidget):
 
         self.sport_card.add_widget(self.goal)
         self.sport_card.add_widget(self.status)
+        self.sport_card.add_stretch()
 
-        layout.addWidget(self.sport_card)
+        grid.addWidget(self.personal_card, 0, 0)
+        grid.addWidget(self.sport_card, 0, 1)
+
+        # ==========================
+        # Observações
+        # ==========================
 
         self.notes_card = SectionCard("Observações")
 
@@ -44,14 +64,13 @@ class AthleteGeneralTab(QWidget):
 
         layout.addWidget(self.notes_card)
 
-        layout.addStretch()
-
     def set_athlete(self, athlete):
 
         self.phone.set_value(athlete.phone)
         self.email.set_value(athlete.email)
 
         self.goal.set_value(athlete.goal)
+
         self.status.set_value(
             "Ativo" if athlete.active else "Inativo"
         )

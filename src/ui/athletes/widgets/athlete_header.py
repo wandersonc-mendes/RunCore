@@ -1,9 +1,13 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QHBoxLayout,
     QLabel,
     QVBoxLayout,
     QWidget,
 )
+
+from ui.widgets.avatar import Avatar
+from ui.widgets.status_badge import StatusBadge
 
 
 class AthleteHeader(QWidget):
@@ -12,53 +16,59 @@ class AthleteHeader(QWidget):
         super().__init__()
 
         layout = QVBoxLayout(self)
-
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
+        layout.setSpacing(12)
 
-        self.photo = QLabel("👤")
-        self.photo.setAlignment(Qt.AlignCenter)
-        self.photo.setFixedSize(120, 120)
-
-        self.photo.setStyleSheet("""
-            QLabel {
-                font-size: 42px;
-                border: 2px solid #777;
-                border-radius: 60px;
-                background: #2d2d2d;
-            }
-        """)
+        self.avatar = Avatar(120)
 
         self.name = QLabel()
         self.name.setAlignment(Qt.AlignCenter)
 
         self.name.setStyleSheet("""
             QLabel {
-                font-size: 22px;
+                font-size: 24px;
                 font-weight: bold;
             }
         """)
 
-        self.subtitle = QLabel()
-        self.subtitle.setAlignment(Qt.AlignCenter)
+        info_layout = QHBoxLayout()
+        info_layout.setAlignment(Qt.AlignCenter)
+        info_layout.setSpacing(12)
 
-        self.subtitle.setStyleSheet("""
+        self.status = StatusBadge()
+
+        self.goal = QLabel()
+
+        self.goal.setStyleSheet("""
             QLabel {
                 color: gray;
                 font-size: 14px;
+                font-weight: 500;
             }
         """)
 
-        layout.addWidget(self.photo, alignment=Qt.AlignCenter)
+        info_layout.addWidget(self.status)
+        info_layout.addWidget(self.goal)
+
+        layout.addWidget(
+            self.avatar,
+            alignment=Qt.AlignCenter,
+        )
+
         layout.addWidget(self.name)
-        layout.addWidget(self.subtitle)
+        layout.addLayout(info_layout)
 
     def set_athlete(self, athlete):
 
         self.name.setText(athlete.name or "")
 
-        status = "🟢 Ativo" if athlete.active else "🔴 Inativo"
+        self.status.set_status(athlete.active)
 
-        goal = athlete.goal or "-"
+        self.goal.setText(
+            f"🎯 {athlete.goal or '-'}"
+        )
 
-        self.subtitle.setText(f"{status}    •    {goal}")
+        if hasattr(athlete, "photo"):
+            self.avatar.set_image(athlete.photo)
+        else:
+            self.avatar.set_placeholder()

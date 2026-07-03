@@ -1,3 +1,8 @@
+from PySide6.QtGui import (
+    QKeySequence,
+    QShortcut,
+)
+
 from PySide6.QtWidgets import (
     QMessageBox,
     QVBoxLayout,
@@ -7,8 +12,8 @@ from PySide6.QtWidgets import (
 from theme import BACKGROUND, PAGE_MARGIN
 
 from repositories.athlete_repository import AthleteRepository
-from ui.athletes.dialogs.new_athlete_dialog import NewAthleteDialog
 from ui.athletes.dialogs.athlete_profile_dialog import AthleteProfileDialog
+from ui.athletes.dialogs.new_athlete_dialog import NewAthleteDialog
 from ui.athletes.table import AthletesTable
 from ui.athletes.toolbar import AthletesToolbar
 from ui.widgets.top_bar import TopBar
@@ -62,6 +67,39 @@ class AthletesPage(QWidget):
             self.open_profile_dialog
         )
 
+        self.table.enterPressed.connect(
+            self.open_profile_dialog
+        )
+
+        # Atalhos
+
+        self.shortcut_new = QShortcut(
+            QKeySequence("Ctrl+N"),
+            self,
+        )
+
+        self.shortcut_new.activated.connect(
+            self.open_new_athlete_dialog
+        )
+
+        self.shortcut_search = QShortcut(
+            QKeySequence("Ctrl+F"),
+            self,
+        )
+
+        self.shortcut_search.activated.connect(
+            self.focus_search
+        )
+
+        self.shortcut_delete = QShortcut(
+            QKeySequence("Delete"),
+            self,
+        )
+
+        self.shortcut_delete.activated.connect(
+            self.delete_selected_athlete
+        )
+
         self.load_athletes()
 
     def load_athletes(self):
@@ -80,6 +118,11 @@ class AthletesPage(QWidget):
         athletes = self.repository.search(text)
         self.table.load(athletes)
 
+    def focus_search(self):
+
+        self.toolbar.search.setFocus()
+        self.toolbar.search.selectAll()
+
     def open_new_athlete_dialog(self):
 
         dialog = NewAthleteDialog()
@@ -94,12 +137,16 @@ class AthletesPage(QWidget):
         if athlete_id is None:
             return
 
-        athlete = self.repository.get_by_id(athlete_id)
+        athlete = self.repository.get_by_id(
+            athlete_id
+        )
 
         if athlete is None:
             return
 
-        dialog = AthleteProfileDialog(athlete)
+        dialog = AthleteProfileDialog(
+            athlete
+        )
 
         if dialog.exec():
             self.search_athletes()
@@ -118,7 +165,9 @@ class AthletesPage(QWidget):
 
             return
 
-        athlete = self.repository.get_by_id(athlete_id)
+        athlete = self.repository.get_by_id(
+            athlete_id
+        )
 
         if athlete is None:
             return
@@ -133,7 +182,9 @@ class AthletesPage(QWidget):
         if resposta != QMessageBox.Yes:
             return
 
-        self.repository.delete(athlete.id)
+        self.repository.delete(
+            athlete.id
+        )
 
         self.search_athletes()
 

@@ -64,21 +64,28 @@ class NewAthleteDialog(QDialog):
 
         botoes = QHBoxLayout()
 
-        self.cancel = QPushButton("Cancelar")
         self.save = QPushButton("Salvar")
+        self.cancel = QPushButton("Cancelar")
 
         botoes.addStretch()
-        botoes.addWidget(self.cancel)
         botoes.addWidget(self.save)
+        botoes.addWidget(self.cancel)
 
         layout.addLayout(botoes)
 
         self.cancel.clicked.connect(self.reject)
         self.save.clicked.connect(self.save_athlete)
 
+        self.cancel.setAutoDefault(False)
+        self.cancel.setDefault(False)
+
+        self.save.setAutoDefault(True)
+        self.save.setDefault(True)
+
         if self.athlete:
             self.load_data()
-
+        self.name.setFocus()
+        self.name.selectAll()
     def load_data(self):
 
         self.name.setText(self.athlete.name)

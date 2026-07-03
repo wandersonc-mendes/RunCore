@@ -8,6 +8,7 @@ from theme import BACKGROUND, PAGE_MARGIN
 
 from repositories.athlete_repository import AthleteRepository
 from ui.athletes.dialogs.new_athlete_dialog import NewAthleteDialog
+from ui.athletes.dialogs.athlete_profile_dialog import AthleteProfileDialog
 from ui.athletes.table import AthletesTable
 from ui.athletes.toolbar import AthletesToolbar
 from ui.widgets.top_bar import TopBar
@@ -40,11 +41,9 @@ class AthletesPage(QWidget):
         )
 
         self.toolbar = AthletesToolbar()
-
         layout.addWidget(self.toolbar)
 
         self.table = AthletesTable()
-
         layout.addWidget(self.table)
 
         self.toolbar.btn_new.clicked.connect(
@@ -60,7 +59,7 @@ class AthletesPage(QWidget):
         )
 
         self.table.doubleClicked.connect(
-            self.edit_selected_athlete
+            self.open_profile_dialog
         )
 
         self.load_athletes()
@@ -68,7 +67,6 @@ class AthletesPage(QWidget):
     def load_athletes(self):
 
         athletes = self.repository.list_all()
-
         self.table.load(athletes)
 
     def search_athletes(self):
@@ -76,13 +74,10 @@ class AthletesPage(QWidget):
         text = self.toolbar.search.text().strip()
 
         if text == "":
-
             self.load_athletes()
-
             return
 
         athletes = self.repository.search(text)
-
         self.table.load(athletes)
 
     def open_new_athlete_dialog(self):
@@ -90,27 +85,30 @@ class AthletesPage(QWidget):
         dialog = NewAthleteDialog()
 
         if dialog.exec():
-
             self.search_athletes()
 
-    def edit_selected_athlete(self):
+    def open_profile_dialog(self):
 
-        athlete = self.table.selected_athlete()
+        athlete_id = self.table.selected_athlete_id()
+
+        if athlete_id is None:
+            return
+
+        athlete = self.repository.get_by_id(athlete_id)
 
         if athlete is None:
             return
 
-        dialog = NewAthleteDialog(athlete)
+        dialog = AthleteProfileDialog(athlete)
 
         if dialog.exec():
-
             self.search_athletes()
 
     def delete_selected_athlete(self):
 
-        athlete = self.table.selected_athlete()
+        athlete_id = self.table.selected_athlete_id()
 
-        if athlete is None:
+        if athlete_id is None:
 
             QMessageBox.information(
                 self,
@@ -118,6 +116,11 @@ class AthletesPage(QWidget):
                 "Selecione um atleta.",
             )
 
+            return
+
+        athlete = self.repository.get_by_id(athlete_id)
+
+        if athlete is None:
             return
 
         resposta = QMessageBox.question(
@@ -130,9 +133,7 @@ class AthletesPage(QWidget):
         if resposta != QMessageBox.Yes:
             return
 
-        self.repository.delete(
-            athlete.id
-        )
+        self.repository.delete(athlete.id)
 
         self.search_athletes()
 

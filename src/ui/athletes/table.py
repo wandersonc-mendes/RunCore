@@ -14,8 +14,6 @@ class AthletesTable(QTableWidget):
     def __init__(self):
         super().__init__()
 
-        self.athletes = []
-
         self.setColumnCount(3)
 
         self.setHorizontalHeaderLabels(
@@ -61,8 +59,6 @@ class AthletesTable(QTableWidget):
 
         self.setSortingEnabled(False)
 
-        self.athletes = athletes
-
         self.setRowCount(len(athletes))
 
         for row, athlete in enumerate(athletes):
@@ -81,18 +77,16 @@ class AthletesTable(QTableWidget):
 
         self.setSortingEnabled(True)
 
-    def selected_athlete(self):
+    def selected_athlete_id(self):
 
         row = self.currentRow()
 
         if row < 0:
             return None
 
-        athlete_id = self.item(row, 0).data(Qt.UserRole)
+        item = self.item(row, 0)
 
-        for athlete in self.athletes:
+        if item is None:
+            return None
 
-            if athlete.id == athlete_id:
-                return athlete
-
-        return None
+        return item.data(Qt.UserRole)

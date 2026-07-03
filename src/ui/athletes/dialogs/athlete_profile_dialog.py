@@ -2,7 +2,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
     QHBoxLayout,
-    QLabel,
     QPushButton,
     QTabWidget,
     QVBoxLayout,
@@ -10,10 +9,14 @@ from PySide6.QtWidgets import (
 )
 
 from repositories.athlete_repository import AthleteRepository
+from repositories.evaluation_repository import EvaluationRepository
+
 from ui.athletes.dialogs.new_athlete_dialog import NewAthleteDialog
 from ui.athletes.dialogs.new_evaluation_dialog import NewEvaluationDialog
+
 from ui.athletes.widgets.athlete_general_tab import AthleteGeneralTab
 from ui.athletes.widgets.athlete_header import AthleteHeader
+from ui.athletes.widgets.evaluation_table import EvaluationTable
 
 
 class AthleteProfileDialog(QDialog):
@@ -22,6 +25,8 @@ class AthleteProfileDialog(QDialog):
         super().__init__()
 
         self.repository = AthleteRepository()
+        self.evaluation_repository = EvaluationRepository()
+
         self.athlete = athlete
 
         self.setWindowTitle("Perfil do Atleta")
@@ -58,22 +63,8 @@ class AthleteProfileDialog(QDialog):
 
         evaluations_layout.addLayout(top)
 
-        self.lbl_empty = QLabel(
-            "Nenhuma avaliação cadastrada."
-        )
-
-        self.lbl_empty.setAlignment(Qt.AlignCenter)
-
-        self.lbl_empty.setStyleSheet("""
-            QLabel {
-                color: gray;
-                font-size: 14px;
-            }
-        """)
-
-        evaluations_layout.addStretch()
-        evaluations_layout.addWidget(self.lbl_empty)
-        evaluations_layout.addStretch()
+        self.evaluation_table = EvaluationTable()
+        evaluations_layout.addWidget(self.evaluation_table)
 
         # =====================================================
 
@@ -99,7 +90,6 @@ class AthleteProfileDialog(QDialog):
 
         self.btn_close.clicked.connect(self.reject)
         self.btn_edit.clicked.connect(self.edit_athlete)
-
         self.btn_new_evaluation.clicked.connect(
             self.new_evaluation
         )
@@ -110,6 +100,14 @@ class AthleteProfileDialog(QDialog):
 
         self.header.set_athlete(self.athlete)
         self.general_tab.set_athlete(self.athlete)
+
+        evaluations = (
+            self.evaluation_repository.list_by_athlete(
+                self.athlete.id
+            )
+        )
+
+        self.evaluation_table.load(evaluations)
 
     def edit_athlete(self):
 
@@ -130,7 +128,8 @@ class AthleteProfileDialog(QDialog):
         )
 
         if dialog.exec():
-            print("Avaliação salva")
+
+            self.load_data()
 
     def keyPressEvent(self, event):
 

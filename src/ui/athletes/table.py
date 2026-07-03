@@ -1,4 +1,6 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QHeaderView,
     QTableWidget,
     QTableWidgetItem,
@@ -42,14 +44,22 @@ class AthletesTable(QTableWidget):
         )
 
         self.setSelectionBehavior(
-            QTableWidget.SelectRows
+            QAbstractItemView.SelectRows
         )
 
         self.setSelectionMode(
-            QTableWidget.SingleSelection
+            QAbstractItemView.SingleSelection
         )
 
+        self.setEditTriggers(
+            QAbstractItemView.NoEditTriggers
+        )
+
+        self.setSortingEnabled(True)
+
     def load(self, athletes: list[Athlete]):
+
+        self.setSortingEnabled(False)
 
         self.athletes = athletes
 
@@ -57,25 +67,19 @@ class AthletesTable(QTableWidget):
 
         for row, athlete in enumerate(athletes):
 
-            self.setItem(
-                row,
-                0,
-                QTableWidgetItem(athlete.name),
+            item_name = QTableWidgetItem(athlete.name)
+            item_goal = QTableWidgetItem(athlete.goal)
+            item_status = QTableWidgetItem(
+                "Ativo" if athlete.active else "Inativo"
             )
 
-            self.setItem(
-                row,
-                1,
-                QTableWidgetItem(athlete.goal),
-            )
+            item_name.setData(Qt.UserRole, athlete.id)
 
-            self.setItem(
-                row,
-                2,
-                QTableWidgetItem(
-                    "Ativo" if athlete.active else "Inativo"
-                ),
-            )
+            self.setItem(row, 0, item_name)
+            self.setItem(row, 1, item_goal)
+            self.setItem(row, 2, item_status)
+
+        self.setSortingEnabled(True)
 
     def selected_athlete(self):
 
@@ -84,4 +88,11 @@ class AthletesTable(QTableWidget):
         if row < 0:
             return None
 
-        return self.athletes[row]
+        athlete_id = self.item(row, 0).data(Qt.UserRole)
+
+        for athlete in self.athletes:
+
+            if athlete.id == athlete_id:
+                return athlete
+
+        return None

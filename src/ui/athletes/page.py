@@ -55,6 +55,10 @@ class AthletesPage(QWidget):
             self.delete_selected_athlete
         )
 
+        self.toolbar.search.textChanged.connect(
+            self.search_athletes
+        )
+
         self.table.doubleClicked.connect(
             self.edit_selected_athlete
         )
@@ -67,13 +71,27 @@ class AthletesPage(QWidget):
 
         self.table.load(athletes)
 
+    def search_athletes(self):
+
+        text = self.toolbar.search.text().strip()
+
+        if text == "":
+
+            self.load_athletes()
+
+            return
+
+        athletes = self.repository.search(text)
+
+        self.table.load(athletes)
+
     def open_new_athlete_dialog(self):
 
         dialog = NewAthleteDialog()
 
         if dialog.exec():
 
-            self.load_athletes()
+            self.search_athletes()
 
     def edit_selected_athlete(self):
 
@@ -86,7 +104,7 @@ class AthletesPage(QWidget):
 
         if dialog.exec():
 
-            self.load_athletes()
+            self.search_athletes()
 
     def delete_selected_athlete(self):
 
@@ -116,7 +134,7 @@ class AthletesPage(QWidget):
             athlete.id
         )
 
-        self.load_athletes()
+        self.search_athletes()
 
         QMessageBox.information(
             self,

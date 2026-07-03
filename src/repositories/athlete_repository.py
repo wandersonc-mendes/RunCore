@@ -1,3 +1,5 @@
+from sqlalchemy import func
+
 from database.database import SessionLocal
 from models.athlete import Athlete
 
@@ -37,6 +39,25 @@ class AthleteRepository:
 
         athletes = (
             session.query(Athlete)
+            .order_by(Athlete.name)
+            .all()
+        )
+
+        session.close()
+
+        return athletes
+
+    def search(self, text):
+
+        session = SessionLocal()
+
+        text = text.lower()
+
+        athletes = (
+            session.query(Athlete)
+            .filter(
+                func.lower(Athlete.name).like(f"%{text}%")
+            )
             .order_by(Athlete.name)
             .all()
         )

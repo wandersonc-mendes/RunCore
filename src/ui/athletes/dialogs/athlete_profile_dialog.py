@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
     QHBoxLayout,
+    QLabel,
     QPushButton,
     QTabWidget,
     QVBoxLayout,
@@ -10,6 +11,7 @@ from PySide6.QtWidgets import (
 
 from repositories.athlete_repository import AthleteRepository
 from ui.athletes.dialogs.new_athlete_dialog import NewAthleteDialog
+from ui.athletes.dialogs.new_evaluation_dialog import NewEvaluationDialog
 from ui.athletes.widgets.athlete_general_tab import AthleteGeneralTab
 from ui.athletes.widgets.athlete_header import AthleteHeader
 
@@ -36,8 +38,47 @@ class AthleteProfileDialog(QDialog):
 
         self.general_tab = AthleteGeneralTab()
 
+        # =====================================================
+        # Aba Avaliações
+        # =====================================================
+
+        self.evaluations_tab = QWidget()
+
+        evaluations_layout = QVBoxLayout(self.evaluations_tab)
+        evaluations_layout.setSpacing(15)
+
+        top = QHBoxLayout()
+        top.addStretch()
+
+        self.btn_new_evaluation = QPushButton(
+            "+ Nova Avaliação"
+        )
+
+        top.addWidget(self.btn_new_evaluation)
+
+        evaluations_layout.addLayout(top)
+
+        self.lbl_empty = QLabel(
+            "Nenhuma avaliação cadastrada."
+        )
+
+        self.lbl_empty.setAlignment(Qt.AlignCenter)
+
+        self.lbl_empty.setStyleSheet("""
+            QLabel {
+                color: gray;
+                font-size: 14px;
+            }
+        """)
+
+        evaluations_layout.addStretch()
+        evaluations_layout.addWidget(self.lbl_empty)
+        evaluations_layout.addStretch()
+
+        # =====================================================
+
         self.tabs.addTab(self.general_tab, "Geral")
-        self.tabs.addTab(QWidget(), "Avaliações")
+        self.tabs.addTab(self.evaluations_tab, "Avaliações")
         self.tabs.addTab(QWidget(), "Treinos")
         self.tabs.addTab(QWidget(), "Histórico")
         self.tabs.addTab(QWidget(), "Competições")
@@ -59,6 +100,10 @@ class AthleteProfileDialog(QDialog):
         self.btn_close.clicked.connect(self.reject)
         self.btn_edit.clicked.connect(self.edit_athlete)
 
+        self.btn_new_evaluation.clicked.connect(
+            self.new_evaluation
+        )
+
         self.load_data()
 
     def load_data(self):
@@ -77,6 +122,15 @@ class AthleteProfileDialog(QDialog):
             )
 
             self.load_data()
+
+    def new_evaluation(self):
+
+        dialog = NewEvaluationDialog(
+            self.athlete
+        )
+
+        if dialog.exec():
+            print("Avaliação salva")
 
     def keyPressEvent(self, event):
 

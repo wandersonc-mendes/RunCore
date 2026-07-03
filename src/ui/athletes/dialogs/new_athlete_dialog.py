@@ -1,3 +1,5 @@
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -82,10 +84,30 @@ class NewAthleteDialog(QDialog):
         self.save.setAutoDefault(True)
         self.save.setDefault(True)
 
+        self.shortcut_save = QShortcut(
+            QKeySequence("Ctrl+Return"),
+            self,
+        )
+
+        self.shortcut_save.activated.connect(
+            self.save_athlete
+        )
+
+        self.shortcut_save2 = QShortcut(
+            QKeySequence("Ctrl+Enter"),
+            self,
+        )
+
+        self.shortcut_save2.activated.connect(
+            self.save_athlete
+        )
+
         if self.athlete:
             self.load_data()
+
         self.name.setFocus()
         self.name.selectAll()
+
     def load_data(self):
 
         self.name.setText(self.athlete.name)

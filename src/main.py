@@ -4,8 +4,11 @@ from PySide6.QtWidgets import QApplication
 
 from config import APP_NAME
 from database.database import create_database
+
+# Registra todos os models
+import models
+
 from ui.main_window import MainWindow
-from models.athlete import Athlete
 
 
 def main():

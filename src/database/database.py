@@ -4,6 +4,10 @@ from sqlalchemy.orm import sessionmaker
 
 from config import DATABASE_URL
 
+# Registrar os models
+# import models.athlete
+# import models.evaluation
+
 
 class Base(DeclarativeBase):
     pass

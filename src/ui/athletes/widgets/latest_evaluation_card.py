@@ -14,14 +14,14 @@ class LatestEvaluationCard(SectionCard):
         self.imc = InfoItem("IMC")
         self.max_hr = InfoItem("FC Máxima")
         self.resting_hr = InfoItem("FC Repouso")
-        self.vo2 = InfoItem("VO₂")
+        self.vdot = InfoItem("VDOT")
 
         self.add_widget(self.weight)
         self.add_widget(self.height)
         self.add_widget(self.imc)
         self.add_widget(self.max_hr)
         self.add_widget(self.resting_hr)
-        self.add_widget(self.vo2)
+        self.add_widget(self.vdot)
 
         self.add_stretch()
 
@@ -32,7 +32,7 @@ class LatestEvaluationCard(SectionCard):
         self.imc.set_value("-")
         self.max_hr.set_value("-")
         self.resting_hr.set_value("-")
-        self.vo2.set_value("-")
+        self.vdot.set_value("-")
 
     def set_evaluation(self, evaluation):
 
@@ -79,6 +79,6 @@ class LatestEvaluationCard(SectionCard):
             f"{evaluation.resting_hr} bpm"
         )
 
-        self.vo2.set_value(
-            f"{evaluation.vo2:.1f}"
+        self.vdot.set_value(
+            f"{evaluation.vdot:.1f}"
         )

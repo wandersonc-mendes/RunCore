@@ -11,7 +11,10 @@ class EvaluationRepository:
         height,
         max_hr,
         resting_hr,
-        vo2,
+        test_type,
+        distance,
+        time_seconds,
+        vdot,
     ):
         session = SessionLocal()
 
@@ -21,7 +24,10 @@ class EvaluationRepository:
             height=height,
             max_hr=max_hr,
             resting_hr=resting_hr,
-            vo2=vo2,
+            test_type=test_type,
+            distance=distance,
+            time_seconds=time_seconds,
+            vdot=vdot,
         )
 
         session.add(evaluation)

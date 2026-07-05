@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QComboBox,
     QDialog,
     QDoubleSpinBox,
     QHBoxLayout,
@@ -8,6 +9,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from core.physiology.vdot_service import VdotService
 from repositories.evaluation_repository import EvaluationRepository
 from ui.widgets.section_card import SectionCard
 
@@ -21,14 +23,14 @@ class NewEvaluationDialog(QDialog):
         self.repository = EvaluationRepository()
 
         self.setWindowTitle("Nova Avaliação")
-        self.resize(520, 520)
+        self.resize(520, 620)
 
         layout = QVBoxLayout(self)
         layout.setSpacing(15)
 
-        # ==================================================
+        # ==========================================
         # Dados físicos
-        # ==================================================
+        # ==========================================
 
         physical = SectionCard("Dados físicos")
 
@@ -49,9 +51,9 @@ class NewEvaluationDialog(QDialog):
         physical.add_widget(QLabel("Altura"))
         physical.add_widget(self.height)
 
-        # ==================================================
-        # Frequência Cardíaca
-        # ==================================================
+        # ==========================================
+        # Frequência cardíaca
+        # ==========================================
 
         heart = SectionCard("Frequência Cardíaca")
 
@@ -69,20 +71,37 @@ class NewEvaluationDialog(QDialog):
         heart.add_widget(QLabel("FC Repouso"))
         heart.add_widget(self.resting_hr)
 
-        # ==================================================
-        # Performance
-        # ==================================================
+        # ==========================================
+        # Teste
+        # ==========================================
 
-        performance = SectionCard("Performance")
+        performance = SectionCard("Teste")
 
-        self.vo2 = QDoubleSpinBox()
-        self.vo2.setDecimals(1)
-        self.vo2.setRange(10, 100)
+        self.test_type = QComboBox()
+        self.test_type.addItems([
+            "1600 m",
+            "5 km",
+            "10 km",
+        ])
 
-        performance.add_widget(QLabel("VO₂ Máx"))
-        performance.add_widget(self.vo2)
+        self.distance = QDoubleSpinBox()
+        self.distance.setSuffix(" m")
+        self.distance.setDecimals(0)
+        self.distance.setRange(100, 50000)
+        self.distance.setValue(1600)
 
-        # ==================================================
+        self.time_seconds = QSpinBox()
+        self.time_seconds.setSuffix(" s")
+        self.time_seconds.setRange(1, 30000)
+
+        performance.add_widget(QLabel("Tipo"))
+        performance.add_widget(self.test_type)
+
+        performance.add_widget(QLabel("Distância"))
+        performance.add_widget(self.distance)
+
+        performance.add_widget(QLabel("Tempo"))
+        performance.add_widget(self.time_seconds)
 
         layout.addWidget(physical)
         layout.addWidget(heart)
@@ -115,13 +134,21 @@ class NewEvaluationDialog(QDialog):
 
     def save(self):
 
+        vdot = VdotService.calculate(
+            self.distance.value(),
+            self.time_seconds.value(),
+        )
+
         self.repository.create(
             athlete_id=self.athlete.id,
             weight=self.weight.value(),
             height=self.height.value(),
             max_hr=self.max_hr.value(),
             resting_hr=self.resting_hr.value(),
-            vo2=self.vo2.value(),
+            test_type=self.test_type.currentText(),
+            distance=self.distance.value(),
+            time_seconds=self.time_seconds.value(),
+            vdot=vdot,
         )
 
         self.accept()

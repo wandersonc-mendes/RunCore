@@ -4,6 +4,7 @@ from sqlalchemy import DateTime
 from sqlalchemy import Float
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
+from sqlalchemy import String
 
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -46,7 +47,22 @@ class Evaluation(Base):
         default=0,
     )
 
-    vo2: Mapped[float] = mapped_column(
+    test_type: Mapped[str] = mapped_column(
+        String(30),
+        default="NONE",
+    )
+
+    distance: Mapped[float] = mapped_column(
+        Float,
+        default=0,
+    )
+
+    time_seconds: Mapped[float] = mapped_column(
+        Float,
+        default=0,
+    )
+
+    vdot: Mapped[float] = mapped_column(
         Float,
         default=0,
     )

@@ -17,6 +17,9 @@ from ui.athletes.dialogs.new_evaluation_dialog import NewEvaluationDialog
 from ui.athletes.widgets.athlete_general_tab import AthleteGeneralTab
 from ui.athletes.widgets.athlete_header import AthleteHeader
 from ui.athletes.widgets.evaluation_table import EvaluationTable
+from ui.athletes.widgets.latest_evaluation_card import (
+    LatestEvaluationCard,
+)
 
 
 class AthleteProfileDialog(QDialog):
@@ -63,6 +66,9 @@ class AthleteProfileDialog(QDialog):
 
         evaluations_layout.addLayout(top)
 
+        self.latest_evaluation = LatestEvaluationCard()
+        evaluations_layout.addWidget(self.latest_evaluation)
+
         self.evaluation_table = EvaluationTable()
         evaluations_layout.addWidget(self.evaluation_table)
 
@@ -101,13 +107,18 @@ class AthleteProfileDialog(QDialog):
         self.header.set_athlete(self.athlete)
         self.general_tab.set_athlete(self.athlete)
 
-        evaluations = (
-            self.evaluation_repository.list_by_athlete(
-                self.athlete.id
-            )
+        evaluations = self.evaluation_repository.list_by_athlete(
+            self.athlete.id
         )
 
         self.evaluation_table.load(evaluations)
+
+        if evaluations:
+            self.latest_evaluation.set_evaluation(
+                evaluations[0]
+            )
+        else:
+            self.latest_evaluation.clear()
 
     def edit_athlete(self):
 
@@ -128,7 +139,6 @@ class AthleteProfileDialog(QDialog):
         )
 
         if dialog.exec():
-
             self.load_data()
 
     def keyPressEvent(self, event):

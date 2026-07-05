@@ -34,19 +34,37 @@ class InfoItem(QWidget):
 
         self.value.setWordWrap(True)
 
-        self.value.setStyleSheet(f"""
+        self.default_style = f"""
             QLabel {{
                 color: {TEXT};
                 font-size: 14px;
             }}
-        """)
+        """
+
+        self.value.setStyleSheet(self.default_style)
 
         layout.addWidget(self.title)
         layout.addWidget(self.value, 1)
 
     def set_value(self, value):
 
-        if not value:
+        if value in (None, ""):
             value = "-"
 
         self.value.setText(str(value))
+        self.value.setStyleSheet(self.default_style)
+
+    def set_colored_value(self, value, color):
+
+        if value in (None, ""):
+            value = "-"
+
+        self.value.setText(str(value))
+
+        self.value.setStyleSheet(f"""
+            QLabel {{
+                color: {color};
+                font-size: 14px;
+                font-weight: bold;
+            }}
+        """)

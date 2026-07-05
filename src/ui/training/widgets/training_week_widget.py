@@ -1,10 +1,9 @@
 from PySide6.QtWidgets import QLabel
 
-from ui.widgets.section_card import SectionCard
-
 from core.training.training_plan_service import (
     TrainingPlanService,
 )
+from ui.widgets.section_card import SectionCard
 
 
 class TrainingWeekWidget(SectionCard):
@@ -14,40 +13,45 @@ class TrainingWeekWidget(SectionCard):
 
         self.labels = []
 
-        self.load()
+    def clear(self):
 
-    def load(self):
+        for label in self.labels:
+            label.deleteLater()
 
-        week = TrainingPlanService.generate_base_week(
-            vdot=50
-        )
+        self.labels.clear()
+
+    def load(self, vdot: float):
+
+        self.clear()
+
+        week = TrainingPlanService.generate_base_week(vdot)
 
         for day in week.days:
 
-            text = f"{day.day}"
+            workout = day.workouts[0] if day.workouts else None
 
-            if day.workouts:
+            text = f"<b>{day.day}</b>"
 
-                workout = day.workouts[0]
+            if workout:
 
-                text += (
-                    f" • {workout.name}"
-                )
+                text += f"<br>{workout.name}"
 
                 if workout.distance:
-                    text += (
-                        f" - {workout.distance} km"
-                    )
+                    text += f" • {workout.distance:.1f} km"
+
+                if workout.repetitions:
+                    text += f" • {workout.repetitions}x"
+
+                if workout.recovery:
+                    text += f" • Rec: {workout.recovery} m"
 
             if day.notes:
-                text += (
-                    f" | {day.notes}"
-                )
+                text += f"<br><span style='color:#888'>{day.notes}</span>"
 
             label = QLabel(text)
+            label.setWordWrap(True)
 
             self.labels.append(label)
-
             self.add_widget(label)
 
         self.add_stretch()

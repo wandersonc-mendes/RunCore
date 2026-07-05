@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 
 from ui.dashboard.page import DashboardPage
 from ui.athletes.page import AthletesPage
+from ui.training.page import TrainingPage
 from ui.widgets.sidebar_button import SidebarButton
 
 
@@ -82,9 +83,11 @@ class MainWindow(QMainWindow):
 
         self.dashboard_page = DashboardPage()
         self.athletes_page = AthletesPage()
+        self.training_page = TrainingPage()
 
         self.stack.addWidget(self.dashboard_page)
         self.stack.addWidget(self.athletes_page)
+        self.stack.addWidget(self.training_page)
 
         layout.addWidget(menu)
         layout.addWidget(self.stack)
@@ -99,4 +102,8 @@ class MainWindow(QMainWindow):
 
         self.btn_atletas.clicked.connect(
             lambda: self.stack.setCurrentWidget(self.athletes_page)
+        )
+
+        self.btn_planejamento.clicked.connect(
+            lambda: self.stack.setCurrentWidget(self.training_page)
         )

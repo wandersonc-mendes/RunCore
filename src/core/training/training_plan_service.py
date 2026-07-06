@@ -1,4 +1,4 @@
-from core.training.pace_service import PaceService
+from core.physiology.pace_service import PaceService
 from core.training.training_day import TrainingDay
 from core.training.training_week import TrainingWeek
 from core.training.workout_builder import WorkoutBuilder
@@ -9,14 +9,14 @@ class TrainingPlanService:
     @staticmethod
     def generate_base_week(vdot: float) -> TrainingWeek:
 
-        paces = PaceService.from_vdot(vdot)
-
         week = TrainingWeek(number=1)
 
         monday = TrainingDay("Segunda")
-        monday.add(WorkoutBuilder.easy(10))
+        monday.add(
+            WorkoutBuilder.easy(10)
+        )
         monday.notes = (
-            f"Easy: {paces['easy']}"
+            f"Easy: {PaceService.easy(vdot)}"
         )
 
         tuesday = TrainingDay("Terça")
@@ -30,7 +30,7 @@ class TrainingPlanService:
             )
         )
         wednesday.notes = (
-            f"Interval: {paces['interval']}"
+            f"Interval: {PaceService.interval(vdot)}"
         )
 
         thursday = TrainingDay("Quinta")
@@ -40,7 +40,7 @@ class TrainingPlanService:
             WorkoutBuilder.threshold(8)
         )
         friday.notes = (
-            f"Threshold: {paces['threshold']}"
+            f"Threshold: {PaceService.threshold(vdot)}"
         )
 
         saturday = TrainingDay("Sábado")
@@ -50,7 +50,7 @@ class TrainingPlanService:
             WorkoutBuilder.long(18)
         )
         sunday.notes = (
-            f"Marathon: {paces['marathon']}"
+            f"Marathon: {PaceService.marathon(vdot)}"
         )
 
         week.add(monday)

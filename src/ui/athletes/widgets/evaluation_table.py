@@ -13,6 +13,8 @@ class EvaluationTable(QTableWidget):
     def __init__(self):
         super().__init__()
 
+        self.evaluations = []
+
         self.setColumnCount(8)
 
         self.setHorizontalHeaderLabels([
@@ -28,7 +30,10 @@ class EvaluationTable(QTableWidget):
 
         header = self.horizontalHeader()
 
-        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(
+            0,
+            QHeaderView.Stretch,
+        )
 
         for column in range(1, 8):
             header.setSectionResizeMode(
@@ -36,12 +41,44 @@ class EvaluationTable(QTableWidget):
                 QHeaderView.ResizeToContents,
             )
 
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.setSelectionBehavior(
+            QAbstractItemView.SelectRows
+        )
+
+        self.setSelectionMode(
+            QAbstractItemView.SingleSelection
+        )
+
+        self.setEditTriggers(
+            QAbstractItemView.NoEditTriggers
+        )
+
         self.setAlternatingRowColors(True)
 
+    def selected_evaluation(self):
+
+        row = self.currentRow()
+
+        if row < 0:
+            return None
+
+        if row >= len(self.evaluations):
+            return None
+
+        return self.evaluations[row]
+
+    def selected_evaluation_id(self):
+
+        evaluation = self.selected_evaluation()
+
+        if evaluation is None:
+            return None
+
+        return evaluation.id
+
     def load(self, evaluations):
+
+        self.evaluations = evaluations
 
         self.setRowCount(len(evaluations))
 
@@ -52,27 +89,66 @@ class EvaluationTable(QTableWidget):
                 evaluation.height,
             )
 
-            self.setItem(row,0,QTableWidgetItem(
-                evaluation.created_at.strftime("%d/%m/%Y")
-            ))
-            self.setItem(row,1,QTableWidgetItem(
-                evaluation.test_type
-            ))
-            self.setItem(row,2,QTableWidgetItem(
-                f"{evaluation.distance:.0f} m"
-            ))
-            self.setItem(row,3,QTableWidgetItem(
-                f"{evaluation.weight:.1f} kg"
-            ))
-            self.setItem(row,4,QTableWidgetItem(
-                f"{imc:.1f}"
-            ))
-            self.setItem(row,5,QTableWidgetItem(
-                str(evaluation.max_hr)
-            ))
-            self.setItem(row,6,QTableWidgetItem(
-                str(evaluation.resting_hr)
-            ))
-            self.setItem(row,7,QTableWidgetItem(
-                f"{evaluation.vdot:.1f}"
-            ))
+            self.setItem(
+                row,
+                0,
+                QTableWidgetItem(
+                    evaluation.created_at.strftime("%d/%m/%Y")
+                ),
+            )
+
+            self.setItem(
+                row,
+                1,
+                QTableWidgetItem(
+                    evaluation.test_type
+                ),
+            )
+
+            self.setItem(
+                row,
+                2,
+                QTableWidgetItem(
+                    f"{evaluation.distance:.0f} m"
+                ),
+            )
+
+            self.setItem(
+                row,
+                3,
+                QTableWidgetItem(
+                    f"{evaluation.weight:.1f} kg"
+                ),
+            )
+
+            self.setItem(
+                row,
+                4,
+                QTableWidgetItem(
+                    f"{imc:.1f}"
+                ),
+            )
+
+            self.setItem(
+                row,
+                5,
+                QTableWidgetItem(
+                    str(evaluation.max_hr)
+                ),
+            )
+
+            self.setItem(
+                row,
+                6,
+                QTableWidgetItem(
+                    str(evaluation.resting_hr)
+                ),
+            )
+
+            self.setItem(
+                row,
+                7,
+                QTableWidgetItem(
+                    f"{evaluation.vdot:.1f}"
+                ),
+            )

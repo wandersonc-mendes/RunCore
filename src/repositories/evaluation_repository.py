@@ -37,6 +37,34 @@ class EvaluationRepository:
 
         return evaluation
 
+    def update(self, evaluation):
+
+        session = SessionLocal()
+
+        evaluation = session.merge(evaluation)
+
+        session.commit()
+
+        session.refresh(evaluation)
+
+        session.close()
+
+        return evaluation
+
+    def get_by_id(self, evaluation_id):
+
+        session = SessionLocal()
+
+        evaluation = (
+            session.query(Evaluation)
+            .filter(Evaluation.id == evaluation_id)
+            .first()
+        )
+
+        session.close()
+
+        return evaluation
+
     def list_by_athlete(self, athlete_id):
 
         session = SessionLocal()

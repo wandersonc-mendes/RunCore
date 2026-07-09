@@ -12,24 +12,51 @@ from core.education.workout_knowledge import (
 
 class WorkoutDetailsDialog(QDialog):
 
-    def __init__(self, workout):
+    def __init__(self, session):
         super().__init__()
 
-        self.setWindowTitle(workout.name)
+        self.session = session
+
+        self.setWindowTitle(
+            session.workout_name
+        )
+
         self.resize(520, 520)
 
         layout = QVBoxLayout(self)
 
         knowledge = (
-            WorkoutKnowledge.get(workout.name)
-            or {}
+            WorkoutKnowledge.get(
+                session.workout_name
+            ) or {}
         )
 
         title = QLabel(
-            f"<h2>{workout.name}</h2>"
+            f"<h2>{session.workout_name}</h2>"
         )
 
         layout.addWidget(title)
+
+        info = ""
+
+        if session.repetitions:
+
+            info = (
+                f"{session.repetitions} × "
+                f"{int(session.distance)} m"
+            )
+
+        elif session.distance:
+
+            info = (
+                f"{session.distance:.1f} km"
+            )
+
+        layout.addWidget(
+            QLabel(
+                f"<b>Sessão</b><br>{info}"
+            )
+        )
 
         layout.addWidget(
             QLabel(

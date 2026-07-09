@@ -32,6 +32,19 @@ class TrainingSessionRepository:
 
         session.close()
 
+    def get_by_id(self, session_id):
+
+        session = SessionLocal()
+
+        item = session.get(
+            TrainingSession,
+            session_id,
+        )
+
+        session.close()
+
+        return item
+
     def list_by_training(
         self,
         training_id,

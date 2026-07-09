@@ -84,3 +84,23 @@ class TrainingRepository:
         session.close()
 
         return trainings
+
+    def get_active_by_athlete(
+        self,
+        athlete_id,
+    ):
+
+        session = SessionLocal()
+
+        training = session.scalars(
+            select(Training)
+            .where(
+                Training.athlete_id == athlete_id,
+                Training.active.is_(True),
+            )
+            .limit(1)
+        ).first()
+
+        session.close()
+
+        return training

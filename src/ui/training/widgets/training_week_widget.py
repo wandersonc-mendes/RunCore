@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QLabel
 
-from core.training.training_cycle_builder import (
-    TrainingCycleBuilder,
+from core.training.training_query_service import (
+    TrainingQueryService,
 )
 from ui.training.widgets.workout_card import (
     WorkoutCard,
@@ -15,6 +15,7 @@ class TrainingWeekWidget(SectionCard):
         super().__init__("Planejamento")
 
         self.widgets = []
+        self.query = TrainingQueryService()
 
     def clear(self):
 
@@ -23,50 +24,30 @@ class TrainingWeekWidget(SectionCard):
 
         self.widgets.clear()
 
-    def load(self, vdot: float):
+    def load(self, training_id: int):
 
         self.clear()
 
-        cycle = TrainingCycleBuilder.base(vdot)
-
-        self.title.setText(
-            f"Ciclo - {cycle.name}"
+        weeks = self.query.sessions_by_week(
+            training_id
         )
 
-        for week in cycle.weeks:
+        self.title.setText(
+            "Planejamento"
+        )
+
+        for week_number in sorted(weeks.keys()):
 
             title = QLabel(
-                f"<h3>Semana {week.number}</h3>"
+                f"<h3>Semana {week_number}</h3>"
             )
 
             self.add_widget(title)
             self.widgets.append(title)
 
-            for day in week.days:
+            for session in weeks[week_number]:
 
-                workout = (
-                    day.workouts[0]
-                    if day.workouts
-                    else None
-                )
-
-                if workout is None:
-
-                    label = QLabel(
-                        f"<b>{day.day}</b><br>Descanso"
-                    )
-
-                    label.setWordWrap(True)
-
-                    self.add_widget(label)
-                    self.widgets.append(label)
-
-                    continue
-
-                card = WorkoutCard(
-                    day,
-                    workout,
-                )
+                card = WorkoutCard(session)
 
                 self.add_widget(card)
                 self.widgets.append(card)

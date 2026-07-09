@@ -8,7 +8,6 @@ from PySide6.QtWidgets import (
 from core.education.workout_knowledge import (
     WorkoutKnowledge,
 )
-from core.training.workout import Workout
 from ui.training.dialogs.workout_details_dialog import (
     WorkoutDetailsDialog,
 )
@@ -33,7 +32,6 @@ class WorkoutCard(QFrame):
         self.session = session
 
         self.setObjectName("WorkoutCard")
-
         self.setCursor(Qt.PointingHandCursor)
 
         self.setStyleSheet("""
@@ -52,18 +50,18 @@ class WorkoutCard(QFrame):
 
         layout = QVBoxLayout(self)
 
-        knowledge = (
-            WorkoutKnowledge.get(
-                session.workout_name
-            ) or {}
-        )
-
         title = QLabel(
             f"<b>{WEEKDAY.get(session.weekday, '')}</b>"
         )
 
-        workout = QLabel(
+        workout_name = QLabel(
             self.display_name()
+        )
+
+        knowledge = (
+            WorkoutKnowledge.get(
+                session.workout_name
+            ) or {}
         )
 
         objective = QLabel(
@@ -78,7 +76,7 @@ class WorkoutCard(QFrame):
         )
 
         layout.addWidget(title)
-        layout.addWidget(workout)
+        layout.addWidget(workout_name)
         layout.addWidget(objective)
 
     def display_name(self):
@@ -98,28 +96,8 @@ class WorkoutCard(QFrame):
 
     def mousePressEvent(self, event):
 
-        workout = Workout(
-            name=self.session.workout_name,
-            zone=self.session.zone,
-            distance=(
-                self.session.distance
-                if self.session.distance > 0
-                else None
-            ),
-            repetitions=(
-                self.session.repetitions
-                if self.session.repetitions > 0
-                else None
-            ),
-            recovery=(
-                self.session.recovery
-                if self.session.recovery > 0
-                else None
-            ),
-        )
-
         WorkoutDetailsDialog(
-            workout
+            self.session
         ).exec()
 
         super().mousePressEvent(event)

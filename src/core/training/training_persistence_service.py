@@ -44,13 +44,49 @@ class TrainingPersistenceService:
             training
         )
 
+        self._generate_sessions(
+            training.id,
+            vdot,
+        )
+
+        return training
+
+    def regenerate_training(
+        self,
+        training_id: int,
+        vdot: float,
+    ):
+
+        sessions = (
+            self.session_repository.list_by_training(
+                training_id
+            )
+        )
+
+        for session in sessions:
+
+            self.session_repository.delete(
+                session.id
+            )
+
+        self._generate_sessions(
+            training_id,
+            vdot,
+        )
+
+    def _generate_sessions(
+        self,
+        training_id: int,
+        vdot: float,
+    ):
+
         cycle = TrainingCycleBuilder.base(
             vdot
         )
 
         sessions = (
             TrainingCycleBuilder.to_training_sessions(
-                training.id,
+                training_id,
                 cycle,
             )
         )
@@ -58,8 +94,6 @@ class TrainingPersistenceService:
         self.session_repository.create_many(
             sessions
         )
-
-        return training
 
     def delete_training(
         self,

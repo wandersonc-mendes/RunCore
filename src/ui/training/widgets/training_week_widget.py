@@ -1,7 +1,10 @@
 from PySide6.QtWidgets import QLabel
 
-from core.training.training_plan_service import (
-    TrainingPlanService,
+from core.training.training_cycle_builder import (
+    TrainingCycleBuilder,
+)
+from ui.training.widgets.workout_card import (
+    WorkoutCard,
 )
 from ui.widgets.section_card import SectionCard
 
@@ -9,49 +12,63 @@ from ui.widgets.section_card import SectionCard
 class TrainingWeekWidget(SectionCard):
 
     def __init__(self):
-        super().__init__("Semana 1")
+        super().__init__("Planejamento")
 
-        self.labels = []
+        self.widgets = []
 
     def clear(self):
 
-        for label in self.labels:
-            label.deleteLater()
+        for widget in self.widgets:
+            widget.deleteLater()
 
-        self.labels.clear()
+        self.widgets.clear()
 
     def load(self, vdot: float):
 
         self.clear()
 
-        week = TrainingPlanService.generate_base_week(vdot)
+        cycle = TrainingCycleBuilder.base(vdot)
 
-        for day in week.days:
+        self.title.setText(
+            f"Ciclo - {cycle.name}"
+        )
 
-            workout = day.workouts[0] if day.workouts else None
+        for week in cycle.weeks:
 
-            text = f"<b>{day.day}</b>"
+            title = QLabel(
+                f"<h3>Semana {week.number}</h3>"
+            )
 
-            if workout:
+            self.add_widget(title)
+            self.widgets.append(title)
 
-                text += f"<br>{workout.name}"
+            for day in week.days:
 
-                if workout.distance:
-                    text += f" • {workout.distance:.1f} km"
+                workout = (
+                    day.workouts[0]
+                    if day.workouts
+                    else None
+                )
 
-                if workout.repetitions:
-                    text += f" • {workout.repetitions}x"
+                if workout is None:
 
-                if workout.recovery:
-                    text += f" • Rec: {workout.recovery} m"
+                    label = QLabel(
+                        f"<b>{day.day}</b><br>Descanso"
+                    )
 
-            if day.notes:
-                text += f"<br><span style='color:#888'>{day.notes}</span>"
+                    label.setWordWrap(True)
 
-            label = QLabel(text)
-            label.setWordWrap(True)
+                    self.add_widget(label)
+                    self.widgets.append(label)
 
-            self.labels.append(label)
-            self.add_widget(label)
+                    continue
+
+                card = WorkoutCard(
+                    day,
+                    workout,
+                )
+
+                self.add_widget(card)
+                self.widgets.append(card)
 
         self.add_stretch()

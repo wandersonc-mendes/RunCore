@@ -7,58 +7,101 @@ from core.training.workout_builder import WorkoutBuilder
 class TrainingPlanService:
 
     @staticmethod
-    def generate_base_week(vdot: float) -> TrainingWeek:
+    def _build_day(
+        name: str,
+        workout=None,
+        note: str = "",
+        objective: str = "",
+        priority: int = 0,
+    ) -> TrainingDay:
 
-        week = TrainingWeek(number=1)
+        day = TrainingDay(name)
 
-        monday = TrainingDay("Segunda")
-        monday.add(
-            WorkoutBuilder.easy(10)
-        )
-        monday.notes = (
-            f"Easy: {PaceService.easy(vdot)}"
-        )
+        day.notes = note
+        day.objective = objective
+        day.priority = priority
 
-        tuesday = TrainingDay("Terça")
+        if workout:
+            day.add(workout)
 
-        wednesday = TrainingDay("Quarta")
-        wednesday.add(
-            WorkoutBuilder.interval(
-                repetitions=8,
-                distance=400,
-                recovery=200,
+        return day
+
+    @staticmethod
+    def generate_base_week(
+        vdot: float,
+        week_number: int = 1,
+        long_run: float = 18,
+        easy_run: float = 10,
+        threshold_run: float = 8,
+        interval_reps: int = 8,
+    ) -> TrainingWeek:
+
+        week = TrainingWeek(number=week_number)
+
+        week.add(
+            TrainingPlanService._build_day(
+                name="Segunda",
+                workout=WorkoutBuilder.easy(easy_run),
+                note=f"Easy: {PaceService.easy(vdot)}",
+                objective="Rodagem leve",
+                priority=1,
             )
         )
-        wednesday.notes = (
-            f"Interval: {PaceService.interval(vdot)}"
+
+        week.add(
+            TrainingPlanService._build_day(
+                name="Terça",
+            )
         )
 
-        thursday = TrainingDay("Quinta")
-
-        friday = TrainingDay("Sexta")
-        friday.add(
-            WorkoutBuilder.threshold(8)
-        )
-        friday.notes = (
-            f"Threshold: {PaceService.threshold(vdot)}"
-        )
-
-        saturday = TrainingDay("Sábado")
-
-        sunday = TrainingDay("Domingo")
-        sunday.add(
-            WorkoutBuilder.long(18)
-        )
-        sunday.notes = (
-            f"Marathon: {PaceService.marathon(vdot)}"
+        week.add(
+            TrainingPlanService._build_day(
+                name="Quarta",
+                workout=WorkoutBuilder.interval(
+                    repetitions=interval_reps,
+                    distance=400,
+                    recovery=200,
+                ),
+                note=f"Interval: {PaceService.interval(vdot)}",
+                objective="VO₂máx",
+                priority=3,
+            )
         )
 
-        week.add(monday)
-        week.add(tuesday)
-        week.add(wednesday)
-        week.add(thursday)
-        week.add(friday)
-        week.add(saturday)
-        week.add(sunday)
+        week.add(
+            TrainingPlanService._build_day(
+                name="Quinta",
+            )
+        )
+
+        week.add(
+            TrainingPlanService._build_day(
+                name="Sexta",
+                workout=WorkoutBuilder.threshold(
+                    threshold_run
+                ),
+                note=f"Threshold: {PaceService.threshold(vdot)}",
+                objective="Limiar",
+                priority=2,
+            )
+        )
+
+        week.add(
+            TrainingPlanService._build_day(
+                name="Sábado",
+            )
+        )
+
+        week.add(
+            TrainingPlanService._build_day(
+                name="Domingo",
+                workout=WorkoutBuilder.long(
+                    long_run
+                ),
+                note=f"Marathon: {PaceService.marathon(vdot)}",
+                objective="Resistência",
+                priority=4,
+            )
+        )
 
         return week

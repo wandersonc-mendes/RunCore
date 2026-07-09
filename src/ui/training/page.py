@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -37,10 +38,15 @@ class TrainingPage(QWidget):
         self.info = QLabel()
         layout.addWidget(self.info)
 
-        self.week = TrainingWeekWidget()
-        layout.addWidget(self.week)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QScrollArea.NoFrame)
 
-        layout.addStretch()
+        self.week = TrainingWeekWidget()
+
+        self.scroll.setWidget(self.week)
+
+        layout.addWidget(self.scroll)
 
         self.load_athletes()
 
@@ -79,8 +85,10 @@ class TrainingPage(QWidget):
             athlete_id
         )
 
-        evaluation = self.evaluation_repository.last_evaluation(
-            athlete_id
+        evaluation = (
+            self.evaluation_repository.last_evaluation(
+                athlete_id
+            )
         )
 
         self.title.setText(

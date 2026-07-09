@@ -83,9 +83,20 @@ class TrainingCycleBuilder:
                 session.weekday = weekday[day.day]
                 session.workout_name = workout.name
                 session.zone = workout.zone
-                session.distance = workout.distance or 0
-                session.repetitions = workout.repetitions or 0
-                session.recovery = workout.recovery or 0
+
+                session.planned_distance = (
+                    workout.distance or 0
+                )
+
+                session.planned_duration = 0
+
+                session.repetitions = (
+                    workout.repetitions or 0
+                )
+
+                session.recovery = (
+                    workout.recovery or 0
+                )
 
                 sessions.append(session)
 

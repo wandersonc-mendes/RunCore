@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from sqlalchemy import (
     Boolean,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -45,8 +48,23 @@ class TrainingSession(Base):
         String(30),
     )
 
-    distance: Mapped[float] = mapped_column(
+    planned_distance: Mapped[float] = mapped_column(
         Float,
+        default=0,
+    )
+
+    completed_distance: Mapped[float] = mapped_column(
+        Float,
+        default=0,
+    )
+
+    planned_duration: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+
+    completed_duration: Mapped[int] = mapped_column(
+        Integer,
         default=0,
     )
 
@@ -60,9 +78,24 @@ class TrainingSession(Base):
         default=0,
     )
 
+    rpe: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+
+    notes: Mapped[str] = mapped_column(
+        String(1000),
+        default="",
+    )
+
     completed: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
+    )
+
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
     )
 
     training = relationship(

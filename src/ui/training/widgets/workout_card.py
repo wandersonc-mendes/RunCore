@@ -86,12 +86,12 @@ class WorkoutCard(QFrame):
             return (
                 f"{self.session.workout_name} - "
                 f"{self.session.repetitions} × "
-                f"{int(self.session.distance)} m"
+                f"{int(self.session.planned_distance)} m"
             )
 
         return (
             f"{self.session.workout_name} - "
-            f"{self.session.distance:.1f} km"
+            f"{self.session.planned_distance:.1f} km"
         )
 
     def mousePressEvent(self, event):

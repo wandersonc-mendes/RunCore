@@ -43,18 +43,24 @@ class WorkoutDetailsDialog(QDialog):
 
             info = (
                 f"{session.repetitions} × "
-                f"{int(session.distance)} m"
+                f"{int(session.planned_distance)} m"
             )
 
-        elif session.distance:
+        elif session.planned_distance:
 
             info = (
-                f"{session.distance:.1f} km"
+                f"{session.planned_distance:.1f} km"
             )
 
         layout.addWidget(
             QLabel(
                 f"<b>Sessão</b><br>{info}"
+            )
+        )
+
+        layout.addWidget(
+            QLabel(
+                f"<b>Zona</b><br>{session.zone}"
             )
         )
 
@@ -104,6 +110,22 @@ class WorkoutDetailsDialog(QDialog):
                 + errors
             )
         )
+
+        if session.completed:
+
+            layout.addWidget(
+                QLabel(
+                    "<b>Status</b><br>✅ Concluído"
+                )
+            )
+
+        else:
+
+            layout.addWidget(
+                QLabel(
+                    "<b>Status</b><br>⏳ Pendente"
+                )
+            )
 
         layout.addStretch()
 

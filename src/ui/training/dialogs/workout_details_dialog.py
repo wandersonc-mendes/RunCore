@@ -8,6 +8,9 @@ from PySide6.QtWidgets import (
 from core.education.workout_knowledge import (
     WorkoutKnowledge,
 )
+from ui.training.dialogs.workout_execution_dialog import (
+    WorkoutExecutionDialog,
+)
 
 
 class WorkoutDetailsDialog(QDialog):
@@ -21,7 +24,7 @@ class WorkoutDetailsDialog(QDialog):
             session.workout_name
         )
 
-        self.resize(520, 520)
+        self.resize(520, 560)
 
         layout = QVBoxLayout(self)
 
@@ -31,13 +34,11 @@ class WorkoutDetailsDialog(QDialog):
             ) or {}
         )
 
-        title = QLabel(
-            f"<h2>{session.workout_name}</h2>"
+        layout.addWidget(
+            QLabel(
+                f"<h2>{session.workout_name}</h2>"
+            )
         )
-
-        layout.addWidget(title)
-
-        info = ""
 
         if session.repetitions:
 
@@ -46,10 +47,10 @@ class WorkoutDetailsDialog(QDialog):
                 f"{int(session.planned_distance)} m"
             )
 
-        elif session.planned_distance:
+        else:
 
             info = (
-                f"{session.planned_distance:.1f} km"
+                f"{session.planned_distance:.3f} km"
             )
 
         layout.addWidget(
@@ -66,23 +67,24 @@ class WorkoutDetailsDialog(QDialog):
 
         layout.addWidget(
             QLabel(
-                f"<b>Objetivo</b><br>"
-                f"{knowledge.get('objective', '-')}"
-            )
-        )
-
-        adaptations = "<br>".join(
-            f"• {item}"
-            for item in knowledge.get(
-                "adaptations",
-                [],
+                "<b>Objetivo</b><br>"
+                + knowledge.get(
+                    "objective",
+                    "-",
+                )
             )
         )
 
         layout.addWidget(
             QLabel(
                 "<b>Adaptações</b><br>"
-                + adaptations
+                + "<br>".join(
+                    f"• {i}"
+                    for i in knowledge.get(
+                        "adaptations",
+                        [],
+                    )
+                )
             )
         )
 
@@ -96,40 +98,92 @@ class WorkoutDetailsDialog(QDialog):
             )
         )
 
-        errors = "<br>".join(
-            f"• {item}"
-            for item in knowledge.get(
-                "errors",
-                [],
-            )
-        )
-
         layout.addWidget(
             QLabel(
                 "<b>Erros comuns</b><br>"
-                + errors
+                + "<br>".join(
+                    f"• {i}"
+                    for i in knowledge.get(
+                        "errors",
+                        [],
+                    )
+                )
             )
         )
 
         if session.completed:
 
-            layout.addWidget(
-                QLabel(
-                    "<b>Status</b><br>✅ Concluído"
-                )
+            h = session.completed_duration // 3600
+            m = (
+                session.completed_duration % 3600
+            ) // 60
+            s = (
+                session.completed_duration % 60
             )
 
-        else:
+            execution = f"""
+<b>Execução</b><br>
+✓ {session.completed_distance:.3f} km<br>
+⏱ {h:02}:{m:02}:{s:02}<br>
+RPE: {session.rpe}
+"""
+
+            if session.notes:
+
+                execution += (
+                    "<br>Observações:<br>"
+                    + session.notes
+                )
 
             layout.addWidget(
-                QLabel(
-                    "<b>Status</b><br>⏳ Pendente"
-                )
+                QLabel(execution)
             )
+
+        status = (
+            "🟢 Concluído"
+            if session.completed
+            else "🟡 Pendente"
+        )
+
+        layout.addWidget(
+            QLabel(
+                f"<b>Status</b><br>{status}"
+            )
+        )
 
         layout.addStretch()
 
-        btn = QPushButton("Fechar")
-        btn.clicked.connect(self.accept)
+        btn_execution = QPushButton(
+            "Registrar Execução"
+            if not session.completed
+            else "Editar Execução"
+        )
 
-        layout.addWidget(btn)
+        btn_execution.clicked.connect(
+            self.open_execution
+        )
+
+        layout.addWidget(
+            btn_execution
+        )
+
+        btn_close = QPushButton(
+            "Fechar"
+        )
+
+        btn_close.clicked.connect(
+            self.accept
+        )
+
+        layout.addWidget(
+            btn_close
+        )
+
+    def open_execution(self):
+
+        dialog = WorkoutExecutionDialog(
+            self.session
+        )
+
+        if dialog.exec():
+            self.accept()

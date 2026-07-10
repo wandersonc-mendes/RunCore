@@ -80,6 +80,9 @@ class TrainingPage(QWidget):
 
         self.week = TrainingWeekWidget()
 
+        self.week.set_reload_callback(
+            self.load_training
+        )
         self.scroll.setWidget(
             self.week
         )

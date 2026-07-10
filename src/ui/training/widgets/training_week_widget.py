@@ -17,6 +17,15 @@ class TrainingWeekWidget(SectionCard):
         self.widgets = []
         self.query = TrainingQueryService()
 
+        self.reload_callback = None
+
+    def set_reload_callback(
+        self,
+        callback,
+    ):
+
+        self.reload_callback = callback
+
     def clear(self):
 
         for widget in self.widgets:
@@ -36,7 +45,9 @@ class TrainingWeekWidget(SectionCard):
             "Planejamento"
         )
 
-        for week_number in sorted(weeks.keys()):
+        for week_number in sorted(
+            weeks.keys()
+        ):
 
             title = QLabel(
                 f"<h3>Semana {week_number}</h3>"
@@ -47,7 +58,10 @@ class TrainingWeekWidget(SectionCard):
 
             for session in weeks[week_number]:
 
-                card = WorkoutCard(session)
+                card = WorkoutCard(
+                    session,
+                    self.reload_callback,
+                )
 
                 self.add_widget(card)
                 self.widgets.append(card)

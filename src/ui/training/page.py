@@ -1,3 +1,5 @@
+from tkinter import dialog
+
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -23,6 +25,9 @@ from ui.training.widgets.training_week_widget import (
     TrainingWeekWidget,
 )
 
+from ui.training.dialogs.training_structure_dialog import (
+    TrainingStructureDialog,
+)
 
 class TrainingPage(QWidget):
 
@@ -67,6 +72,7 @@ class TrainingPage(QWidget):
         )
 
         buttons = QHBoxLayout()
+
         buttons.addWidget(self.btn_generate)
         buttons.addWidget(self.btn_regenerate)
 
@@ -246,4 +252,4 @@ class TrainingPage(QWidget):
         self.btn_regenerate.show()
 
         self.week.show()
-        self.week.load(training.id)    
+        self.week.load(training.id)

@@ -1,12 +1,10 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    sessionmaker,
+)
 
 from config import DATABASE_URL
-
-# Registrar os models
-# import models.athlete
-# import models.evaluation
 
 
 class Base(DeclarativeBase):
@@ -25,4 +23,8 @@ SessionLocal = sessionmaker(
 
 def create_database():
 
-    Base.metadata.create_all(bind=engine)
+    import models
+
+    Base.metadata.create_all(
+        bind=engine
+    )

@@ -32,20 +32,16 @@ class TrainingSession(Base):
         nullable=False,
     )
 
-    week: Mapped[int] = mapped_column(
-        Integer,
-    )
+    week: Mapped[int] = mapped_column(Integer)
 
-    weekday: Mapped[int] = mapped_column(
-        Integer,
-    )
+    weekday: Mapped[int] = mapped_column(Integer)
 
     workout_name: Mapped[str] = mapped_column(
-        String(80),
+        String(80)
     )
 
     zone: Mapped[str] = mapped_column(
-        String(30),
+        String(30)
     )
 
     planned_distance: Mapped[float] = mapped_column(
@@ -101,4 +97,10 @@ class TrainingSession(Base):
     training = relationship(
         "Training",
         back_populates="sessions",
+    )
+
+    steps = relationship(
+        "TrainingStep",
+        cascade="all, delete-orphan",
+        order_by="TrainingStep.order",
     )

@@ -11,7 +11,9 @@ from core.education.workout_knowledge import (
 from ui.training.dialogs.workout_execution_dialog import (
     WorkoutExecutionDialog,
 )
-
+from ui.training.dialogs.training_structure_dialog import (
+    TrainingStructureDialog,
+)
 
 class WorkoutDetailsDialog(QDialog):
 
@@ -153,6 +155,18 @@ RPE: {session.rpe}
 
         layout.addStretch()
 
+        btn_structure = QPushButton(
+            "Editar Estrutura"
+        )
+
+        btn_structure.clicked.connect(
+            self.open_structure
+        )
+
+        layout.addWidget(
+        btn_structure
+        )
+
         btn_execution = QPushButton(
             "Registrar Execução"
             if not session.completed
@@ -187,3 +201,9 @@ RPE: {session.rpe}
 
         if dialog.exec():
             self.accept()
+
+    def open_structure(self):   
+
+        dialog = TrainingStructureDialog()            
+
+        dialog.exec()

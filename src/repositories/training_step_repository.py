@@ -8,10 +8,21 @@ from models.training_step import (
 
 class TrainingStepRepository:
 
-    def create_many(
-        self,
-        steps,
-    ):
+    def create(self, step):
+
+        session = SessionLocal()
+
+        session.add(step)
+
+        session.commit()
+
+        session.refresh(step)
+
+        session.close()
+
+        return step
+
+    def create_many(self, steps):
 
         session = SessionLocal()
 
@@ -21,6 +32,20 @@ class TrainingStepRepository:
 
         session.close()
 
+    def update(self, step):
+
+        session = SessionLocal()
+
+        step = session.merge(step)
+
+        session.commit()
+
+        session.refresh(step)
+
+        session.close()
+
+        return step
+
     def list_by_session(
         self,
         session_id,
@@ -28,7 +53,7 @@ class TrainingStepRepository:
 
         session = SessionLocal()
 
-        result = session.scalars(
+        items = session.scalars(
             select(TrainingStep)
             .where(
                 TrainingStep.session_id == session_id
@@ -40,7 +65,7 @@ class TrainingStepRepository:
 
         session.close()
 
-        return result
+        return items
 
     def delete_by_session(
         self,

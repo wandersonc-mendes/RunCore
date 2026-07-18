@@ -1,7 +1,10 @@
 from PySide6.QtWidgets import QLabel
 
-from core.training.training_plan_service import (
-    TrainingPlanService,
+from core.training.training_query_service import (
+    TrainingQueryService,
+)
+from ui.training.widgets.workout_card import (
+    WorkoutCard,
 )
 from ui.widgets.section_card import SectionCard
 
@@ -9,49 +12,58 @@ from ui.widgets.section_card import SectionCard
 class TrainingWeekWidget(SectionCard):
 
     def __init__(self):
-        super().__init__("Semana 1")
+        super().__init__("Planejamento")
 
-        self.labels = []
+        self.widgets = []
+        self.query = TrainingQueryService()
+
+        self.reload_callback = None
+
+    def set_reload_callback(
+        self,
+        callback,
+    ):
+
+        self.reload_callback = callback
 
     def clear(self):
 
-        for label in self.labels:
-            label.deleteLater()
+        for widget in self.widgets:
+            widget.deleteLater()
 
-        self.labels.clear()
+        self.widgets.clear()
 
-    def load(self, vdot: float):
+    def load(self, training_id: int):
 
         self.clear()
 
-        week = TrainingPlanService.generate_base_week(vdot)
+        weeks = self.query.sessions_by_week(
+            training_id
+        )
 
-        for day in week.days:
+        self.title.setText(
+            "Planejamento"
+        )
 
-            workout = day.workouts[0] if day.workouts else None
+        for week_number in sorted(
+            weeks.keys()
+        ):
 
-            text = f"<b>{day.day}</b>"
+            title = QLabel(
+                f"<h3>Semana {week_number}</h3>"
+            )
 
-            if workout:
+            self.add_widget(title)
+            self.widgets.append(title)
 
-                text += f"<br>{workout.name}"
+            for session in weeks[week_number]:
 
-                if workout.distance:
-                    text += f" • {workout.distance:.1f} km"
+                card = WorkoutCard(
+                    session,
+                    self.reload_callback,
+                )
 
-                if workout.repetitions:
-                    text += f" • {workout.repetitions}x"
-
-                if workout.recovery:
-                    text += f" • Rec: {workout.recovery} m"
-
-            if day.notes:
-                text += f"<br><span style='color:#888'>{day.notes}</span>"
-
-            label = QLabel(text)
-            label.setWordWrap(True)
-
-            self.labels.append(label)
-            self.add_widget(label)
+                self.add_widget(card)
+                self.widgets.append(card)
 
         self.add_stretch()

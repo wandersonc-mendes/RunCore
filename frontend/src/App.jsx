@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { listAthletes, createAthlete, deleteAthlete } from "./api";
+import AthleteProfile from "./AthleteProfile";
 import "./App.css";
 
 const emptyForm = { name: "", phone: "", email: "", goal: "", notes: "" };
@@ -11,6 +12,7 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedAthleteId, setSelectedAthleteId] = useState(null);
 
   async function load(currentSearch = search) {
     setLoading(true);
@@ -74,6 +76,13 @@ export default function App() {
       </header>
 
       <main className="content">
+        {selectedAthleteId ? (
+          <AthleteProfile
+            athleteId={selectedAthleteId}
+            onBack={() => setSelectedAthleteId(null)}
+          />
+        ) : (
+          <>
         <form className="search-row" onSubmit={handleSearchSubmit}>
           <input
             type="text"
@@ -154,7 +163,14 @@ export default function App() {
             <tbody>
               {athletes.map((a) => (
                 <tr key={a.id}>
-                  <td className="name-cell">{a.name}</td>
+                  <td className="name-cell">
+                    <button
+                      className="link-button"
+                      onClick={() => setSelectedAthleteId(a.id)}
+                    >
+                      {a.name}
+                    </button>
+                  </td>
                   <td className="muted">
                     {a.phone}
                     {a.phone && a.email ? " · " : ""}
@@ -175,6 +191,8 @@ export default function App() {
               ))}
             </tbody>
           </table>
+        )}
+          </>
         )}
       </main>
     </div>

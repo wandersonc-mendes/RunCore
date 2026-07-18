@@ -30,3 +30,22 @@ export function createAthlete(data) {
 export function deleteAthlete(id) {
   return request(`/api/athletes/${id}`, { method: "DELETE" });
 }
+
+export function getAthlete(id) {
+  return request(`/api/athletes/${id}`);
+}
+
+export function listEvaluations(athleteId) {
+  return request(`/api/athletes/${athleteId}/evaluations`);
+}
+
+export function createEvaluation(athleteId, data) {
+  return request(`/api/athletes/${athleteId}/evaluations`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteEvaluation(id) {
+  return request(`/api/evaluations/${id}`, { method: "DELETE" });
+}

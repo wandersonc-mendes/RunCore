@@ -8,6 +8,7 @@ from database.database import create_database
 import models
 
 from api.routers import athletes
+from api.routers import evaluations
 
 create_database()
 
@@ -25,6 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(athletes.router, prefix="/api")
+app.include_router(evaluations.router, prefix="/api")
 
 
 @app.get("/health")

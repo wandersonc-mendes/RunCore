@@ -14,7 +14,9 @@ uvicorn api.main:app --reload --port 8000
 
 - API disponível em `http://localhost:8000`
 - Docs interativas (Swagger) em `http://localhost:8000/docs`
-- Endpoints atuais: `GET/POST /api/athletes`, `GET/PUT/DELETE /api/athletes/{id}`
+- Endpoints atuais:
+  - `GET/POST /api/athletes`, `GET/PUT/DELETE /api/athletes/{id}`
+  - `GET/POST /api/athletes/{id}/evaluations`, `PUT/DELETE /api/evaluations/{id}` (calcula VDOT automaticamente)
 
 ## Frontend (React + Vite)
 
@@ -28,12 +30,14 @@ npm run dev
 - App disponível em `http://localhost:5173`
 - `VITE_API_URL` no `.env` aponta pro backend (padrão: `http://localhost:8000`)
 
-## Status (Sprint 0 — esqueleto)
+## Status
 
-- [x] API expõe CRUD completo de atletas reaproveitando o `AthleteRepository`
-- [x] Tela React lista, busca, cria e remove atletas
-- [ ] Editar atleta pela web
-- [ ] Demais módulos (avaliações, planejamento, dashboard)
+- [x] Sprint 0 — API expõe CRUD completo de atletas reaproveitando o `AthleteRepository`
+- [x] Sprint 0 — Tela React lista, busca, cria e remove atletas
+- [x] Sprint 1 — Perfil do atleta: histórico de avaliações + cálculo automático de VDOT
+      (reaproveita `EvaluationRepository` e `VdotService` como estão)
+- [ ] Editar atleta / avaliação pela web
+- [ ] Demais módulos (planejamento de treino, dashboard)
 
 ## Estrutura nova
 

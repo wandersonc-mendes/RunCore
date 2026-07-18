@@ -237,3 +237,56 @@ button {
   background: #ececec;
   color: var(--muted);
 }
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent-dark);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.back-btn {
+  margin-bottom: 16px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profile-name {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.vdot-card {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.vdot-value {
+  font-size: 28px;
+  color: var(--accent-dark);
+}
+
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24px 0 14px;
+}
+
+.section-row h3 {
+  margin: 0;
+  font-size: 16px;
+}

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from database.database import SessionLocal
 from models.training_step import (
@@ -87,3 +87,21 @@ class TrainingStepRepository:
         session.commit()
 
         session.close()
+
+    def replace_by_session(self, session_id, steps):
+
+        session = SessionLocal()
+
+        try:
+            session.execute(
+                delete(TrainingStep).where(
+                    TrainingStep.session_id == session_id
+                )
+            )
+            session.add_all(steps)
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()

@@ -3,7 +3,7 @@ import sys
 from PySide6.QtWidgets import QApplication
 
 from config import APP_NAME
-from database.database import create_database
+from database.bootstrap import initialize_database
 
 # Registra todos os models
 import models
@@ -13,7 +13,7 @@ from ui.main_window import MainWindow
 
 def main():
 
-    create_database()
+    initialize_database()
 
     app = QApplication(sys.argv)
     app.setApplicationName(APP_NAME)

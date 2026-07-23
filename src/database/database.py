@@ -19,12 +19,3 @@ engine = create_engine(
 SessionLocal = sessionmaker(
     bind=engine,
 )
-
-
-def create_database():
-
-    import models
-
-    Base.metadata.create_all(
-        bind=engine
-    )

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import ALLOWED_ORIGINS
 from config import APP_NAME
-from database.database import create_database
+from database.bootstrap import initialize_database
 
 # Registra todos os models antes de criar as tabelas.
 import models
@@ -21,7 +21,7 @@ from api.routers import student
 from api.routers import trainings
 
 
-create_database()
+initialize_database()
 
 
 app = FastAPI(

@@ -1,6 +1,6 @@
-from urllib.parse import urlencode
-
 import requests
+
+from urllib.parse import urlencode
 
 from config import STRAVA_CLIENT_ID
 from config import STRAVA_CLIENT_SECRET
@@ -18,14 +18,17 @@ class StravaService:
         "https://www.strava.com/oauth/token"
     )
 
+    REVOKE_URL = (
+        "https://www.strava.com/oauth/revoke"
+    )
+
     API_BASE_URL = (
-        "https://www.strava.com/api/v3"
+        "https://api-v3.strava.com"
     )
 
     DEFAULT_SCOPE = (
         "read,activity:read_all"
     )
-
 
     def build_authorization_url(
         self,
@@ -49,7 +52,6 @@ class StravaService:
             f"{self.AUTHORIZATION_URL}"
             f"?{urlencode(parameters)}"
         )
-
 
     def exchange_code_for_tokens(
         self,
@@ -79,7 +81,6 @@ class StravaService:
 
         return response.json()
 
-
     def refresh_tokens(
         self,
         refresh_token: str,
@@ -104,7 +105,6 @@ class StravaService:
         )
 
         return response.json()
-
 
     def get_logged_in_athlete(
         self,
@@ -131,6 +131,31 @@ class StravaService:
 
         return response.json()
 
+    def revoke_token(
+        self,
+        token: str,
+        token_type_hint: str = "refresh_token",
+    ) -> None:
+
+        validate_strava_configuration()
+
+        response = requests.post(
+            self.REVOKE_URL,
+            auth=(
+                STRAVA_CLIENT_ID,
+                STRAVA_CLIENT_SECRET,
+            ),
+            data={
+                "token": token,
+                "token_type_hint": token_type_hint,
+            },
+            timeout=20,
+        )
+
+        self._raise_for_error(
+            response,
+            operation="desconectar a conta do Strava",
+        )
 
     @staticmethod
     def _raise_for_error(

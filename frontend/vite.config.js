@@ -9,7 +9,7 @@ export default defineConfig({
     port: 5173,
 
     allowedHosts: [
-      "notewifi6.tailf3239d.ts.net",
+      "runcore.tailf3239d.ts.net",
     ],
 
     proxy: {

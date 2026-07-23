@@ -3,17 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import ALLOWED_ORIGINS
 from config import APP_NAME
-
 from database.database import create_database
 
-# Registra todos os models.
+# Registra todos os models antes de criar as tabelas.
 import models
 
 from api.routers import athletes
 from api.routers import auth
 from api.routers import evaluations
+from api.routers import integrations
 from api.routers import invitations
-from api.routers import strava
 
 
 create_database()
@@ -59,7 +58,7 @@ app.include_router(
 )
 
 app.include_router(
-    strava.router,
+    integrations.router,
     prefix="/api",
 )
 

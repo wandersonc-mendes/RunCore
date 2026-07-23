@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
-from fastapi import Request
 from fastapi import status
 
 from pydantic import BaseModel
 
 from api.routers.auth import get_current_user
+
+from config import PUBLIC_FRONTEND_URL
 
 from models.user import User
 
@@ -39,23 +40,17 @@ def require_coach(
 
 
 def build_registration_url(
-    request: Request,
     token: str,
 ) -> str:
 
-    base_url = str(
-        request.base_url,
-    ).rstrip("/")
-
     return (
-        f"{base_url}/"
+        f"{PUBLIC_FRONTEND_URL}/"
         f"?invite={token}"
     )
 
 
 def invitation_to_dict(
     invitation,
-    request: Request,
 ) -> dict:
 
     return {
@@ -66,7 +61,6 @@ def invitation_to_dict(
         "created_at": invitation.created_at,
         "approved_at": invitation.approved_at,
         "registration_url": build_registration_url(
-            request,
             invitation.token,
         ),
     }
@@ -76,7 +70,6 @@ def invitation_to_dict(
     "/invitations",
 )
 def list_invitations(
-    request: Request,
     current_user: User = Depends(
         get_current_user,
     ),
@@ -93,7 +86,6 @@ def list_invitations(
     sent = [
         invitation_to_dict(
             invitation,
-            request,
         )
         for invitation in invitations
         if invitation.status == "sent"
@@ -102,7 +94,6 @@ def list_invitations(
     pending = [
         invitation_to_dict(
             invitation,
-            request,
         )
         for invitation in invitations
         if invitation.status == "pending"
@@ -120,7 +111,6 @@ def list_invitations(
 )
 def create_invitation(
     payload: InvitationCreate,
-    request: Request,
     current_user: User = Depends(
         get_current_user,
     ),
@@ -137,5 +127,4 @@ def create_invitation(
 
     return invitation_to_dict(
         invitation,
-        request,
     )

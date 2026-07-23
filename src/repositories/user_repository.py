@@ -7,7 +7,10 @@ from models.user import User
 
 class UserRepository:
 
-    def get_by_id(self, user_id: int) -> User | None:
+    def get_by_id(
+        self,
+        user_id: int,
+    ) -> User | None:
 
         with SessionLocal() as session:
 
@@ -17,7 +20,10 @@ class UserRepository:
 
             return session.scalar(statement)
 
-    def get_by_email(self, email: str) -> User | None:
+    def get_by_email(
+        self,
+        email: str,
+    ) -> User | None:
 
         normalized_email = email.strip().lower()
 
@@ -29,7 +35,10 @@ class UserRepository:
 
             return session.scalar(statement)
 
-    def email_exists(self, email: str) -> bool:
+    def email_exists(
+        self,
+        email: str,
+    ) -> bool:
 
         return self.get_by_email(email) is not None
 
@@ -39,6 +48,7 @@ class UserRepository:
         email: str,
         password_hash: str,
         role: str,
+        is_active: bool = True,
     ) -> User:
 
         user = User(
@@ -46,6 +56,7 @@ class UserRepository:
             email=email.strip().lower(),
             password_hash=password_hash,
             role=role,
+            is_active=is_active,
         )
 
         with SessionLocal() as session:
@@ -56,3 +67,26 @@ class UserRepository:
             session.expunge(user)
 
         return user
+
+    def activate(
+        self,
+        user_id: int,
+    ) -> User | None:
+
+        with SessionLocal() as session:
+
+            user = session.get(
+                User,
+                user_id,
+            )
+
+            if user is None:
+                return None
+
+            user.is_active = True
+
+            session.commit()
+            session.refresh(user)
+            session.expunge(user)
+
+            return user

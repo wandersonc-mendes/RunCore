@@ -13,6 +13,15 @@ DATABASE_FILE = PROJECT_DIR / "src" / "runcore.db"
 DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
 
 # ==========================
+# Endereço público
+# ==========================
+
+PUBLIC_FRONTEND_URL = os.getenv(
+    "RUNCORE_PUBLIC_FRONTEND_URL",
+    "https://notewifi6.tailf3239d.ts.net",
+).rstrip("/")
+
+# ==========================
 # Autenticação
 # ==========================
 

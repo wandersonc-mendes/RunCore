@@ -29,6 +29,7 @@ class InvitationRepository:
             session.add(invitation)
             session.commit()
             session.refresh(invitation)
+            session.expunge(invitation)
 
             return invitation
 
@@ -49,9 +50,31 @@ class InvitationRepository:
                 )
             )
 
-            return list(
+            invitations = list(
                 session.scalars(statement)
             )
+
+            for invitation in invitations:
+                session.expunge(invitation)
+
+            return invitations
+
+    def get_by_id(
+        self,
+        invitation_id: int,
+    ) -> Invitation | None:
+
+        with SessionLocal() as session:
+
+            invitation = session.get(
+                Invitation,
+                invitation_id,
+            )
+
+            if invitation is not None:
+                session.expunge(invitation)
+
+            return invitation
 
     def get_by_token(
         self,
@@ -67,7 +90,42 @@ class InvitationRepository:
                 )
             )
 
-            return session.scalar(statement)
+            invitation = session.scalar(
+                statement,
+            )
+
+            if invitation is not None:
+                session.expunge(invitation)
+
+            return invitation
+
+    def mark_pending(
+        self,
+        invitation_id: int,
+        student_user_id: int,
+        email: str,
+    ) -> Invitation | None:
+
+        with SessionLocal() as session:
+
+            invitation = session.get(
+                Invitation,
+                invitation_id,
+            )
+
+            if invitation is None:
+                return None
+
+            invitation.student_user_id = student_user_id
+            invitation.email = email.strip().lower()
+            invitation.status = "pending"
+            invitation.approved_at = None
+
+            session.commit()
+            session.refresh(invitation)
+            session.expunge(invitation)
+
+            return invitation
 
     def approve(
         self,
@@ -91,5 +149,6 @@ class InvitationRepository:
 
             session.commit()
             session.refresh(invitation)
+            session.expunge(invitation)
 
             return invitation

@@ -1,3 +1,4 @@
+from fastapi import Depends
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,11 +9,16 @@ from database.database import create_database
 # Registra todos os models antes de criar as tabelas.
 import models
 
+from api.dependencies import require_coach
 from api.routers import athletes
 from api.routers import auth
 from api.routers import evaluations
+from api.routers import goals
 from api.routers import integrations
 from api.routers import invitations
+from api.routers import profiles
+from api.routers import student
+from api.routers import trainings
 
 
 create_database()
@@ -43,12 +49,17 @@ app.include_router(
 )
 
 app.include_router(
-    athletes.router,
+    integrations.router,
     prefix="/api",
 )
 
 app.include_router(
-    evaluations.router,
+    student.router,
+    prefix="/api",
+)
+
+app.include_router(
+    goals.router,
     prefix="/api",
 )
 
@@ -58,8 +69,32 @@ app.include_router(
 )
 
 app.include_router(
-    integrations.router,
+    profiles.router,
     prefix="/api",
+)
+
+app.include_router(
+    athletes.router,
+    prefix="/api",
+    dependencies=[
+        Depends(require_coach),
+    ],
+)
+
+app.include_router(
+    evaluations.router,
+    prefix="/api",
+    dependencies=[
+        Depends(require_coach),
+    ],
+)
+
+app.include_router(
+    trainings.router,
+    prefix="/api",
+    dependencies=[
+        Depends(require_coach),
+    ],
 )
 
 

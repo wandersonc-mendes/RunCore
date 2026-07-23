@@ -12,6 +12,7 @@ from api.routers import auth
 from api.routers import evaluations
 from api.routers import integrations
 from api.routers import invitations
+from api.routers import strava
 
 
 create_database()
@@ -61,6 +62,10 @@ app.include_router(
     prefix="/api",
 )
 
+app.include_router(
+    strava.router,
+    prefix="/api",
+)
 
 @app.get("/health")
 def health():

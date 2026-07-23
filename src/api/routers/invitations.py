@@ -11,6 +11,7 @@ from config import PUBLIC_FRONTEND_URL
 
 from models.user import User
 
+from repositories.athlete_repository import AthleteRepository
 from repositories.invitation_repository import InvitationRepository
 from repositories.user_repository import UserRepository
 
@@ -20,6 +21,7 @@ router = APIRouter(
     tags=["coach"],
 )
 
+athlete_repository = AthleteRepository()
 invitation_repository = InvitationRepository()
 user_repository = UserRepository()
 
@@ -66,6 +68,24 @@ def invitation_to_dict(
         "registration_url": build_registration_url(
             invitation.token,
         ),
+    }
+
+
+def athlete_to_dict(
+    athlete,
+) -> dict:
+
+    return {
+        "id": athlete.id,
+        "user_id": athlete.user_id,
+        "coach_user_id": athlete.coach_user_id,
+        "name": athlete.name,
+        "email": athlete.email,
+        "phone": athlete.phone,
+        "goal": athlete.goal,
+        "active": athlete.active,
+        "notes": athlete.notes,
+        "created_at": athlete.created_at,
     }
 
 
@@ -208,6 +228,23 @@ def approve_invitation(
             detail="Não foi possível ativar o atleta",
         )
 
+    try:
+        athlete = athlete_repository.create_for_user(
+            user_id=activated_student.id,
+            coach_user_id=current_user.id,
+            name=activated_student.name,
+            email=activated_student.email,
+        )
+    except Exception as error:
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=(
+                "O usuário foi ativado, mas não foi possível "
+                "criar o perfil esportivo"
+            ),
+        ) from error
+
     approved_invitation = invitation_repository.approve(
         invitation_id=invitation.id,
         student_user_id=student.id,
@@ -217,7 +254,7 @@ def approve_invitation(
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Não foi possível aprovar o convite",
+            detail="Não foi possível concluir a aprovação do convite",
         )
 
     return {
@@ -232,4 +269,7 @@ def approve_invitation(
             "role": activated_student.role,
             "is_active": activated_student.is_active,
         },
+        "athlete": athlete_to_dict(
+            athlete,
+        ),
     }

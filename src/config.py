@@ -18,7 +18,7 @@ DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
 
 PUBLIC_FRONTEND_URL = os.getenv(
     "RUNCORE_PUBLIC_FRONTEND_URL",
-    "https://notewifi6.tailf3239d.ts.net",
+    "https://runcore.tailf3239d.ts.net",
 ).rstrip("/")
 
 # ==========================

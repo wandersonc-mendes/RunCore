@@ -4,7 +4,6 @@ from models.evaluation import Evaluation
 from models.external_integration import ExternalIntegration
 from models.imported_activity import ImportedActivity
 from models.invitation import Invitation
-from models.strava_connection import StravaConnection
 from models.training import Training
 from models.training_session import TrainingSession
 from models.training_step import TrainingStep

@@ -21,6 +21,7 @@ from api.security import verify_password
 
 from models.user import User
 
+from repositories.invitation_repository import InvitationRepository
 from repositories.user_repository import UserRepository
 
 
@@ -29,7 +30,8 @@ router = APIRouter(
     tags=["auth"],
 )
 
-repository = UserRepository()
+user_repository = UserRepository()
+invitation_repository = InvitationRepository()
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
@@ -85,12 +87,22 @@ class LoginRequest(BaseModel):
         max_length=128,
     )
 
-    role: str | None = None
+    role: Literal[
+        "coach",
+        "student",
+    ] | None = None
 
 
 class AuthResponse(BaseModel):
 
     token: str
+    user: UserOut
+
+
+class PendingRegistrationResponse(BaseModel):
+
+    pending_approval: bool
+    message: str
     user: UserOut
 
 
@@ -149,7 +161,7 @@ def get_current_user(
             detail="Token inválido ou expirado",
         )
 
-    user = repository.get_by_id(
+    user = user_repository.get_by_id(
         user_id,
     )
 
@@ -164,15 +176,67 @@ def get_current_user(
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Usuário inativo",
+            detail="Cadastro aguardando aprovação do treinador",
         )
 
     return user
 
 
+def validate_student_invitation(
+    invite_token: str | None,
+    email: str,
+):
+
+    if not invite_token:
+
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="O cadastro de atleta exige um convite válido",
+        )
+
+    invitation = invitation_repository.get_by_token(
+        invite_token,
+    )
+
+    if invitation is None:
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Convite não encontrado",
+        )
+
+    if invitation.status != "sent":
+
+        if invitation.status == "pending":
+
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Este convite já possui um cadastro aguardando aprovação",
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este convite já foi utilizado",
+        )
+
+    invitation_email = invitation.email.strip().lower()
+
+    if (
+        invitation_email
+        and invitation_email != email
+    ):
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Este convite foi enviado para outro e-mail",
+        )
+
+    return invitation
+
+
 @router.post(
     "/register",
-    response_model=AuthResponse,
+    response_model=AuthResponse | PendingRegistrationResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def register(
@@ -183,7 +247,7 @@ def register(
         payload.email,
     )
 
-    if repository.email_exists(
+    if user_repository.email_exists(
         normalized_email,
     ):
 
@@ -192,13 +256,52 @@ def register(
             detail="Este e-mail já está cadastrado",
         )
 
-    user = repository.create(
+    if payload.role == "student":
+
+        invitation = validate_student_invitation(
+            invite_token=payload.invite_token,
+            email=normalized_email,
+        )
+
+        user = user_repository.create(
+            name=payload.name,
+            email=normalized_email,
+            password_hash=hash_password(
+                payload.password,
+            ),
+            role="student",
+            is_active=False,
+        )
+
+        pending_invitation = invitation_repository.mark_pending(
+            invitation_id=invitation.id,
+            student_user_id=user.id,
+            email=normalized_email,
+        )
+
+        if pending_invitation is None:
+
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Não foi possível vincular o cadastro ao convite",
+            )
+
+        return PendingRegistrationResponse(
+            pending_approval=True,
+            message="Pré-cadastro enviado. Aguarde a aprovação do treinador.",
+            user=UserOut.model_validate(
+                user,
+            ),
+        )
+
+    user = user_repository.create(
         name=payload.name,
         email=normalized_email,
         password_hash=hash_password(
             payload.password,
         ),
-        role=payload.role,
+        role="coach",
+        is_active=True,
     )
 
     token = create_access_token(
@@ -226,7 +329,7 @@ def login(
         payload.email,
     )
 
-    user = repository.get_by_email(
+    user = user_repository.get_by_email(
         normalized_email,
     )
 
@@ -243,11 +346,21 @@ def login(
             detail="E-mail ou senha inválidos",
         )
 
+    if (
+        payload.role is not None
+        and user.role != payload.role
+    ):
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="A conta não corresponde ao perfil selecionado",
+        )
+
     if not user.is_active:
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Usuário inativo",
+            detail="Cadastro aguardando aprovação do treinador",
         )
 
     token = create_access_token(

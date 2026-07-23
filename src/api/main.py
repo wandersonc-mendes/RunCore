@@ -10,7 +10,7 @@ import models
 from api.routers import athletes
 from api.routers import auth
 from api.routers import evaluations
-
+from api.routers import invitations
 
 create_database()
 
@@ -49,6 +49,10 @@ app.include_router(
     prefix="/api",
 )
 
+app.include_router(
+    invitations.router,
+    prefix="/api",
+)
 
 @app.get("/health")
 def health():

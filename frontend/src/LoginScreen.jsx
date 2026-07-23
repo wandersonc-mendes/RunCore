@@ -1,8 +1,10 @@
 import { useState } from "react";
 
 import {
+  forgotPassword,
   login,
   register,
+  resetPassword,
   saveSession,
 } from "./api";
 
@@ -10,14 +12,26 @@ import {
 export default function LoginScreen({
   onAuthenticated,
 }) {
-  const inviteToken = new URLSearchParams(
+  const urlParams = new URLSearchParams(
     window.location.search,
-  ).get("invite");
+  );
+
+  const inviteToken = urlParams.get(
+    "invite",
+  );
+
+  const urlResetToken = (
+    urlParams.get("reset_token")
+    || urlParams.get("token")
+    || ""
+  );
 
   const [mode, setMode] = useState(
     inviteToken
       ? "student-register"
-      : "login",
+      : urlResetToken
+        ? "reset-password"
+        : "login",
   );
 
   const [form, setForm] = useState({
@@ -26,13 +40,30 @@ export default function LoginScreen({
     password: "",
   });
 
+  const [confirmPassword, setConfirmPassword] = useState(
+    "",
+  );
+
+  const [resetToken, setResetToken] = useState(
+    urlResetToken,
+  );
+
   const [loginRole, setLoginRole] = useState(
     "coach",
   );
 
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(
+    "",
+  );
+
+  const [message, setMessage] = useState(
+    "",
+  );
+
+  const [saving, setSaving] = useState(
+    false,
+  );
+
 
   const registeringStudent = (
     mode === "student-register"
@@ -46,6 +77,236 @@ export default function LoginScreen({
     mode === "student-pending"
   );
 
+  const recoveringPassword = (
+    mode === "forgot-password"
+  );
+
+  const resettingPassword = (
+    mode === "reset-password"
+  );
+
+
+  function clearMessages() {
+    setError("");
+    setMessage("");
+  }
+
+
+  function clearForm() {
+    setForm({
+      name: "",
+      email: "",
+      password: "",
+    });
+
+    setConfirmPassword("");
+  }
+
+
+  function cleanUrl() {
+    const cleanAddress = (
+      `${window.location.origin}${window.location.pathname}`
+    );
+
+    window.history.replaceState(
+      {},
+      "",
+      cleanAddress,
+    );
+  }
+
+
+  function showLogin() {
+    setMode(
+      "login",
+    );
+
+    clearMessages();
+    clearForm();
+    setResetToken("");
+    cleanUrl();
+  }
+
+
+  function showCoachRegistration() {
+    setMode(
+      "coach-register",
+    );
+
+    clearMessages();
+    clearForm();
+  }
+
+
+  function showForgotPassword() {
+    setMode(
+      "forgot-password",
+    );
+
+    clearMessages();
+
+    setForm((current) => ({
+      ...current,
+      name: "",
+      password: "",
+    }));
+
+    setConfirmPassword("");
+  }
+
+
+  async function handleLogin() {
+    const session = await login({
+      email: form.email,
+      password: form.password,
+      role: loginRole,
+    });
+
+    saveSession(
+      session,
+    );
+
+    onAuthenticated(
+      session.user,
+    );
+  }
+
+
+  async function handleRegistration() {
+    const result = await register({
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      role: registeringStudent
+        ? "student"
+        : "coach",
+      invite_token: registeringStudent
+        ? inviteToken
+        : null,
+    });
+
+    if (
+      registeringStudent
+      && result.pending_approval
+    ) {
+      setMode(
+        "student-pending",
+      );
+
+      setMessage(
+        result.message
+        || "Pré-cadastro enviado. Aguarde a aprovação do treinador.",
+      );
+
+      clearForm();
+
+      return;
+    }
+
+    if (
+      !result.token
+      || !result.user
+    ) {
+      throw new Error(
+        "O servidor não retornou uma sessão válida.",
+      );
+    }
+
+    saveSession(
+      result,
+    );
+
+    onAuthenticated(
+      result.user,
+    );
+  }
+
+
+  async function handleForgotPassword() {
+    const result = await forgotPassword({
+      email: form.email,
+    });
+
+    setMessage(
+      result.message
+      || (
+        "Se o e-mail estiver cadastrado, "
+        + "você receberá as instruções para redefinir a senha."
+      ),
+    );
+
+    /*
+     * Durante o desenvolvimento, o backend devolve o token.
+     * Quando o envio por e-mail for implementado, esse campo
+     * deixará de ser necessário no frontend.
+     */
+    if (result.reset_token) {
+      setResetToken(
+        result.reset_token,
+      );
+
+      setForm((current) => ({
+        ...current,
+        password: "",
+      }));
+
+      setConfirmPassword("");
+
+      setMode(
+        "reset-password",
+      );
+    }
+  }
+
+
+  async function handleResetPassword() {
+    if (!resetToken) {
+      throw new Error(
+        "Token de recuperação não informado.",
+      );
+    }
+
+    if (form.password.length < 8) {
+      throw new Error(
+        "A nova senha deve ter pelo menos 8 caracteres.",
+      );
+    }
+
+    if (
+      form.password
+      !== confirmPassword
+    ) {
+      throw new Error(
+        "As senhas informadas não são iguais.",
+      );
+    }
+
+    const result = await resetPassword({
+      token: resetToken,
+      password: form.password,
+    });
+
+    setMode(
+      "login",
+    );
+
+    setResetToken("");
+    setConfirmPassword("");
+
+    setForm({
+      name: "",
+      email: form.email,
+      password: "",
+    });
+
+    cleanUrl();
+
+    setMessage(
+      result.message
+      || "Senha alterada com sucesso. Faça o login.",
+    );
+  }
+
 
   async function submit(
     event,
@@ -56,129 +317,91 @@ export default function LoginScreen({
       return;
     }
 
-    setSaving(true);
-    setError("");
-    setMessage("");
+    setSaving(
+      true,
+    );
+
+    clearMessages();
 
     try {
       if (mode === "login") {
-        const session = await login({
-          email: form.email,
-          password: form.password,
-          role: loginRole,
-        });
-
-        saveSession(
-          session,
-        );
-
-        onAuthenticated(
-          session.user,
-        );
-
+        await handleLogin();
         return;
       }
 
-      const result = await register({
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        role: registeringStudent
-          ? "student"
-          : "coach",
-        invite_token: registeringStudent
-          ? inviteToken
-          : null,
-      });
-
-      if (
-        registeringStudent
-        && result.pending_approval
-      ) {
-        setMode(
-          "student-pending",
-        );
-
-        setMessage(
-          result.message
-          || "Pré-cadastro enviado. Aguarde a aprovação do treinador.",
-        );
-
-        setForm({
-          name: "",
-          email: "",
-          password: "",
-        });
-
+      if (recoveringPassword) {
+        await handleForgotPassword();
         return;
       }
 
-      if (
-        !result.token
-        || !result.user
-      ) {
-        throw new Error(
-          "O servidor não retornou uma sessão válida.",
-        );
+      if (resettingPassword) {
+        await handleResetPassword();
+        return;
       }
 
-      saveSession(
-        result,
-      );
-
-      onAuthenticated(
-        result.user,
-      );
+      await handleRegistration();
     } catch (err) {
       setError(
         err.message
         || "Não foi possível concluir a solicitação.",
       );
     } finally {
-      setSaving(false);
+      setSaving(
+        false,
+      );
     }
   }
 
 
-  function showLogin() {
-    setMode(
-      "login",
-    );
+  function screenSubtitle() {
+    if (registeringStudent) {
+      return "Pré-cadastro de aluno";
+    }
 
-    setError("");
-    setMessage("");
+    if (registeringCoach) {
+      return "Cadastro de treinador";
+    }
 
-    setForm({
-      name: "",
-      email: "",
-      password: "",
-    });
+    if (recoveringPassword) {
+      return "Recuperar senha";
+    }
 
-    const cleanUrl = (
-      `${window.location.origin}${window.location.pathname}`
-    );
+    if (resettingPassword) {
+      return "Definir nova senha";
+    }
 
-    window.history.replaceState(
-      {},
-      "",
-      cleanUrl,
+    return (
+      `Entrar como ${
+        loginRole === "coach"
+          ? "treinador"
+          : "atleta"
+      }`
     );
   }
 
 
-  function showCoachRegistration() {
-    setMode(
-      "coach-register",
-    );
+  function submitButtonText() {
+    if (saving) {
+      return "Aguarde...";
+    }
 
-    setError("");
-    setMessage("");
+    if (mode === "login") {
+      return "Entrar";
+    }
 
-    setForm({
-      name: "",
-      email: "",
-      password: "",
-    });
+    if (recoveringPassword) {
+      return "Continuar";
+    }
+
+    if (resettingPassword) {
+      return "Salvar nova senha";
+    }
+
+    if (registeringCoach) {
+      return "Criar conta de treinador";
+    }
+
+    return "Enviar pré-cadastro";
   }
 
 
@@ -203,7 +426,8 @@ export default function LoginScreen({
           </div>
 
           <p className="muted">
-            O acesso será liberado depois que o treinador aprovar seu cadastro.
+            O acesso será liberado depois que o treinador
+            aprovar seu cadastro.
           </p>
 
           <button
@@ -231,17 +455,7 @@ export default function LoginScreen({
         </h1>
 
         <p>
-          {
-            registeringStudent
-              ? "Pré-cadastro de aluno"
-              : registeringCoach
-                ? "Cadastro de treinador"
-                : `Entrar como ${
-                    loginRole === "coach"
-                      ? "treinador"
-                      : "atleta"
-                  }`
-          }
+          {screenSubtitle()}
         </p>
 
         {
@@ -260,7 +474,7 @@ export default function LoginScreen({
                     "coach",
                   );
 
-                  setError("");
+                  clearMessages();
                 }}
               >
                 Sou treinador
@@ -278,12 +492,31 @@ export default function LoginScreen({
                     "student",
                   );
 
-                  setError("");
+                  clearMessages();
                 }}
               >
                 Sou atleta
               </button>
             </div>
+          )
+        }
+
+        {
+          recoveringPassword
+          && (
+            <p className="muted">
+              Informe o e-mail usado no cadastro para
+              iniciar a recuperação da senha.
+            </p>
+          )
+        }
+
+        {
+          resettingPassword
+          && (
+            <p className="muted">
+              Digite e confirme a nova senha de acesso.
+            </p>
           )
         }
 
@@ -317,7 +550,8 @@ export default function LoginScreen({
             registeringStudent
             && (
               <p className="muted">
-                Seu cadastro ficará aguardando a aprovação do treinador.
+                Seu cadastro ficará aguardando a aprovação
+                do treinador.
               </p>
             )
           }
@@ -326,44 +560,97 @@ export default function LoginScreen({
             registeringCoach
             && (
               <p className="muted">
-                Crie sua conta para administrar atletas e planejamentos.
+                Crie sua conta para administrar atletas e
+                planejamentos.
               </p>
             )
           }
 
-          <label>
-            E-mail
+          {
+            !resettingPassword
+            && (
+              <label>
+                E-mail
 
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(event) => {
-                setForm({
-                  ...form,
-                  email: event.target.value,
-                });
-              }}
-            />
-          </label>
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={(event) => {
+                    setForm({
+                      ...form,
+                      email: event.target.value,
+                    });
+                  }}
+                />
+              </label>
+            )
+          }
 
-          <label>
-            Senha
+          {
+            !recoveringPassword
+            && (
+              <label>
+                {
+                  resettingPassword
+                    ? "Nova senha"
+                    : "Senha"
+                }
 
-            <input
-              type="password"
-              required
-              minLength="8"
-              maxLength="128"
-              value={form.password}
-              onChange={(event) => {
-                setForm({
-                  ...form,
-                  password: event.target.value,
-                });
-              }}
-            />
-          </label>
+                <input
+                  type="password"
+                  required
+                  minLength="8"
+                  maxLength="128"
+                  autoComplete={
+                    resettingPassword
+                      ? "new-password"
+                      : "current-password"
+                  }
+                  value={form.password}
+                  onChange={(event) => {
+                    setForm({
+                      ...form,
+                      password: event.target.value,
+                    });
+                  }}
+                />
+              </label>
+            )
+          }
+
+          {
+            resettingPassword
+            && (
+              <label>
+                Confirmar nova senha
+
+                <input
+                  type="password"
+                  required
+                  minLength="8"
+                  maxLength="128"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => {
+                    setConfirmPassword(
+                      event.target.value,
+                    );
+                  }}
+                />
+              </label>
+            )
+          }
+
+          {
+            message
+            && (
+              <div className="profile-message">
+                {message}
+              </div>
+            )
+          }
 
           {
             error
@@ -378,20 +665,43 @@ export default function LoginScreen({
             className="btn-primary"
             disabled={saving}
           >
-            {
-              saving
-                ? "Aguarde..."
-                : mode === "login"
-                  ? "Entrar"
-                  : registeringCoach
-                    ? "Criar conta de treinador"
-                    : "Enviar pré-cadastro"
-            }
+            {submitButtonText()}
           </button>
+
+          {
+            mode === "login"
+            && (
+              <button
+                type="button"
+                className="auth-switch"
+                onClick={showForgotPassword}
+              >
+                Esqueceu sua senha?
+              </button>
+            )
+          }
+
+          {
+            (
+              recoveringPassword
+              || resettingPassword
+            )
+            && (
+              <button
+                type="button"
+                className="auth-switch"
+                onClick={showLogin}
+              >
+                Voltar para o login
+              </button>
+            )
+          }
         </form>
 
         {
           !inviteToken
+          && !recoveringPassword
+          && !resettingPassword
           && (
             <div className="auth-actions">
               {
@@ -419,8 +729,14 @@ export default function LoginScreen({
               <small>
                 {
                   loginRole === "student"
-                    ? "Ainda não possui acesso? Solicite o link de convite ao seu treinador."
-                    : "Alunos entram pelo link de convite enviado pelo treinador."
+                    ? (
+                      "Ainda não possui acesso? "
+                      + "Solicite o link de convite ao seu treinador."
+                    )
+                    : (
+                      "Alunos entram pelo link de convite "
+                      + "enviado pelo treinador."
+                    )
                 }
               </small>
             </div>

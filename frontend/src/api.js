@@ -36,6 +36,19 @@ export function deleteAthlete(id) {
 
 export function login(data) { return request("/api/auth/login", { method: "POST", body: JSON.stringify(data) }); }
 export function register(data) { return request("/api/auth/register", { method: "POST", body: JSON.stringify(data) }); }
+export function forgotPassword(data) {
+  return request("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function resetPassword(data) {
+  return request("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
 export function getCurrentUser() { return request("/api/auth/me"); }
 export function saveSession(session) { localStorage.setItem("runcore_token", session.token); }
 export function clearSession() { localStorage.removeItem("runcore_token"); }

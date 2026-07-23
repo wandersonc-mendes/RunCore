@@ -12,3 +12,4 @@ from models.training import Training
 from models.training_session import TrainingSession
 from models.training_step import TrainingStep
 from models.user import User
+from models.password_reset_token import PasswordResetToken

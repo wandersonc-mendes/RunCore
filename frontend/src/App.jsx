@@ -426,62 +426,578 @@ export default function App() {
   return (
     <div className="page">
       <header className="topbar">
-        <div className="brand"><BrandLogo /><div><h1>RunCore</h1><p>Painel do treinador</p></div></div>
-        <div className="header-actions"><button className="btn-ghost" onClick={() => { clearSession(); setCurrentUser(null); }}>Sair</button><button className="btn-primary" onClick={() => setShowForm((value) => !value)}>{showForm ? "Cancelar" : "+ Novo atleta"}</button></div>
+        <div className="brand">
+          <BrandLogo />
+
+          <div>
+            <h1>RunCore</h1>
+            <p>Painel do treinador</p>
+          </div>
+        </div>
+
+        <div className="header-actions">
+          <button
+            className="btn-ghost"
+            onClick={() => {
+              clearSession();
+              setCurrentUser(null);
+            }}
+          >
+            Sair
+          </button>
+
+          <button
+            className="btn-primary"
+            onClick={() => setShowForm((value) => !value)}
+          >
+            {showForm ? "Cancelar" : "+ Novo atleta"}
+          </button>
+        </div>
       </header>
-      <nav className="portal-menu coach-nav" aria-label="Coach navigation">
-        <button onClick={() => document.getElementById("visao-geral")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Visão geral</button>
-        <button onClick={() => document.getElementById("convites")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Convites e aprovações</button>
-        <button type="button" onClick={() => setQuickAction("athletes")}>Atletas</button>
-        <button type="button" onClick={() => setQuickAction("evaluations")}>Avaliações</button>
-        <button type="button" onClick={() => setQuickAction("training")}>Planejamentos</button>
-      </nav>
-      {quickAction && <div className="quick-action-overlay" role="dialog" aria-modal="true" aria-label="Escolher atleta"><section className="quick-action-dialog"><div><p className="eyebrow">ATALHO</p><h2>{quickAction === "athletes" ? "Abrir cadastro do atleta" : quickAction === "evaluations" ? "Abrir avaliações" : "Abrir planejamento"}</h2><p className="muted">Escolha o atleta que deseja acompanhar.</p></div><div className="quick-action-list">{athletes.length ? athletes.map((athlete) => <button type="button" key={athlete.id} onClick={() => { setQuickAction(null); if (quickAction === "athletes") openProfile(athlete); else if (quickAction === "evaluations") openEvaluations(athlete); else openTraining(athlete); }}><span>{athlete.name}</span><small>{athlete.goal || "Sem objetivo informado"}</small></button>) : <p className="muted">Nenhum atleta cadastrado.</p>}</div><button type="button" className="btn-ghost" onClick={() => setQuickAction(null)}>Cancelar</button></section></div>}
-      <main className="content">
-        <section id="visao-geral" className="coach-hero">
-          <div><p className="eyebrow">VISÃO GERAL</p><h2>Olá, {currentUser.name}.</h2><p>Organize seus atletas, acompanhe avaliações e mantenha cada plano em dia.</p></div>
-          <div className="hero-date"><span>RUNCORE</span><strong>Assessoria em movimento</strong></div>
-        </section>
-        <section id="convites" className="card invitations-card">
-          <div><p className="eyebrow">NOVOS ALUNOS</p><h2>Convites e aprovações</h2><p className="muted">Envie o link, receba o pré-cadastro e aprove o aluno quando estiver pronto.</p></div>
-          <form className="invite-form" onSubmit={handleCreateInvitation}><input type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="E-mail do aluno (opcional)" /><button className="btn-primary">Gerar link de convite</button></form>
-          {inviteLink && <div className="invite-link"><span>Link pronto para compartilhar</span><input readOnly value={inviteLink} onFocus={(event) => event.target.select()} /><button className="btn-ghost" onClick={() => navigator.clipboard?.writeText(inviteLink)}>Copiar</button></div>}
-          <div className="invitation-status-grid"><section className="pending-invitations"><div className="invitation-section-heading"><strong>Aguardando sua aprovação</strong><span>{invitations.pending.length}</span></div>{invitations.pending.length ? invitations.pending.map((invitation) => <div className="invitation-row" key={invitation.id}><div><strong>{invitation.student_name || "Novo aluno"}</strong><small>{invitation.email || "E-mail informado no pré-cadastro"} · {formatDate(invitation.created_at)}</small></div><div className="invitation-actions">{invitation.athlete_id && <button className="btn-ghost" onClick={() => openProfile({ id: invitation.athlete_id, name: invitation.student_name || "Novo aluno" })}>Ver cadastro</button>}<button className="btn-primary" onClick={() => handleApproveInvitation(invitation.id)}>Aprovar</button></div></div>) : <p className="invitation-empty">Nenhum aluno aguardando aprovação.</p>}</section><section className="sent-invitations"><div className="invitation-section-heading"><strong>Convites enviados</strong><span>{invitations.sent.length}</span></div>{invitations.sent.length ? invitations.sent.slice(0, 3).map((invitation) => <div className="sent-invitation" key={invitation.id}><span>{invitation.email || "Link sem e-mail definido"}</span><small>Enviado em {formatDate(invitation.created_at)}</small></div>) : <p className="invitation-empty">Nenhum convite pendente de uso.</p>}</section></div>
-        </section>
-        <section className="stat-grid">
-          <article className="stat-card"><span className="stat-icon">●</span><div><span>Atletas ativos</span><strong>{athletes.filter((athlete) => athlete.active).length}</strong><small>em acompanhamento</small></div></article>
-          <article className="stat-card"><span className="stat-icon stat-blue">↗</span><div><span>Total de atletas</span><strong>{athletes.length}</strong><small>cadastros na equipe</small></div></article>
-          <article className="stat-card"><span className="stat-icon stat-amber">✓</span><div><span>Próximo passo</span><strong>Avaliar</strong><small>atualize o VDOT dos atletas</small></div></article>
-        </section>
-        <section id="atletas" className="section-heading"><div><p className="eyebrow">EQUIPE</p><h2>Seus atletas</h2></div><span>{athletes.length} cadastrados</span></section>
-        <form className="search-row" onSubmit={handleSearchSubmit}><input type="text" placeholder="Buscar por nome..." value={search} onChange={(e) => setSearch(e.target.value)} /><button type="submit" className="btn-ghost">Buscar</button></form>
-        {showForm && (
-          <form className="card new-athlete-form" onSubmit={handleCreateAthlete}>
-            <div className="form-grid">
-              <label>Nome<input required value={athleteForm.name} onChange={(e) => setAthleteForm({ ...athleteForm, name: e.target.value })} /></label>
-              <label>Telefone<input value={athleteForm.phone} onChange={(e) => setAthleteForm({ ...athleteForm, phone: e.target.value })} /></label>
-              <label>E-mail<input type="email" value={athleteForm.email} onChange={(e) => setAthleteForm({ ...athleteForm, email: e.target.value })} /></label>
-              <label>Objetivo<input placeholder="Ex: Maratona, 10K..." value={athleteForm.goal} onChange={(e) => setAthleteForm({ ...athleteForm, goal: e.target.value })} /></label>
+
+      {quickAction && (
+        <div
+          className="quick-action-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Escolher atleta"
+        >
+          <section className="quick-action-dialog">
+            <div>
+              <p className="eyebrow">ATALHO</p>
+
+              <h2>
+                {quickAction === "athletes"
+                  ? "Abrir cadastro do atleta"
+                  : quickAction === "evaluations"
+                    ? "Abrir avaliações"
+                    : "Abrir planejamento"}
+              </h2>
+
+              <p className="muted">
+                Escolha o atleta que deseja acompanhar.
+              </p>
             </div>
-            <label className="notes-label">Observações<textarea rows={2} value={athleteForm.notes} onChange={(e) => setAthleteForm({ ...athleteForm, notes: e.target.value })} /></label>
-            <button type="submit" className="btn-primary">Salvar atleta</button>
+
+            <div className="quick-action-list">
+              {athletes.length ? (
+                athletes.map((athlete) => (
+                  <button
+                    type="button"
+                    key={athlete.id}
+                    onClick={() => {
+                      setQuickAction(null);
+
+                      if (quickAction === "athletes") {
+                        openProfile(athlete);
+                      } else if (quickAction === "evaluations") {
+                        openEvaluations(athlete);
+                      } else {
+                        openTraining(athlete);
+                      }
+                    }}
+                  >
+                    <span>{athlete.name}</span>
+
+                    <small>
+                      {athlete.goal || "Sem objetivo informado"}
+                    </small>
+                  </button>
+                ))
+              ) : (
+                <p className="muted">Nenhum atleta cadastrado.</p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => setQuickAction(null)}
+            >
+              Cancelar
+            </button>
+          </section>
+        </div>
+      )}
+
+      <main className="content">
+        <section
+          id="visao-geral"
+          className="coach-hero"
+        >
+          <div>
+            <p className="eyebrow">VISÃO GERAL</p>
+
+            <h2>Olá, {currentUser.name}.</h2>
+
+            <p>
+              Organize seus atletas, acompanhe avaliações e mantenha
+              cada plano em dia.
+            </p>
+          </div>
+
+          <div className="hero-date">
+            <span>RUNCORE</span>
+            <strong>Assessoria em movimento</strong>
+          </div>
+        </section>
+
+        <nav
+          className="portal-menu coach-nav coach-nav-below"
+          aria-label="Navegação do treinador"
+        >
+          <button
+            type="button"
+            onClick={() =>
+              document
+                .getElementById("visao-geral")
+                ?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                })
+            }
+          >
+            Visão geral
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              document
+                .getElementById("convites")
+                ?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                })
+            }
+          >
+            Convites e aprovações
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setQuickAction("athletes")}
+          >
+            Atletas
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setQuickAction("evaluations")}
+          >
+            Avaliações
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setQuickAction("training")}
+          >
+            Planejamentos
+          </button>
+        </nav>
+
+        <section
+          id="convites"
+          className="card invitations-card"
+        >
+          <div>
+            <p className="eyebrow">NOVOS ALUNOS</p>
+
+            <h2>Convites e aprovações</h2>
+
+            <p className="muted">
+              Envie o link, receba o pré-cadastro e aprove o aluno
+              quando estiver pronto.
+            </p>
+          </div>
+
+          <form
+            className="invite-form"
+            onSubmit={handleCreateInvitation}
+          >
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(event) =>
+                setInviteEmail(event.target.value)
+              }
+              placeholder="E-mail do aluno (opcional)"
+            />
+
+            <button className="btn-primary">
+              Gerar link de convite
+            </button>
+          </form>
+
+          {inviteLink && (
+            <div className="invite-link">
+              <span>Link pronto para compartilhar</span>
+
+              <input
+                readOnly
+                value={inviteLink}
+                onFocus={(event) => event.target.select()}
+              />
+
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() =>
+                  navigator.clipboard?.writeText(inviteLink)
+                }
+              >
+                Copiar
+              </button>
+            </div>
+          )}
+
+          <div className="invitation-status-grid">
+            <section className="pending-invitations">
+              <div className="invitation-section-heading">
+                <strong>Aguardando sua aprovação</strong>
+                <span>{invitations.pending.length}</span>
+              </div>
+
+              {invitations.pending.length ? (
+                invitations.pending.map((invitation) => (
+                  <div
+                    className="invitation-row"
+                    key={invitation.id}
+                  >
+                    <div>
+                      <strong>
+                        {invitation.student_name || "Novo aluno"}
+                      </strong>
+
+                      <small>
+                        {invitation.email ||
+                          "E-mail informado no pré-cadastro"}
+                        {" · "}
+                        {formatDate(invitation.created_at)}
+                      </small>
+                    </div>
+
+                    <div className="invitation-actions">
+                      {invitation.athlete_id && (
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          onClick={() =>
+                            openProfile({
+                              id: invitation.athlete_id,
+                              name:
+                                invitation.student_name ||
+                                "Novo aluno",
+                            })
+                          }
+                        >
+                          Ver cadastro
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={() =>
+                          handleApproveInvitation(invitation.id)
+                        }
+                      >
+                        Aprovar
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="invitation-empty">
+                  Nenhum aluno aguardando aprovação.
+                </p>
+              )}
+            </section>
+
+            <section className="sent-invitations">
+              <div className="invitation-section-heading">
+                <strong>Convites enviados</strong>
+                <span>{invitations.sent.length}</span>
+              </div>
+
+              {invitations.sent.length ? (
+                invitations.sent
+                  .slice(0, 3)
+                  .map((invitation) => (
+                    <div
+                      className="sent-invitation"
+                      key={invitation.id}
+                    >
+                      <span>
+                        {invitation.email ||
+                          "Link sem e-mail definido"}
+                      </span>
+
+                      <small>
+                        Enviado em{" "}
+                        {formatDate(invitation.created_at)}
+                      </small>
+                    </div>
+                  ))
+              ) : (
+                <p className="invitation-empty">
+                  Nenhum convite pendente de uso.
+                </p>
+              )}
+            </section>
+          </div>
+        </section>
+
+        <section className="stat-grid">
+          <article className="stat-card">
+            <span className="stat-icon">●</span>
+
+            <div>
+              <span>Atletas ativos</span>
+
+              <strong>
+                {
+                  athletes.filter(
+                    (athlete) => athlete.active,
+                  ).length
+                }
+              </strong>
+
+              <small>em acompanhamento</small>
+            </div>
+          </article>
+
+          <article className="stat-card">
+            <span className="stat-icon stat-blue">↗</span>
+
+            <div>
+              <span>Total de atletas</span>
+              <strong>{athletes.length}</strong>
+              <small>cadastros na equipe</small>
+            </div>
+          </article>
+
+          <article className="stat-card">
+            <span className="stat-icon stat-amber">✓</span>
+
+            <div>
+              <span>Próximo passo</span>
+              <strong>Avaliar</strong>
+              <small>atualize o VDOT dos atletas</small>
+            </div>
+          </article>
+        </section>
+
+        <section
+          id="atletas"
+          className="section-heading"
+        >
+          <div>
+            <p className="eyebrow">EQUIPE</p>
+            <h2>Seus atletas</h2>
+          </div>
+
+          <span>{athletes.length} cadastrados</span>
+        </section>
+
+        <form
+          className="search-row"
+          onSubmit={handleSearchSubmit}
+        >
+          <input
+            type="text"
+            placeholder="Buscar por nome..."
+            value={search}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
+          />
+
+          <button
+            type="submit"
+            className="btn-ghost"
+          >
+            Buscar
+          </button>
+        </form>
+
+        {showForm && (
+          <form
+            className="card new-athlete-form"
+            onSubmit={handleCreateAthlete}
+          >
+            <div className="form-grid">
+              <label>
+                Nome
+
+                <input
+                  required
+                  value={athleteForm.name}
+                  onChange={(event) =>
+                    setAthleteForm({
+                      ...athleteForm,
+                      name: event.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <label>
+                Telefone
+
+                <input
+                  value={athleteForm.phone}
+                  onChange={(event) =>
+                    setAthleteForm({
+                      ...athleteForm,
+                      phone: event.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <label>
+                E-mail
+
+                <input
+                  type="email"
+                  value={athleteForm.email}
+                  onChange={(event) =>
+                    setAthleteForm({
+                      ...athleteForm,
+                      email: event.target.value,
+                    })
+                  }
+                />
+              </label>
+
+              <label>
+                Objetivo
+
+                <input
+                  placeholder="Ex: Maratona, 10K..."
+                  value={athleteForm.goal}
+                  onChange={(event) =>
+                    setAthleteForm({
+                      ...athleteForm,
+                      goal: event.target.value,
+                    })
+                  }
+                />
+              </label>
+            </div>
+
+            <label className="notes-label">
+              Observações
+
+              <textarea
+                rows={2}
+                value={athleteForm.notes}
+                onChange={(event) =>
+                  setAthleteForm({
+                    ...athleteForm,
+                    notes: event.target.value,
+                  })
+                }
+              />
+            </label>
+
+            <button
+              type="submit"
+              className="btn-primary"
+            >
+              Salvar atleta
+            </button>
           </form>
         )}
-        {error && <div className="alert">{error}</div>}
-        {loading ? <p className="muted">Carregando...</p> : athletes.length === 0 ? (
-          <div className="empty-state"><p>Nenhum atleta cadastrado ainda.</p><p className="muted">Use "+ Novo atleta" para começar.</p></div>
+
+        {error && (
+          <div className="alert">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <p className="muted">Carregando...</p>
+        ) : athletes.length === 0 ? (
+          <div className="empty-state">
+            <p>Nenhum atleta cadastrado ainda.</p>
+
+            <p className="muted">
+              Use "+ Novo atleta" para começar.
+            </p>
+          </div>
         ) : (
           <table className="athletes-table">
-            <thead><tr><th>Nome</th><th>Contato</th><th>Objetivo</th><th>Status</th><th></th></tr></thead>
-            <tbody>{athletes.map((athlete) => (
-              <tr key={athlete.id}>
-                <td className="name-cell"><button className="btn-link athlete-name-link" onClick={() => openProfile(athlete)}>{athlete.name}</button></td>
-                <td className="muted">{athlete.phone || "Não informado"}</td>
-                <td>{athlete.goal || "—"}</td>
-                <td><span className={`badge ${athlete.active ? "badge-active" : "badge-inactive"}`}>{athlete.active ? "Ativo" : "Inativo"}</span></td>
-                <td className="table-actions"><button className="btn-link" onClick={() => openEvaluations(athlete)}>Avaliações</button><button className="btn-link" onClick={() => openTraining(athlete)}>Planejamento</button></td>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Contato</th>
+                <th>Objetivo</th>
+                <th>Status</th>
+                <th></th>
               </tr>
-            ))}</tbody>
+            </thead>
+
+            <tbody>
+              {athletes.map((athlete) => (
+                <tr key={athlete.id}>
+                  <td className="name-cell">
+                    <button
+                      type="button"
+                      className="btn-link athlete-name-link"
+                      onClick={() => openProfile(athlete)}
+                    >
+                      {athlete.name}
+                    </button>
+                  </td>
+
+                  <td className="muted">
+                    {athlete.phone || "Não informado"}
+                  </td>
+
+                  <td>
+                    {athlete.goal || "—"}
+                  </td>
+
+                  <td>
+                    <span
+                      className={`badge ${
+                        athlete.active
+                          ? "badge-active"
+                          : "badge-inactive"
+                      }`}
+                    >
+                      {athlete.active
+                        ? "Ativo"
+                        : "Inativo"}
+                    </span>
+                  </td>
+
+                  <td className="table-actions">
+                    <button
+                      type="button"
+                      className="btn-link"
+                      onClick={() =>
+                        openEvaluations(athlete)
+                      }
+                    >
+                      Avaliações
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn-link"
+                      onClick={() =>
+                        openTraining(athlete)
+                      }
+                    >
+                      Planejamento
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         )}
       </main>

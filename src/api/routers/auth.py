@@ -23,7 +23,7 @@ from models.user import User
 
 from repositories.invitation_repository import InvitationRepository
 from repositories.user_repository import UserRepository
-
+from services.auth.password_reset_service import PasswordResetService
 
 router = APIRouter(
     prefix="/auth",
@@ -32,6 +32,7 @@ router = APIRouter(
 
 user_repository = UserRepository()
 invitation_repository = InvitationRepository()
+password_reset_service = PasswordResetService()
 
 bearer_scheme = HTTPBearer(
     auto_error=False,
@@ -105,6 +106,13 @@ class PendingRegistrationResponse(BaseModel):
     message: str
     user: UserOut
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
 
 def normalize_email(
     email: str,
@@ -387,3 +395,50 @@ def get_me(
 ):
 
     return current_user
+
+@router.post(
+    "/forgot-password",
+    status_code=status.HTTP_200_OK,
+)
+def forgot_password(
+    payload: ForgotPasswordRequest,
+):
+    reset_token = password_reset_service.request_reset(
+        payload.email,
+    )
+
+    response = {
+        "message": (
+            "Se o e-mail estiver cadastrado, "
+            "você receberá as instruções para redefinir a senha."
+        ),
+    }
+
+    # Temporário para desenvolvimento.
+    # Em produção, o token será enviado por e-mail.
+    if reset_token is not None:
+        response["reset_token"] = reset_token
+
+        return response
+
+@router.post(
+    "/reset-password",
+    status_code=status.HTTP_200_OK,
+)
+def reset_password(
+    payload: ResetPasswordRequest,
+):
+    success = password_reset_service.reset_password(
+        token=payload.token,
+        new_password=payload.password,
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token inválido ou expirado.",
+        )
+
+    return {
+        "message": "Senha alterada com sucesso.",
+    }

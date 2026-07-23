@@ -90,3 +90,27 @@ class UserRepository:
             session.expunge(user)
 
             return user
+
+    def update_password(
+        self,
+        user_id: int,
+        password_hash: str,
+    ) -> User | None:
+
+        with SessionLocal() as session:
+
+            user = session.get(
+                User,
+                user_id,
+            )
+
+            if user is None:
+                return None
+
+            user.password_hash = password_hash
+
+            session.commit()
+            session.refresh(user)
+            session.expunge(user)
+
+            return user

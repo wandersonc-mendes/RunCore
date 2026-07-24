@@ -228,19 +228,19 @@ export default function LoginScreen({
     });
 
     setMessage(
-      result.message
-      || (
-        "Se o e-mail estiver cadastrado, "
-        + "você receberá as instruções para redefinir a senha."
-      ),
-    );
+  result?.message
+  || (
+    "Se o e-mail estiver cadastrado, "
+    + "você receberá as instruções para redefinir a senha."
+  ),
+);
 
     /*
      * Durante o desenvolvimento, o backend devolve o token.
      * Quando o envio por e-mail for implementado, esse campo
      * deixará de ser necessário no frontend.
      */
-    if (result.reset_token) {
+    if (result?.reset_token) {
       setResetToken(
         result.reset_token,
       );
@@ -342,7 +342,7 @@ export default function LoginScreen({
       await handleRegistration();
     } catch (err) {
       setError(
-        err.message
+        err?.message
         || "Não foi possível concluir a solicitação.",
       );
     } finally {

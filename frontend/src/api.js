@@ -319,7 +319,7 @@ export function deleteEvaluation(
   evaluationId,
 ) {
   return request(
-    `/api/athletes/${athleteId}/evaluations/${evaluationId}`,
+    `/api/evaluations/${evaluationId}`,
     {
       method: "DELETE",
     },

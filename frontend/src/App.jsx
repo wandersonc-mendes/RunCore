@@ -86,7 +86,7 @@ function weekdayForDate(value) {
 }
 
 function BrandLogo() {
-  return <span className="brand-logo"><img src="/runcore.png?v=2" alt="RunCore" /></span>;
+  return <span className="brand-logo"><img src="/logo-horizontal.png?v=1" alt="RunCore" /></span>;
 }
 
 function SessionAdjustment({ value, onChange, onSave, saving }) {

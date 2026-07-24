@@ -276,7 +276,8 @@ export default function StudentPortal({ user, onLogout }) {
   return (
     <main className="student-page">
       <header className="student-header">
-        <div className="brand"><span className="brand-logo"><img src="/runcore.png?v=2" alt="RunCore" /></span><div><h1>RunCore</h1><p>Área do aluno</p></div></div>
+        <div className="brand"><span className="brand-logo"><img src="/logo-horizontal.png?v=1" alt="RunCore" />
+        </span><div><h1>RunCore</h1><p>Área do aluno</p></div></div>
         <button className="btn-ghost" onClick={() => { clearSession(); onLogout(); }}>Sair</button>
       </header>
       <section className="student-hero"><p className="eyebrow">SEU TREINAMENTO</p><h2>Olá, {user.name}.</h2><p>Conecte suas atividades e acompanhe o plano criado pelo seu treinador.</p></section>

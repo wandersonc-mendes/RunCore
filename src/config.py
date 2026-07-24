@@ -26,7 +26,24 @@ load_dotenv(
 
 DATABASE_FILE = ROOT_PROJECT_DIR / "src" / "runcore.db"
 
-DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
+DEFAULT_DATABASE_URL = (
+    f"sqlite:///{DATABASE_FILE.as_posix()}"
+)
+
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    DEFAULT_DATABASE_URL,
+).strip()
+
+# Serviços como Supabase e Railway normalmente entregam a URL
+# começando com postgresql://. O SQLAlchemy deve usar o
+# driver psycopg explicitamente.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://",
+        "postgresql+psycopg://",
+        1,
+    )
 
 
 # ==========================

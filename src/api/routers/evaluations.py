@@ -7,8 +7,66 @@ from repositories.evaluation_repository import EvaluationRepository
 from api.schemas import EvaluationCreate
 from api.schemas import EvaluationOut
 
+
 router = APIRouter(tags=["evaluations"])
 repository = EvaluationRepository()
+
+
+TEST_DISTANCES_METERS = {
+    "3 km": 3000.0,
+    "5 km": 5000.0,
+    "10 km": 10000.0,
+    "Meia maratona": 21097.5,
+    "Maratona": 42195.0,
+}
+
+
+def parse_time_to_seconds(value: str) -> float:
+    try:
+        parts = value.split(":")
+
+        if len(parts) != 3:
+            raise ValueError
+
+        hours, minutes, seconds = map(int, parts)
+
+        if hours < 0:
+            raise ValueError
+
+        if minutes < 0 or minutes >= 60:
+            raise ValueError
+
+        if seconds < 0 or seconds >= 60:
+            raise ValueError
+
+        total_seconds = (
+            hours * 3600
+            + minutes * 60
+            + seconds
+        )
+
+        if total_seconds <= 0:
+            raise ValueError
+
+        return float(total_seconds)
+
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="Tempo inválido. Use o formato HH:MM:SS.",
+        ) from exc
+
+
+def distance_from_test_type(test_type: str) -> float:
+    distance = TEST_DISTANCES_METERS.get(test_type)
+
+    if distance is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Tipo de teste inválido.",
+        )
+
+    return distance
 
 
 @router.get(
@@ -24,11 +82,21 @@ def list_evaluations(athlete_id: int):
     response_model=EvaluationOut,
     status_code=201,
 )
-def create_evaluation(athlete_id: int, payload: EvaluationCreate):
+def create_evaluation(
+    athlete_id: int,
+    payload: EvaluationCreate,
+):
+    distance = distance_from_test_type(
+        payload.test_type,
+    )
+
+    time_seconds = parse_time_to_seconds(
+        payload.time,
+    )
 
     vdot = VdotService.calculate(
-        payload.distance,
-        payload.time_seconds,
+        distance,
+        time_seconds,
     )
 
     return repository.create(
@@ -38,9 +106,10 @@ def create_evaluation(athlete_id: int, payload: EvaluationCreate):
         max_hr=payload.max_hr,
         resting_hr=payload.resting_hr,
         test_type=payload.test_type,
-        distance=payload.distance,
-        time_seconds=payload.time_seconds,
+        distance=distance,
+        time_seconds=time_seconds,
         vdot=vdot,
+        test_date=payload.test_date,
     )
 
 
@@ -48,29 +117,46 @@ def create_evaluation(athlete_id: int, payload: EvaluationCreate):
     "/evaluations/{evaluation_id}",
     response_model=EvaluationOut,
 )
-def update_evaluation(evaluation_id: int, payload: EvaluationCreate):
-
-    evaluation = repository.get_by_id(evaluation_id)
+def update_evaluation(
+    evaluation_id: int,
+    payload: EvaluationCreate,
+):
+    evaluation = repository.get_by_id(
+        evaluation_id,
+    )
 
     if evaluation is None:
         raise HTTPException(
             status_code=404,
-            detail="Avaliação não encontrada",
+            detail="Avaliação não encontrada.",
         )
+
+    distance = distance_from_test_type(
+        payload.test_type,
+    )
+
+    time_seconds = parse_time_to_seconds(
+        payload.time,
+    )
+
+    vdot = VdotService.calculate(
+        distance,
+        time_seconds,
+    )
 
     evaluation.weight = payload.weight
     evaluation.height = payload.height
     evaluation.max_hr = payload.max_hr
     evaluation.resting_hr = payload.resting_hr
     evaluation.test_type = payload.test_type
-    evaluation.distance = payload.distance
-    evaluation.time_seconds = payload.time_seconds
-    evaluation.vdot = VdotService.calculate(
-        payload.distance,
-        payload.time_seconds,
-    )
+    evaluation.distance = distance
+    evaluation.time_seconds = time_seconds
+    evaluation.vdot = vdot
+    evaluation.test_date = payload.test_date
 
-    return repository.update(evaluation)
+    return repository.update(
+        evaluation,
+    )
 
 
 @router.delete(
@@ -78,11 +164,12 @@ def update_evaluation(evaluation_id: int, payload: EvaluationCreate):
     status_code=204,
 )
 def delete_evaluation(evaluation_id: int):
-
-    deleted = repository.delete(evaluation_id)
+    deleted = repository.delete(
+        evaluation_id,
+    )
 
     if not deleted:
         raise HTTPException(
             status_code=404,
-            detail="Avaliação não encontrada",
+            detail="Avaliação não encontrada.",
         )

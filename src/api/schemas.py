@@ -1,7 +1,10 @@
-from datetime import date, datetime
+from datetime import date
+from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
 
 
 class AthleteBase(BaseModel):
@@ -15,6 +18,7 @@ class AthleteBase(BaseModel):
 
 
 class AuthRegister(BaseModel):
+
     name: str = Field(min_length=2, max_length=120)
     email: str
     password: str = Field(min_length=8, max_length=128)
@@ -23,12 +27,15 @@ class AuthRegister(BaseModel):
 
 
 class AuthLogin(BaseModel):
+
     email: str
     password: str
 
 
 class UserOut(BaseModel):
+
     model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     email: str
@@ -36,6 +43,7 @@ class UserOut(BaseModel):
 
 
 class AuthResponse(BaseModel):
+
     token: str
     user: UserOut
 
@@ -58,12 +66,40 @@ class AthleteOut(AthleteBase):
 
 class EvaluationCreate(BaseModel):
 
-    weight: float = Field(gt=0)
-    height: float = Field(gt=0)
-    max_hr: int = Field(gt=0)
-    resting_hr: int = Field(gt=0)
-    test_type: str
-    time: str = Field(min_length=1)
+    weight: float = Field(
+        ge=20,
+        le=300,
+    )
+
+    height: float = Field(
+        ge=0.8,
+        le=2.5,
+    )
+
+    max_hr: int = Field(
+        ge=80,
+        le=250,
+    )
+
+    resting_hr: int = Field(
+        ge=30,
+        le=150,
+    )
+
+    test_type: Literal[
+        "3 km",
+        "5 km",
+        "10 km",
+        "Meia maratona",
+        "Maratona",
+    ]
+
+    time: str = Field(
+        min_length=7,
+        max_length=8,
+        pattern=r"^\d{1,2}:\d{2}:\d{2}$",
+    )
+
     test_date: date
 
 
@@ -139,39 +175,142 @@ class TrainingOut(BaseModel):
 
 
 class TrainingCreate(BaseModel):
-    name: str = Field(default="Planejamento Principal", min_length=2, max_length=100)
-    objective: str = Field(default="Desenvolvimento", min_length=2, max_length=100)
-    target_distance: float = Field(gt=0, le=500)
+
+    name: str = Field(
+        default="Planejamento Principal",
+        min_length=2,
+        max_length=100,
+    )
+
+    objective: str = Field(
+        default="Desenvolvimento",
+        min_length=2,
+        max_length=100,
+    )
+
+    target_distance: float = Field(
+        gt=0,
+        le=500,
+    )
+
     start_date: date
     target_date: date | None = None
-    total_weeks: int | None = Field(default=None, ge=4, le=52)
+
+    total_weeks: int | None = Field(
+        default=None,
+        ge=4,
+        le=52,
+    )
 
 
 class TrainingSessionUpdate(BaseModel):
+
     session_date: date | None = None
-    workout_name: str = Field(min_length=2, max_length=80)
-    zone: str = Field(min_length=2, max_length=30)
-    planned_distance: float = Field(ge=0, le=1000)
-    repetitions: int = Field(ge=0, le=100)
-    notes: str = Field(default="", max_length=1000)
-    steps: list["TrainingStepUpdate"] = Field(default_factory=list, min_length=1, max_length=20)
+
+    workout_name: str = Field(
+        min_length=2,
+        max_length=80,
+    )
+
+    zone: str = Field(
+        min_length=2,
+        max_length=30,
+    )
+
+    planned_distance: float = Field(
+        ge=0,
+        le=1000,
+    )
+
+    repetitions: int = Field(
+        ge=0,
+        le=100,
+    )
+
+    notes: str = Field(
+        default="",
+        max_length=1000,
+    )
+
+    steps: list["TrainingStepUpdate"] = Field(
+        default_factory=list,
+        min_length=1,
+        max_length=20,
+    )
 
 
 class TrainingStepUpdate(BaseModel):
-    type: str = Field(min_length=2, max_length=30)
-    distance: float = Field(ge=0, le=1000)
+
+    type: str = Field(
+        min_length=2,
+        max_length=30,
+    )
+
+    distance: float = Field(
+        ge=0,
+        le=1000,
+    )
+
     distance_unit: Literal["km", "m"] = "km"
-    repetitions: int = Field(ge=0, le=100)
-    recovery: str = Field(default="", max_length=80)
-    pace_min: str = Field(default="", max_length=10)
-    pace_max: str = Field(default="", max_length=10)
-    notes: str = Field(default="", max_length=2000)
+
+    repetitions: int = Field(
+        ge=0,
+        le=100,
+    )
+
+    recovery: str = Field(
+        default="",
+        max_length=80,
+    )
+
+    pace_min: str = Field(
+        default="",
+        max_length=10,
+    )
+
+    pace_max: str = Field(
+        default="",
+        max_length=10,
+    )
+
+    notes: str = Field(
+        default="",
+        max_length=2000,
+    )
 
 
 class ActivityFeedbackPayload(BaseModel):
-    perceived_effort: int = Field(ge=1, le=10)
-    feeling: Literal["otimo", "bem", "pesado", "muito_dificil"] = "bem"
-    pain: str = Field(default="", max_length=300)
-    sleep_quality: int | None = Field(default=None, ge=1, le=5)
-    pre_fatigue: int | None = Field(default=None, ge=1, le=5)
-    notes: str = Field(default="", max_length=1500)
+
+    perceived_effort: int = Field(
+        ge=1,
+        le=10,
+    )
+
+    feeling: Literal[
+        "otimo",
+        "bem",
+        "pesado",
+        "muito_dificil",
+    ] = "bem"
+
+    pain: str = Field(
+        default="",
+        max_length=300,
+    )
+
+    sleep_quality: int | None = Field(
+        default=None,
+        ge=1,
+        le=5,
+    )
+
+    pre_fatigue: int | None = Field(
+        default=None,
+        ge=1,
+        le=5,
+    )
+
+    notes: str = Field(
+        default="",
+        max_length=1500,
+    )

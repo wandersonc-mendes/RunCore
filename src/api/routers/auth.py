@@ -422,23 +422,26 @@ def forgot_password(
         return response
 
 @router.post(
-    "/reset-password",
+    "/forgot-password",
     status_code=status.HTTP_200_OK,
 )
-def reset_password(
-    payload: ResetPasswordRequest,
+def forgot_password(
+    payload: ForgotPasswordRequest,
 ):
-    success = password_reset_service.reset_password(
-        token=payload.token,
-        new_password=payload.password,
+    reset_token = password_reset_service.request_reset(
+        payload.email,
     )
 
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token inválido ou expirado.",
-        )
-
-    return {
-        "message": "Senha alterada com sucesso.",
+    response = {
+        "message": (
+            "Se o e-mail estiver cadastrado, "
+            "você receberá as instruções para redefinir a senha."
+        ),
     }
+
+    # Temporário para desenvolvimento.
+    # Em produção, o token será enviado por e-mail.
+    if reset_token is not None:
+        response["reset_token"] = reset_token
+
+    return response

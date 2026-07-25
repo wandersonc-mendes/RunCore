@@ -415,12 +415,46 @@ export default function App() {
               ))}
             </>
           )}
-        ...
-</main>
+        </main>
 
-{selectedWorkout && workoutEdit && <div className="session-editor-overlay" role="presentation" onMouseDown={() => setSelectedWorkout(null)}><section className="session-editor-modal" role="dialog" aria-modal="true" aria-label="Ajustar sessão" onMouseDown={(event) => event.stopPropagation()}><header><div><p className="eyebrow">EDIÇÃO COMPLETA</p><h2>Ajustar sessão</h2></div><button className="modal-close" onClick={() => setSelectedWorkout(null)} aria-label="Fechar edição">×</button></header><SessionAdjustment value={workoutEdit} onChange={setWorkoutEdit} onSave={handleUpdateWorkout} saving={savingTraining} /></section></div>}
+        {selectedWorkout && workoutEdit && (
+          <div
+            className="session-editor-overlay"
+            role="presentation"
+            onMouseDown={() => setSelectedWorkout(null)}
+          >
+            <section
+              className="session-editor-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Ajustar sessão"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <header>
+                <div>
+                  <p className="eyebrow">EDIÇÃO COMPLETA</p>
+                  <h2>Ajustar sessão</h2>
+                </div>
 
-</div>
+                <button
+                  className="modal-close"
+                  onClick={() => setSelectedWorkout(null)}
+                  aria-label="Fechar edição"
+                >
+                  ×
+                </button>
+              </header>
+
+              <SessionAdjustment
+                value={workoutEdit}
+                onChange={setWorkoutEdit}
+                onSave={handleUpdateWorkout}
+                saving={savingTraining}
+              />
+            </section>
+          </div>
+        )}
+      </div>
     );
   }
 

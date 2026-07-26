@@ -378,3 +378,34 @@
     width: auto;
   }
 }
+
+
+/* ATHLETES ROUTE ACTIONS */
+.athletes-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.athletes-heading-actions > span {
+  color: var(--shell-muted);
+  font-size: 13px;
+}
+
+.coach-routed-page[data-view="dashboard"]
+.athletes-heading-actions .btn-primary {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  .athletes-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .athletes-heading-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

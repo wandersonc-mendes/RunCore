@@ -1128,14 +1128,26 @@ export default function App() {
 
         <section
           id="atletas"
-          className="section-heading"
+          className="section-heading athletes-section-heading"
         >
           <div>
             <p className="eyebrow">EQUIPE</p>
             <h2>Seus atletas</h2>
           </div>
 
-          <span>{athletes.length} cadastrados</span>
+          <div className="athletes-heading-actions">
+            <span>{athletes.length} cadastrados</span>
+
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() =>
+                setShowForm((value) => !value)
+              }
+            >
+              {showForm ? "Cancelar" : "+ Novo atleta"}
+            </button>
+          </div>
         </section>
 
         <form

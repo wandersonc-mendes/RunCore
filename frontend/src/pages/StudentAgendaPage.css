@@ -1,0 +1,133 @@
+.student-agenda-page {
+  display: grid;
+  gap: 22px;
+}
+
+.student-agenda-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.student-agenda-heading h2 {
+  margin: 4px 0;
+}
+
+.student-agenda-summary {
+  display: grid;
+  min-width: 145px;
+  padding: 15px 18px;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+  text-align: center;
+}
+
+.student-agenda-summary strong {
+  color: var(--shell-accent);
+  font-size: 27px;
+}
+
+.student-agenda-summary span {
+  color: var(--shell-muted);
+  font-size: 12px;
+}
+
+.student-agenda-weeks {
+  display: grid;
+  gap: 17px;
+}
+
+.student-agenda-week {
+  overflow: hidden;
+  border: 1px solid var(--shell-border);
+  border-radius: 15px;
+  background: var(--shell-surface);
+  box-shadow: var(--shell-shadow);
+}
+
+.student-agenda-week > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--shell-border);
+  background: var(--shell-surface-soft);
+}
+
+.student-agenda-week > header span {
+  color: var(--shell-muted);
+  font-size: 12px;
+}
+
+.student-agenda-week > div {
+  display: grid;
+}
+
+.student-agenda-week article {
+  display: grid;
+  grid-template-columns: 130px 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--shell-border);
+}
+
+.student-agenda-week article:last-child {
+  border-bottom: 0;
+}
+
+.student-agenda-date strong {
+  text-transform: capitalize;
+}
+
+.student-agenda-session-main h3,
+.student-agenda-session-main p {
+  margin: 0;
+}
+
+.student-agenda-session-main p {
+  margin-top: 4px;
+  color: var(--shell-muted);
+  font-size: 12px;
+}
+
+.student-agenda-distance {
+  color: var(--shell-accent);
+  font-weight: 800;
+}
+
+.student-agenda-empty {
+  padding: 32px;
+  border: 1px dashed var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+  text-align: center;
+}
+
+.student-agenda-empty h3,
+.student-agenda-empty p {
+  margin: 0;
+}
+
+.student-agenda-empty p {
+  margin-top: 7px;
+  color: var(--shell-muted);
+}
+
+@media (max-width: 680px) {
+  .student-agenda-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .student-agenda-summary {
+    width: 100%;
+  }
+
+  .student-agenda-week article {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

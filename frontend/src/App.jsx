@@ -23,13 +23,14 @@ import StudentPortal from "./StudentPortal";
 import AthleteProfileView from "./AthleteProfileView";
 import IptAssessmentView from "./IptAssessmentView";
 import AppShell from "./layout/AppShell";
-import PlaceholderPage from "./pages/PlaceholderPage";
 import SettingsPage from "./pages/SettingsPage";
 import PlanningPage from "./pages/PlanningPage";
 import WorkoutsPage from "./pages/WorkoutsPage";
 import AgendaPage from "./pages/AgendaPage";
 import EvaluationsPage from "./pages/EvaluationsPage";
 import ReportsPage from "./pages/ReportsPage";
+import StudentEvolutionPage from "./pages/StudentEvolutionPage";
+import StudentAgendaPage from "./pages/StudentAgendaPage";
 import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
@@ -479,8 +480,8 @@ export default function App() {
           <Route path={studentPaths.activities} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="activities" />} />
           <Route path={studentPaths.calculators} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="calculators" />} />
           <Route path={studentPaths.profile} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="profile" />} />
-          <Route path={studentPaths.evolution} element={<PlaceholderPage eyebrow="EVOLUÇÃO" title="Sua evolução" description="Gráficos e indicadores de evolução serão organizados nesta tela." />} />
-          <Route path={studentPaths.calendar} element={<PlaceholderPage eyebrow="AGENDA" title="Agenda do atleta" description="Treinos, avaliações e provas aparecerão nesta tela." />} />
+          <Route path={studentPaths.evolution} element={<StudentEvolutionPage />} />
+          <Route path={studentPaths.calendar} element={<StudentAgendaPage />} />
           <Route path={studentPaths.settings} element={<SettingsPage user={currentUser} />} />
         </Route>
         <Route path="*" element={<Navigate to={studentPaths.dashboard} replace />} />
@@ -493,8 +494,6 @@ export default function App() {
     setCurrentUser(null);
   };
 
-  const coachPlaceholders = {
-  };
 
 
 
@@ -584,21 +583,6 @@ export default function App() {
     return (
       <AppShell user={currentUser} onLogout={coachLogout}>
         <SettingsPage user={currentUser} />
-      </AppShell>
-    );
-  }
-
-  if (!selectedAthlete && coachPlaceholders[location.pathname]) {
-    const [eyebrow, title, description] =
-      coachPlaceholders[location.pathname];
-
-    return (
-      <AppShell user={currentUser} onLogout={coachLogout}>
-        <PlaceholderPage
-          eyebrow={eyebrow}
-          title={title}
-          description={description}
-        />
       </AppShell>
     );
   }

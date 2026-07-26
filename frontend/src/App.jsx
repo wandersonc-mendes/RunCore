@@ -503,6 +503,30 @@ export default function App() {
 
 
 
+
+  if (
+    !selectedAthlete
+    && location.pathname === coachPaths.dashboard
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <CoachDashboardPage
+          user={currentUser}
+          athletes={athletes}
+          invitations={invitations}
+          inviteEmail={inviteEmail}
+          setInviteEmail={setInviteEmail}
+          inviteLink={inviteLink}
+          onCreateInvitation={handleCreateInvitation}
+          onApproveInvitation={handleApproveInvitation}
+          onOpenProfile={openProfile}
+          onOpenTraining={openTraining}
+          onOpenEvaluations={openEvaluations}
+        />
+      </AppShell>
+    );
+  }
+
   if (
     !selectedAthlete
     && location.pathname === coachPaths.reports

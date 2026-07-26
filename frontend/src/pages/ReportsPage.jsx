@@ -248,7 +248,8 @@ export default function ReportsPage({
                       <div>
                         <h4>{athlete.name}</h4>
                         <p>
-                          {athlete.goal
+                          {training?.objective
+                            || athlete.goal
                             || "Sem objetivo informado"}
                         </p>
                       </div>

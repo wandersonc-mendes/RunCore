@@ -18,6 +18,18 @@ function formatDate(value) {
 }
 
 
+function formatSessionDistance(session) {
+  const repetitions = Number(session.repetitions || 0);
+  const distance = Number(session.planned_distance || 0);
+
+  if (repetitions > 0) {
+    return `${repetitions} × ${distance} m`;
+  }
+
+  return `${distance.toFixed(1)} km`;
+}
+
+
 export default function AgendaPage({
   athletes,
   onOpenTraining,
@@ -197,9 +209,7 @@ export default function AgendaPage({
 
                       <div className="agenda-session-meta">
                         <span>
-                          {Number(
-                            session.planned_distance || 0,
-                          ).toFixed(1)} km
+                          {formatSessionDistance(session)}
                         </span>
 
                         <button

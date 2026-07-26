@@ -1640,3 +1640,57 @@ button {
     white-space: normal;
   }
 }
+
+
+/* COACH REVIEW FIXES */
+:root[data-theme="dark"] .athletes-table {
+  overflow: hidden;
+  border: 1px solid var(--shell-border);
+  border-radius: 12px;
+  background: var(--shell-surface);
+  color: var(--shell-text);
+}
+
+:root[data-theme="dark"] .athletes-table thead,
+:root[data-theme="dark"] .athletes-table th {
+  background: var(--shell-surface-soft);
+  color: var(--shell-muted);
+}
+
+:root[data-theme="dark"] .athletes-table tbody,
+:root[data-theme="dark"] .athletes-table tr,
+:root[data-theme="dark"] .athletes-table td {
+  background: var(--shell-surface);
+  color: var(--shell-text);
+  border-color: var(--shell-border);
+}
+
+:root[data-theme="dark"] .athletes-table tbody tr:hover td {
+  background: var(--shell-surface-soft);
+}
+
+:root[data-theme="dark"] .athletes-table .muted {
+  color: var(--shell-muted);
+}
+
+:root[data-theme="dark"] .btn-ghost:not(:disabled) {
+  border-color: rgba(53, 185, 132, 0.7);
+  background: rgba(30, 143, 104, 0.12);
+  color: #54d6a2;
+}
+
+:root[data-theme="dark"] .btn-ghost:not(:disabled):hover {
+  border-color: #54d6a2;
+  background: rgba(30, 143, 104, 0.22);
+  color: #7ae6ba;
+}
+
+:root[data-theme="dark"] .btn-ghost:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+:root[data-theme="dark"] .btn-link,
+:root[data-theme="dark"] .dashboard-link-button {
+  color: #54d6a2;
+}

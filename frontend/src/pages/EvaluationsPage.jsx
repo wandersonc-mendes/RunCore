@@ -13,6 +13,16 @@ function formatDate(value) {
 }
 
 
+function evaluationDate(evaluation) {
+  return (
+    evaluation?.test_date
+    || evaluation?.evaluation_date
+    || evaluation?.created_at?.slice?.(0, 10)
+    || ""
+  );
+}
+
+
 export default function EvaluationsPage({
   athletes,
   onOpenEvaluations,
@@ -46,8 +56,8 @@ export default function EvaluationsPage({
               const evaluations = result.value.evaluations || [];
               const latest = [...evaluations].sort(
                 (first, second) =>
-                  String(second.test_date || "").localeCompare(
-                    String(first.test_date || ""),
+                  evaluationDate(second).localeCompare(
+                    evaluationDate(first),
                   ),
               )[0] || null;
 
@@ -187,7 +197,7 @@ export default function EvaluationsPage({
                   <span>Último teste</span>
                   <strong>
                     {latest
-                      ? formatDate(latest.test_date)
+                      ? formatDate(evaluationDate(latest))
                       : "—"}
                   </strong>
                 </div>

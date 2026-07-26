@@ -1551,3 +1551,79 @@ button {
     text-align: left;
   }
 }
+
+
+/* STUDENT PLAN DEFINITIVE LAYOUT */
+.routed-student-page .student-content > .student-plan {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100% !important;
+  gap: 18px !important;
+}
+
+.routed-student-page .student-content > .student-plan
+> .student-plan-heading {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+.routed-student-page .student-content > .student-plan
+> .student-sessions {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  gap: 12px !important;
+}
+
+.routed-student-page .student-plan-title-block {
+  width: 100% !important;
+}
+
+.routed-student-page .student-plan-kicker,
+.routed-student-page .student-plan-name-row {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr) auto !important;
+  width: 100% !important;
+  gap: 24px !important;
+}
+
+.routed-student-page .student-plan-kicker > span,
+.routed-student-page .student-plan-name-row > strong {
+  justify-self: end;
+  text-align: right;
+}
+
+.routed-student-page .student-sessions > article {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .routed-student-page .student-content > .student-plan
+  > .student-sessions {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .routed-student-page .student-plan-kicker,
+  .routed-student-page .student-plan-name-row {
+    grid-template-columns: 1fr !important;
+    gap: 5px !important;
+  }
+
+  .routed-student-page .student-plan-kicker > span,
+  .routed-student-page .student-plan-name-row > strong {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .routed-student-page .student-content > .student-plan
+  > .student-sessions {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -1627,3 +1627,16 @@ button {
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* STUDENT PLAN GOAL SINGLE LINE */
+.routed-student-page .student-plan-name-row > strong {
+  max-width: none !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .routed-student-page .student-plan-name-row > strong {
+    white-space: normal;
+  }
+}

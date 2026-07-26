@@ -27,6 +27,7 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import SettingsPage from "./pages/SettingsPage";
 import PlanningPage from "./pages/PlanningPage";
 import WorkoutsPage from "./pages/WorkoutsPage";
+import AgendaPage from "./pages/AgendaPage";
 import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
@@ -491,11 +492,6 @@ export default function App() {
   };
 
   const coachPlaceholders = {
-    [coachPaths.calendar]: [
-      "AGENDA",
-      "Agenda",
-      "Treinos, avaliações e provas serão exibidos nesta tela.",
-    ],
     [coachPaths.evaluations]: [
       "AVALIAÇÕES",
       "Avaliações",
@@ -510,6 +506,21 @@ export default function App() {
 
 
 
+
+
+  if (
+    !selectedAthlete
+    && location.pathname === coachPaths.calendar
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <AgendaPage
+          athletes={athletes}
+          onOpenTraining={openTraining}
+        />
+      </AppShell>
+    );
+  }
 
   if (
     !selectedAthlete

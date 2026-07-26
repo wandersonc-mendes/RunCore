@@ -64,7 +64,7 @@ class IptServiceTest(unittest.TestCase):
 
         with self.assertRaisesRegex(
             ValueError,
-            "Tipo de protocolo IPT invÃ¡lido",
+            "Tipo de protocolo IPT inv\u00e1lido",
         ):
             IptService.calculate(
                 protocol_type="invalid",

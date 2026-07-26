@@ -108,7 +108,9 @@ class IptService:
                 duration_seconds=long_value,
             )
         else:
-            raise ValueError("Tipo de protocolo IPT invÃ¡lido.")
+            raise ValueError(
+                "Tipo de protocolo IPT inv\u00e1lido."
+            )
 
         ipt_percentage = (
             1 - long_speed / short_speed
@@ -134,23 +136,23 @@ class IptService:
             return (
                 "Resistente",
                 "O atleta apresenta boa capacidade de sustentar a velocidade "
-                "entre os esforÃ§os curto e longo.",
-                "Preservar a resistÃªncia e desenvolver velocidade e potÃªncia.",
+                "entre os esfor\u00e7os curto e longo.",
+                "Preservar a resist\u00eancia e desenvolver velocidade e pot\u00eancia.",
             )
 
         if ipt_percentage <= 11:
             return (
                 "Equilibrado",
-                "O atleta apresenta equilÃ­brio entre velocidade e capacidade "
-                "de sustentaÃ§Ã£o.",
-                "Distribuir os estÃ­mulos entre velocidade, limiar e resistÃªncia.",
+                "O atleta apresenta equil\u00edbrio entre velocidade e capacidade "
+                "de sustenta\u00e7\u00e3o.",
+                "Distribuir os est\u00edmulos entre velocidade, limiar e resist\u00eancia.",
             )
 
         return (
             "Potente",
-            "O atleta apresenta maior expressÃ£o de velocidade no esforÃ§o curto "
-            "em relaÃ§Ã£o Ã  capacidade de sustentaÃ§Ã£o.",
-            "Desenvolver ritmos sustentados, limiares e resistÃªncia especÃ­fica.",
+            "O atleta apresenta maior express\u00e3o de velocidade no esfor\u00e7o curto "
+            "em rela\u00e7\u00e3o \u00e0 capacidade de sustenta\u00e7\u00e3o.",
+            "Desenvolver ritmos sustentados, limiares e resist\u00eancia espec\u00edfica.",
         )
 
     @staticmethod
@@ -165,5 +167,5 @@ class IptService:
     def _validate_positive(**values):
         if any(value <= 0 for value in values.values()):
             raise ValueError(
-                "DistÃ¢ncias, duraÃ§Ãµes e resultados devem ser maiores que zero."
+                "Dist\u00e2ncias, dura\u00e7\u00f5es e resultados devem ser maiores que zero."
             )

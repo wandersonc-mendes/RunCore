@@ -55,6 +55,7 @@ export default function Topbar({
   onLogout,
 }) {
   const [openPanel, setOpenPanel] = useState(null);
+  const [profilePhoto, setProfilePhoto] = useState("");
   const containerRef = useRef(null);
   const navigate = useNavigate();
 
@@ -64,7 +65,35 @@ export default function Topbar({
     : coachPaths.settings;
   const profilePath = isStudent
     ? studentPaths.profile
-    : coachPaths.settings;
+    : coachPaths.profile;
+
+
+  useEffect(() => {
+    const key = `runcore_profile_photo_${user?.id || user?.email || "coach"}`;
+
+    function loadPhoto() {
+      setProfilePhoto(localStorage.getItem(key) || "");
+    }
+
+    function handlePhotoChange(event) {
+      if (!event.detail || event.detail.key === key) {
+        loadPhoto();
+      }
+    }
+
+    loadPhoto();
+    window.addEventListener(
+      "runcore-profile-photo-changed",
+      handlePhotoChange,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "runcore-profile-photo-changed",
+        handlePhotoChange,
+      );
+    };
+  }, [user]);
 
   useEffect(() => {
     function closeOnOutsideClick(event) {
@@ -251,8 +280,16 @@ export default function Topbar({
             aria-expanded={openPanel === "user"}
             onClick={() => togglePanel("user")}
           >
-            <span className="app-user-avatar">
-              {initials(user?.name)}
+            <span
+              className={`app-user-avatar ${
+                profilePhoto ? "has-photo" : ""
+              }`}
+            >
+              {profilePhoto ? (
+                <img src={profilePhoto} alt="Foto do perfil" />
+              ) : (
+                initials(user?.name)
+              )}
             </span>
 
             <span className="app-user-name">
@@ -265,8 +302,16 @@ export default function Topbar({
           {openPanel === "user" && (
             <div className="app-user-dropdown">
               <div className="app-user-summary">
-                <span className="app-user-avatar large">
-                  {initials(user?.name)}
+                <span
+                  className={`app-user-avatar large ${
+                    profilePhoto ? "has-photo" : ""
+                  }`}
+                >
+                  {profilePhoto ? (
+                    <img src={profilePhoto} alt="Foto do perfil" />
+                  ) : (
+                    initials(user?.name)
+                  )}
                 </span>
 
                 <div>

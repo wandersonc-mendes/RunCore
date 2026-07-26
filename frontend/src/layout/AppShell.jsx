@@ -6,6 +6,7 @@ import "./AppShell.css";
 
 const pageTitles = {
   "/treinador/dashboard": "Dashboard",
+  "/treinador/meu-perfil": "Meu perfil",
   "/treinador/atletas": "Atletas",
   "/treinador/treinos": "Treinos",
   "/treinador/agenda": "Agenda",

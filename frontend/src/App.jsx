@@ -29,6 +29,7 @@ import WorkoutsPage from "./pages/WorkoutsPage";
 import AgendaPage from "./pages/AgendaPage";
 import EvaluationsPage from "./pages/EvaluationsPage";
 import ReportsPage from "./pages/ReportsPage";
+import CoachDashboardPage from "./pages/CoachDashboardPage";
 import StudentEvolutionPage from "./pages/StudentEvolutionPage";
 import StudentAgendaPage from "./pages/StudentAgendaPage";
 import { coachPaths, studentPaths } from "./router/paths";

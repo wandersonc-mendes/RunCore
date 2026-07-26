@@ -3,7 +3,7 @@ import { coachPaths, studentPaths } from "../router/paths";
 export const coachMenu = [
   { label: "Dashboard", path: coachPaths.dashboard, icon: "⌂" },
   { label: "Atletas", path: coachPaths.athletes, icon: "♙" },
-  { label: "Planejamento", path: coachPaths.workouts, icon: "▣" },
+  { label: "Planejamento", path: coachPaths.planning, icon: "▣" },
   { label: "Treinos", path: coachPaths.workouts, icon: "◇" },
   { label: "Agenda", path: coachPaths.calendar, icon: "□" },
   { label: "Avaliações", path: coachPaths.evaluations, icon: "✓" },

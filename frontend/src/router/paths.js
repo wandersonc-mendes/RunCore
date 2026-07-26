@@ -7,6 +7,7 @@ export const publicPaths = {
 export const coachPaths = {
   dashboard: "/treinador/dashboard",
   athletes: "/treinador/atletas",
+  planning: "/treinador/planejamento",
   athleteProfile: (athleteId = ":athleteId") =>
     `/treinador/atletas/${athleteId}`,
   athletePlanning: (athleteId = ":athleteId") =>

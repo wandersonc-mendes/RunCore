@@ -32,7 +32,7 @@ function titleFor(pathname) {
   return "RunCore";
 }
 
-export default function AppShell({ user, onLogout }) {
+export default function AppShell({ user, onLogout, children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -41,7 +41,7 @@ export default function AppShell({ user, onLogout }) {
       <Sidebar role={user?.role} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       <div className="app-shell-main">
         <Topbar user={user} title={titleFor(location.pathname)} onMenu={() => setMobileMenuOpen(true)} onLogout={onLogout} />
-        <main className="app-shell-content"><Outlet /></main>
+        <main className="app-shell-content">{children || <Outlet />}</main>
       </div>
     </div>
   );

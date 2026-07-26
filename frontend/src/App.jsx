@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   clearSession,
   createAthlete,
@@ -24,7 +24,7 @@ import AthleteProfileView from "./AthleteProfileView";
 import IptAssessmentView from "./IptAssessmentView";
 import AppShell from "./layout/AppShell";
 import PlaceholderPage from "./pages/PlaceholderPage";
-import { studentPaths } from "./router/paths";
+import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
 const emptyAthlete = { name: "", phone: "", email: "", goal: "", notes: "" };
@@ -140,6 +140,8 @@ function SessionAdjustment({ value, onChange, onSave, saving }) {
 }
 
 export default function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [athletes, setAthletes] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -195,6 +197,15 @@ export default function App() {
   useEffect(() => {
     if (currentUser?.role === "coach") { loadAthletes(""); loadInvitations(); }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (
+      currentUser?.role === "coach"
+      && !location.pathname.startsWith("/treinador")
+    ) {
+      navigate(coachPaths.dashboard, { replace: true });
+    }
+  }, [currentUser, location.pathname, navigate]);
 
   useEffect(() => {
     if (currentUser?.role !== "coach") return undefined;
@@ -376,6 +387,60 @@ export default function App() {
       </Routes>
     );
   }
+
+  const coachLogout = () => {
+    clearSession();
+    setCurrentUser(null);
+  };
+
+  const coachPlaceholders = {
+    [coachPaths.planning]: [
+      "PLANEJAMENTO",
+      "Planejamento",
+      "Macrociclos, mesociclos e organização dos ciclos serão concentrados nesta tela.",
+    ],
+    [coachPaths.workouts]: [
+      "TREINOS",
+      "Treinos",
+      "Sessões e biblioteca de treinos serão organizadas nesta tela.",
+    ],
+    [coachPaths.calendar]: [
+      "AGENDA",
+      "Agenda",
+      "Treinos, avaliações e provas serão exibidos nesta tela.",
+    ],
+    [coachPaths.evaluations]: [
+      "AVALIAÇÕES",
+      "Avaliações",
+      "A visão geral das avaliações dos atletas será disponibilizada nesta tela.",
+    ],
+    [coachPaths.reports]: [
+      "RELATÓRIOS",
+      "Relatórios",
+      "Indicadores de evolução, volume e aderência serão exibidos nesta tela.",
+    ],
+    [coachPaths.settings]: [
+      "CONFIGURAÇÕES",
+      "Configurações",
+      "Preferências da conta, aparência e notificações serão configuradas nesta tela.",
+    ],
+  };
+
+  if (!selectedAthlete && coachPlaceholders[location.pathname]) {
+    const [eyebrow, title, description] =
+      coachPlaceholders[location.pathname];
+
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <PlaceholderPage
+          eyebrow={eyebrow}
+          title={title}
+          description={description}
+        />
+      </AppShell>
+    );
+  }
+
   if (selectedAthlete && selectedView === "profile") return <AthleteProfileView athlete={selectedAthlete} onClose={() => setSelectedAthlete(null)} onRemove={() => handleDeleteAthlete(selectedAthlete.id)} />;
 
   if (selectedAthlete && selectedView === "ipt") {
@@ -509,8 +574,17 @@ export default function App() {
     );
   }
 
+  const coachView =
+    location.pathname === coachPaths.athletes
+      ? "athletes"
+      : "dashboard";
+
   return (
-    <div className="page">
+    <AppShell user={currentUser} onLogout={coachLogout}>
+      <div
+        className="page coach-routed-page"
+        data-view={coachView}
+      >
       <header className="topbar">
         <div className="brand">
           <BrandLogo />
@@ -1097,6 +1171,7 @@ export default function App() {
           </table>
         )}
       </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

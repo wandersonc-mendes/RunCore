@@ -117,3 +117,40 @@
     padding: 0;
   }
 }
+
+
+/* ROUTED COACH PORTAL */
+.coach-routed-page {
+  min-height: auto;
+  background: transparent;
+}
+
+.coach-routed-page > .topbar,
+.coach-routed-page .coach-nav-below {
+  display: none;
+}
+
+.coach-routed-page > .content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.coach-routed-page[data-view="dashboard"] #atletas,
+.coach-routed-page[data-view="dashboard"] .search-row,
+.coach-routed-page[data-view="dashboard"] .new-athlete-form,
+.coach-routed-page[data-view="dashboard"] .athletes-table,
+.coach-routed-page[data-view="dashboard"] .empty-state {
+  display: none;
+}
+
+.coach-routed-page[data-view="athletes"] #visao-geral,
+.coach-routed-page[data-view="athletes"] #convites,
+.coach-routed-page[data-view="athletes"] .stat-grid {
+  display: none;
+}
+
+.coach-routed-page[data-view="athletes"] #atletas {
+  margin-top: 0;
+}

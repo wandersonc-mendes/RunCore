@@ -1175,3 +1175,261 @@ button {
   }
 }
 /* IPT FORM FOOTER END */
+
+
+/* RUNCORE AUTH REDESIGN */
+.login-page {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(390px, 46%) minmax(420px, 54%);
+  align-items: stretch;
+  justify-content: stretch;
+  min-height: 100vh;
+  padding: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 80% 18%, rgba(24, 133, 95, 0.08), transparent 34%),
+    var(--shell-bg, #f4f6f5);
+}
+
+.login-page::before {
+  content:
+    "RUNCORE\A\A"
+    "Planejamento inteligente.\A"
+    "Treinamento com propósito.\A\A"
+    "Gerencie atletas, avaliações, metas e ciclos em um único ambiente.";
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  white-space: pre-line;
+  padding: clamp(44px, 7vw, 96px);
+  color: rgba(255, 255, 255, 0.94);
+  background:
+    linear-gradient(180deg, rgba(3, 13, 9, 0.08), rgba(3, 13, 9, 0.78)),
+    radial-gradient(circle at 22% 18%, rgba(255, 106, 34, 0.28), transparent 27%),
+    radial-gradient(circle at 75% 34%, rgba(36, 176, 125, 0.27), transparent 34%),
+    linear-gradient(145deg, #0b2119 0%, #103b2d 47%, #07100c 100%);
+  font-size: clamp(15px, 1.35vw, 20px);
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+}
+
+.login-page::after {
+  content: "";
+  position: absolute;
+  top: clamp(38px, 7vw, 72px);
+  left: clamp(38px, 7vw, 72px);
+  width: clamp(170px, 19vw, 250px);
+  height: 82px;
+  background: url("/logo-horizontal.png?v=1") left center / contain no-repeat;
+  filter: brightness(0) invert(1);
+  pointer-events: none;
+}
+
+.login-card {
+  align-self: center;
+  justify-self: center;
+  width: min(100% - 56px, 480px);
+  max-width: 480px;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  padding: clamp(28px, 4vw, 46px);
+  border: 1px solid var(--shell-border, #dde4e0);
+  border-radius: 20px;
+  background: var(--shell-surface, #fff);
+  box-shadow:
+    0 28px 70px rgba(14, 40, 29, 0.13),
+    0 3px 12px rgba(14, 40, 29, 0.06);
+  text-align: left;
+  scrollbar-width: thin;
+}
+
+.login-card .brand-mark {
+  display: block;
+  width: 148px;
+  height: 54px;
+  margin: 0 0 24px;
+  overflow: hidden;
+  color: transparent;
+  background: url("/logo-horizontal.png?v=1") left center / contain no-repeat;
+}
+
+.login-card h1 {
+  margin: 0;
+  color: var(--shell-text, #16201b);
+  font-size: clamp(27px, 3vw, 36px);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+.login-card > p {
+  margin: 10px 0 25px;
+  color: var(--shell-muted, #66736c);
+  font-size: 15px;
+}
+
+.login-role-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin: 0 0 22px;
+  padding: 5px;
+  border: 1px solid var(--shell-border, #dde4e0);
+  border-radius: 12px;
+  background: var(--shell-surface-soft, #f7f9f8);
+}
+
+.login-role-choice button {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--shell-muted, #66736c);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-role-choice button.active {
+  background: var(--shell-surface, #fff);
+  color: var(--shell-accent, #18855f);
+  box-shadow: 0 5px 13px rgba(16, 47, 35, 0.09);
+}
+
+.login-card form {
+  display: grid;
+  gap: 15px;
+  text-align: left;
+}
+
+.login-card label {
+  display: grid;
+  gap: 7px;
+  color: var(--shell-text, #16201b);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.login-card input,
+.login-card select {
+  width: 100%;
+  min-height: 47px;
+  padding: 11px 13px;
+  border: 1px solid var(--shell-border, #dde4e0);
+  border-radius: 10px;
+  outline: none;
+  background: var(--shell-surface-soft, #f7f9f8);
+  color: var(--shell-text, #16201b);
+  font: inherit;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.login-card input:focus,
+.login-card select:focus {
+  border-color: var(--shell-accent, #18855f);
+  background: var(--shell-surface, #fff);
+  box-shadow: 0 0 0 4px var(--shell-accent-soft, rgba(24, 133, 95, 0.16));
+}
+
+.login-card .btn-primary {
+  min-height: 48px;
+  margin-top: 3px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+.login-card .auth-switch {
+  display: block;
+  margin: 18px auto 0;
+  padding: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--shell-accent, #18855f);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-card .auth-actions {
+  display: grid;
+  gap: 9px;
+  margin-top: 17px;
+}
+
+.login-card .alert {
+  margin-bottom: 15px;
+  border-radius: 10px;
+}
+
+:root[data-theme="dark"] .login-page {
+  background:
+    radial-gradient(circle at 80% 18%, rgba(49, 168, 121, 0.08), transparent 34%),
+    var(--shell-bg);
+}
+
+:root[data-theme="dark"] .login-card {
+  border-color: var(--shell-border);
+  background: var(--shell-surface);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+}
+
+:root[data-theme="dark"] .login-card .brand-mark {
+  filter: brightness(0) invert(1);
+}
+
+@media (max-width: 900px) {
+  .login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(24, 133, 95, 0.16), transparent 35%),
+      var(--shell-bg, #f4f6f5);
+  }
+
+  .login-page::before,
+  .login-page::after {
+    display: none;
+  }
+
+  .login-card {
+    width: min(100%, 500px);
+    max-height: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .login-page {
+    align-items: flex-start;
+    min-height: 100dvh;
+    padding: 18px 14px;
+  }
+
+  .login-card {
+    width: 100%;
+    margin: auto 0;
+    padding: 27px 21px;
+    border-radius: 17px;
+  }
+
+  .login-card .brand-mark {
+    width: 126px;
+    height: 46px;
+    margin-bottom: 18px;
+  }
+
+  .login-card h1 {
+    font-size: 28px;
+  }
+
+  .login-role-choice {
+    grid-template-columns: 1fr;
+  }
+}

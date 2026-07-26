@@ -66,6 +66,7 @@ class TrainingPersistenceService:
         training_id: int,
         vdot: float,
         ipt_profile: str | None = None,
+        total_weeks: int | None = None,
     ):
 
         sessions = (
@@ -74,13 +75,15 @@ class TrainingPersistenceService:
             )
         )
 
-        total_weeks = max(
+        current_total_weeks = max(
             (
                 session.week
                 for session in sessions
             ),
             default=8,
         )
+
+        total_weeks = total_weeks or current_total_weeks
 
         for session in sessions:
 

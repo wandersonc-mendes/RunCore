@@ -35,29 +35,87 @@ class TrainingPlanService:
         threshold_run: float = 8,
         interval_reps: int = 8,
         ipt_profile: str | None = None,
+        total_weeks: int = 8,
     ) -> TrainingWeek:
 
         week = TrainingWeek(number=week_number)
 
         normalized_profile = (ipt_profile or "").strip().lower()
+        total_weeks = max(total_weeks, 1)
+        phase_ratio = week_number / total_weeks
+        block_position = (week_number - 1) % 4
+
+        if phase_ratio <= 0.40:
+            phase = "Base"
+        elif phase_ratio <= 0.75:
+            phase = "Desenvolvimento"
+        elif phase_ratio <= 0.90:
+            phase = "Específica"
+        else:
+            phase = "Polimento"
+
+        work_volume = interval_reps * 400
         interval_distance = 400
-        interval_recovery = 200
-        adjusted_interval_reps = interval_reps
         interval_name = "Intervalado"
         threshold_name = "Limiar"
+        threshold_factor = 1.0
 
         if normalized_profile == "resistente":
-            interval_distance = 200
-            interval_recovery = 100
-            adjusted_interval_reps = interval_reps * 2
-            interval_name = "Intervalado curto"
-            threshold_name = "Limiar controlado"
+            if phase == "Base":
+                interval_distance = (200, 300, 400, 200)[block_position]
+                interval_name = "Velocidade e economia"
+                threshold_name = "Limiar controlado"
+                threshold_factor = 0.85
+            elif phase == "Desenvolvimento":
+                interval_distance = (200, 300, 400, 300)[block_position]
+                interval_name = "Intervalado curto"
+                threshold_name = "Limiar"
+                threshold_factor = 0.95
+            elif phase == "Específica":
+                interval_distance = (400, 600, 400, 300)[block_position]
+                interval_name = "Intervalado específico"
+                threshold_name = "Limiar específico"
+            else:
+                interval_distance = (200, 300, 200, 200)[block_position]
+                interval_name = "Ativação de velocidade"
+                threshold_name = "Limiar reduzido"
+                threshold_factor = 0.65
+
         elif normalized_profile == "potente":
-            interval_distance = 800
-            interval_recovery = 400
-            adjusted_interval_reps = max(1, interval_reps // 2)
-            interval_name = "Intervalado longo"
-            threshold_name = "Limiar sustentado"
+            if phase == "Base":
+                interval_distance = (400, 600, 400, 600)[block_position]
+                interval_name = "Intervalado moderado"
+                threshold_name = "Limiar controlado"
+                threshold_factor = 0.85
+            elif phase == "Desenvolvimento":
+                interval_distance = (800, 1000, 800, 600)[block_position]
+                interval_name = "Intervalado longo"
+                threshold_name = "Limiar sustentado"
+            elif phase == "Específica":
+                interval_distance = (1000, 1200, 800, 600)[block_position]
+                interval_name = "Resistência de velocidade"
+                threshold_name = "Limiar específico"
+                threshold_factor = 1.05
+            else:
+                interval_distance = (400, 600, 400, 400)[block_position]
+                interval_name = "Ativação intervalada"
+                threshold_name = "Limiar reduzido"
+                threshold_factor = 0.65
+
+        elif phase == "Polimento":
+            interval_name = "Intervalado reduzido"
+            threshold_name = "Limiar reduzido"
+            threshold_factor = 0.65
+
+        adjusted_interval_reps = max(1, round(work_volume / interval_distance))
+
+        if phase == "Polimento":
+            adjusted_interval_reps = max(
+                2,
+                round(adjusted_interval_reps * 0.65),
+            )
+
+        interval_recovery = max(100, interval_distance // 2)
 
         interval_workout = WorkoutBuilder.interval(
             repetitions=adjusted_interval_reps,
@@ -67,7 +125,7 @@ class TrainingPlanService:
         interval_workout.name = interval_name
 
         threshold_workout = WorkoutBuilder.threshold(
-            threshold_run
+            round(threshold_run * threshold_factor, 1)
         )
         threshold_workout.name = threshold_name
 

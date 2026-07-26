@@ -91,6 +91,7 @@ class TrainingCycleBuilder:
                     threshold_run=threshold_run,
                     interval_reps=interval_reps,
                     ipt_profile=ipt_profile,
+                    total_weeks=total_weeks,
                 )
             )
 

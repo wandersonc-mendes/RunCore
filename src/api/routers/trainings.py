@@ -6,6 +6,7 @@ from api.schemas import TrainingCreate, TrainingOut, TrainingSessionUpdate
 from core.training.training_persistence_service import TrainingPersistenceService
 from repositories.athlete_repository import AthleteRepository
 from repositories.evaluation_repository import EvaluationRepository
+from repositories.ipt_repository import IptRepository
 from repositories.training_repository import TrainingRepository
 from repositories.training_session_repository import TrainingSessionRepository
 from repositories.training_step_repository import TrainingStepRepository
@@ -15,6 +16,7 @@ from core.training.training_step_service import TrainingStepService
 router = APIRouter(prefix="/athletes/{athlete_id}/training", tags=["training"])
 athlete_repository = AthleteRepository()
 evaluation_repository = EvaluationRepository()
+ipt_repository = IptRepository()
 training_repository = TrainingRepository()
 session_repository = TrainingSessionRepository()
 step_repository = TrainingStepRepository()
@@ -34,6 +36,15 @@ def get_latest_evaluation(athlete_id: int):
     if evaluation is None:
         raise HTTPException(status_code=409, detail="Registre uma avaliação antes de gerar o planejamento.")
     return evaluation
+
+
+def get_latest_ipt_profile(athlete_id: int) -> str | None:
+    assessment = ipt_repository.get_latest_by_athlete(athlete_id)
+
+    if assessment is None:
+        return None
+
+    return assessment["profile"]
 
 
 def phase_for_week(week: int, total_weeks: int) -> str:
@@ -168,6 +179,7 @@ def create_training(athlete_id: int, payload: TrainingCreate):
         start_date=payload.start_date,
         target_date=payload.target_date,
         total_weeks=total_weeks,
+        ipt_profile=get_latest_ipt_profile(athlete_id),
     )
     return serialize_training(training_repository.get_by_id(training.id))
 
@@ -179,7 +191,11 @@ def regenerate_training(athlete_id: int):
     training = training_repository.get_active_by_athlete(athlete_id)
     if training is None:
         raise HTTPException(status_code=404, detail="Não há planejamento ativo para regenerar.")
-    persistence_service.regenerate_training(training.id, evaluation.vdot)
+    persistence_service.regenerate_training(
+        training.id,
+        evaluation.vdot,
+        ipt_profile=get_latest_ipt_profile(athlete_id),
+    )
     return serialize_training(training_repository.get_by_id(training.id))
 
 

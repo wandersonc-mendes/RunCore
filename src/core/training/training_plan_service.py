@@ -34,9 +34,42 @@ class TrainingPlanService:
         easy_run: float = 10,
         threshold_run: float = 8,
         interval_reps: int = 8,
+        ipt_profile: str | None = None,
     ) -> TrainingWeek:
 
         week = TrainingWeek(number=week_number)
+
+        normalized_profile = (ipt_profile or "").strip().lower()
+        interval_distance = 400
+        interval_recovery = 200
+        adjusted_interval_reps = interval_reps
+        interval_name = "Intervalado"
+        threshold_name = "Limiar"
+
+        if normalized_profile == "resistente":
+            interval_distance = 200
+            interval_recovery = 100
+            adjusted_interval_reps = interval_reps * 2
+            interval_name = "Intervalado curto"
+            threshold_name = "Limiar controlado"
+        elif normalized_profile == "potente":
+            interval_distance = 800
+            interval_recovery = 400
+            adjusted_interval_reps = max(1, interval_reps // 2)
+            interval_name = "Intervalado longo"
+            threshold_name = "Limiar sustentado"
+
+        interval_workout = WorkoutBuilder.interval(
+            repetitions=adjusted_interval_reps,
+            distance=interval_distance,
+            recovery=interval_recovery,
+        )
+        interval_workout.name = interval_name
+
+        threshold_workout = WorkoutBuilder.threshold(
+            threshold_run
+        )
+        threshold_workout.name = threshold_name
 
         week.add(
             TrainingPlanService._build_day(
@@ -57,11 +90,7 @@ class TrainingPlanService:
         week.add(
             TrainingPlanService._build_day(
                 name="Quarta",
-                workout=WorkoutBuilder.interval(
-                    repetitions=interval_reps,
-                    distance=400,
-                    recovery=200,
-                ),
+                workout=interval_workout,
                 note=f"Interval: {PaceService.interval(vdot)}",
                 objective="VO₂máx",
                 priority=3,
@@ -77,9 +106,7 @@ class TrainingPlanService:
         week.add(
             TrainingPlanService._build_day(
                 name="Sexta",
-                workout=WorkoutBuilder.threshold(
-                    threshold_run
-                ),
+                workout=threshold_workout,
                 note=f"Threshold: {PaceService.threshold(vdot)}",
                 objective="Limiar",
                 priority=2,

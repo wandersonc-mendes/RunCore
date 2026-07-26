@@ -11,6 +11,7 @@ class TrainingCycleBuilder:
     def base(
         vdot: float,
         total_weeks: int = 8,
+        ipt_profile: str | None = None,
     ) -> TrainingCycle:
 
         cycle = TrainingCycle(
@@ -89,6 +90,7 @@ class TrainingCycleBuilder:
                     easy_run=easy_run,
                     threshold_run=threshold_run,
                     interval_reps=interval_reps,
+                    ipt_profile=ipt_profile,
                 )
             )
 

@@ -120,6 +120,25 @@ class IptRepository:
         finally:
             session.close()
 
+    def get_latest_by_athlete(self, athlete_id):
+        session = SessionLocal()
+
+        try:
+            assessment = (
+                session.query(IptAssessment)
+                .options(joinedload(IptAssessment.protocol))
+                .filter(IptAssessment.athlete_id == athlete_id)
+                .order_by(IptAssessment.created_at.desc())
+                .first()
+            )
+
+            if assessment is None:
+                return None
+
+            return self._serialize_assessment(assessment)
+        finally:
+            session.close()
+
     def delete(self, assessment_id):
 
         session = SessionLocal()

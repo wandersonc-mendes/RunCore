@@ -1,48 +1,318 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { coachPaths, studentPaths } from "../router/paths";
+
+import {
+  coachPaths,
+  studentPaths,
+} from "../router/paths";
+
 
 function initials(name = "") {
-  return name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "RC";
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "RC";
 }
 
-export default function Topbar({ user, title, onMenu, onLogout }) {
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+function notificationsFor(role) {
+  if (role === "student") {
+    return [
+      {
+        title: "Planilha de treinamento",
+        description:
+          "Consulte sua semana atual em Minha planilha.",
+      },
+      {
+        title: "Feedback dos treinos",
+        description:
+          "Registre como se sentiu após cada atividade.",
+      },
+    ];
+  }
+
+  return [
+    {
+      title: "Acompanhamento dos atletas",
+      description:
+        "Consulte avaliações e planejamentos pela tela de atletas.",
+    },
+    {
+      title: "Convites pendentes",
+      description:
+        "As solicitações de novos alunos aparecem no Dashboard.",
+    },
+  ];
+}
+
+
+export default function Topbar({
+  user,
+  title,
+  onMenu,
+  onLogout,
+}) {
+  const [openPanel, setOpenPanel] = useState(null);
+  const containerRef = useRef(null);
   const navigate = useNavigate();
+
+  const isStudent = user?.role === "student";
+  const settingsPath = isStudent
+    ? studentPaths.settings
+    : coachPaths.settings;
+  const profilePath = isStudent
+    ? studentPaths.profile
+    : coachPaths.settings;
+
+  useEffect(() => {
+    function closeOnOutsideClick(event) {
+      if (
+        containerRef.current
+        && !containerRef.current.contains(event.target)
+      ) {
+        setOpenPanel(null);
+      }
+    }
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") {
+        setOpenPanel(null);
+      }
+    }
+
+    document.addEventListener(
+      "mousedown",
+      closeOnOutsideClick,
+    );
+    document.addEventListener(
+      "keydown",
+      closeOnEscape,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        closeOnOutsideClick,
+      );
+      document.removeEventListener(
+        "keydown",
+        closeOnEscape,
+      );
+    };
+  }, []);
+
+  function togglePanel(panel) {
+    setOpenPanel((current) =>
+      current === panel ? null : panel
+    );
+  }
+
+  function goTo(path) {
+    setOpenPanel(null);
+    navigate(path);
+  }
 
   return (
     <header className="app-topbar">
       <div className="app-topbar-heading">
-        <button type="button" className="app-menu-button" aria-label="Abrir menu" onClick={onMenu}>☰</button>
+        <button
+          type="button"
+          className="app-menu-button"
+          aria-label="Abrir menu"
+          onClick={onMenu}
+        >
+          ☰
+        </button>
+
         <div>
           <h1>{title}</h1>
-          <p>{user?.role === "student" ? "Área do atleta" : "Painel do treinador"}</p>
+          <p>
+            {isStudent
+              ? "Área do atleta"
+              : "Painel do treinador"}
+          </p>
         </div>
       </div>
-      <div className="app-topbar-actions">
-        <button type="button" className="app-icon-button" aria-label="Notificações" title="Notificações">
-          ♧<span className="notification-dot" />
-        </button>
-        <button type="button" className="app-icon-button" aria-label="Ajuda" title="Ajuda">?</button>
+
+      <div
+        className="app-topbar-actions"
+        ref={containerRef}
+      >
+        <div className="app-topbar-panel-anchor">
+          <button
+            type="button"
+            className="app-icon-button"
+            aria-label="Notificações"
+            title="Notificações"
+            aria-expanded={openPanel === "notifications"}
+            onClick={() => togglePanel("notifications")}
+          >
+            <span aria-hidden="true">●</span>
+            <span className="notification-dot" />
+          </button>
+
+          {openPanel === "notifications" && (
+            <section
+              className="app-floating-panel notification-panel"
+              aria-label="Central de notificações"
+            >
+              <header>
+                <div>
+                  <strong>Notificações</strong>
+                  <span>Informações importantes</span>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label="Fechar notificações"
+                  onClick={() => setOpenPanel(null)}
+                >
+                  ×
+                </button>
+              </header>
+
+              <div className="notification-list">
+                {notificationsFor(user?.role).map(
+                  (notification) => (
+                    <article key={notification.title}>
+                      <span className="notification-marker" />
+
+                      <div>
+                        <strong>
+                          {notification.title}
+                        </strong>
+                        <p>
+                          {notification.description}
+                        </p>
+                      </div>
+                    </article>
+                  ),
+                )}
+              </div>
+            </section>
+          )}
+        </div>
+
+        <div className="app-topbar-panel-anchor">
+          <button
+            type="button"
+            className="app-icon-button"
+            aria-label="Ajuda"
+            title="Ajuda"
+            aria-expanded={openPanel === "help"}
+            onClick={() => togglePanel("help")}
+          >
+            ?
+          </button>
+
+          {openPanel === "help" && (
+            <section
+              className="app-floating-panel help-panel"
+              aria-label="Ajuda do RunCore"
+            >
+              <header>
+                <div>
+                  <strong>Ajuda</strong>
+                  <span>Orientações rápidas</span>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label="Fechar ajuda"
+                  onClick={() => setOpenPanel(null)}
+                >
+                  ×
+                </button>
+              </header>
+
+              <div className="help-content">
+                <p>
+                  Use o menu lateral para acessar cada
+                  módulo em uma tela independente.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => goTo(settingsPath)}
+                >
+                  Abrir configurações
+                </button>
+              </div>
+            </section>
+          )}
+        </div>
+
         <div className="app-user-menu">
           <button
             type="button"
             className="app-user-trigger"
-            aria-expanded={userMenuOpen}
-            onClick={() => setUserMenuOpen((current) => !current)}
+            aria-expanded={openPanel === "user"}
+            onClick={() => togglePanel("user")}
           >
-            <span className="app-user-avatar">{initials(user?.name)}</span>
-            <span className="app-user-name">{user?.name || "Usuário"}</span>
+            <span className="app-user-avatar">
+              {initials(user?.name)}
+            </span>
+
+            <span className="app-user-name">
+              {user?.name || "Usuário"}
+            </span>
+
             <span aria-hidden="true">⌄</span>
           </button>
-          {userMenuOpen && (
+
+          {openPanel === "user" && (
             <div className="app-user-dropdown">
-              <button type="button">Meu perfil</button>
-              <button type="button">Minha conta</button>
-              <button type="button" onClick={() => { setUserMenuOpen(false); navigate(user?.role === "student" ? studentPaths.settings : coachPaths.settings); }}>Aparência</button>
-              <button type="button">Alterar senha</button>
+              <div className="app-user-summary">
+                <span className="app-user-avatar large">
+                  {initials(user?.name)}
+                </span>
+
+                <div>
+                  <strong>
+                    {user?.name || "Usuário"}
+                  </strong>
+                  <small>
+                    {isStudent
+                      ? "Atleta"
+                      : "Treinador"}
+                  </small>
+                </div>
+              </div>
+
               <hr />
-              <button type="button" className="danger" onClick={onLogout}>Sair</button>
+
+              <button
+                type="button"
+                onClick={() => goTo(profilePath)}
+              >
+                Meu perfil
+              </button>
+
+              <button
+                type="button"
+                onClick={() => goTo(settingsPath)}
+              >
+                Minha conta
+              </button>
+
+              <button
+                type="button"
+                onClick={() => goTo(settingsPath)}
+              >
+                Aparência
+              </button>
+
+              <hr />
+
+              <button
+                type="button"
+                className="danger"
+                onClick={onLogout}
+              >
+                Sair
+              </button>
             </div>
           )}
         </div>

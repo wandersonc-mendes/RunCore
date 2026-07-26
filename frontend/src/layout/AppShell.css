@@ -228,3 +228,153 @@
   background: var(--shell-surface);
   color: var(--shell-text);
 }
+
+/* FUNCTIONAL TOPBAR PANELS */
+.app-topbar-panel-anchor {
+  position: relative;
+}
+
+.app-floating-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 60;
+  width: min(360px, calc(100vw - 28px));
+  overflow: hidden;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+  box-shadow: var(--shell-shadow);
+}
+
+.app-floating-panel > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border-bottom: 1px solid var(--shell-border);
+}
+
+.app-floating-panel > header div {
+  display: grid;
+  gap: 3px;
+}
+
+.app-floating-panel > header span {
+  color: var(--shell-muted);
+  font-size: 12px;
+}
+
+.app-floating-panel > header button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--shell-muted);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.notification-list {
+  display: grid;
+}
+
+.notification-list article {
+  display: grid;
+  grid-template-columns: 9px 1fr;
+  gap: 12px;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--shell-border);
+}
+
+.notification-list article:last-child {
+  border-bottom: 0;
+}
+
+.notification-list article div {
+  display: grid;
+  gap: 4px;
+}
+
+.notification-list p {
+  margin: 0;
+  color: var(--shell-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.notification-marker {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--shell-accent);
+}
+
+.help-content {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.help-content p {
+  margin: 0;
+  color: var(--shell-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.help-content button {
+  min-height: 39px;
+  border: 1px solid var(--shell-border);
+  border-radius: 9px;
+  background: var(--shell-surface-soft);
+  color: var(--shell-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-user-summary {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px 5px;
+}
+
+.app-user-summary > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.app-user-summary strong,
+.app-user-summary small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-user-summary small {
+  color: var(--shell-muted);
+}
+
+.app-user-avatar.large {
+  width: 40px;
+  height: 40px;
+}
+
+@media (max-width: 620px) {
+  .app-floating-panel {
+    position: fixed;
+    top: 76px;
+    right: 14px;
+    left: 14px;
+    width: auto;
+  }
+}

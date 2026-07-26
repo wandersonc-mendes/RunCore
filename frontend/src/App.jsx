@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import {
   clearSession,
   createAthlete,
@@ -21,6 +22,9 @@ import LoginScreen from "./LoginScreen";
 import StudentPortal from "./StudentPortal";
 import AthleteProfileView from "./AthleteProfileView";
 import IptAssessmentView from "./IptAssessmentView";
+import AppShell from "./layout/AppShell";
+import PlaceholderPage from "./pages/PlaceholderPage";
+import { studentPaths } from "./router/paths";
 import "./App.css";
 
 const emptyAthlete = { name: "", phone: "", email: "", goal: "", notes: "" };
@@ -349,7 +353,29 @@ export default function App() {
 
   if (authLoading) return <main className="login-page"><p className="muted">Carregando...</p></main>;
   if (!currentUser) return <LoginScreen onAuthenticated={setCurrentUser} />;
-  if (currentUser.role === "student") return <StudentPortal user={currentUser} onLogout={() => setCurrentUser(null)} />;
+  if (currentUser.role === "student") {
+    const studentLogout = () => {
+      clearSession();
+      setCurrentUser(null);
+    };
+
+    return (
+      <Routes>
+        <Route element={<AppShell user={currentUser} onLogout={studentLogout} />}>
+          <Route path={studentPaths.dashboard} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="dashboard" />} />
+          <Route path={studentPaths.trainingPlan} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="training" />} />
+          <Route path={studentPaths.goals} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="goals" />} />
+          <Route path={studentPaths.activities} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="activities" />} />
+          <Route path={studentPaths.calculators} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="calculators" />} />
+          <Route path={studentPaths.profile} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="profile" />} />
+          <Route path={studentPaths.evolution} element={<PlaceholderPage eyebrow="EVOLUÇÃO" title="Sua evolução" description="Gráficos e indicadores de evolução serão organizados nesta tela." />} />
+          <Route path={studentPaths.calendar} element={<PlaceholderPage eyebrow="AGENDA" title="Agenda do atleta" description="Treinos, avaliações e provas aparecerão nesta tela." />} />
+          <Route path={studentPaths.settings} element={<PlaceholderPage eyebrow="CONFIGURAÇÕES" title="Configurações" description="Preferências de conta e aparência serão disponibilizadas nesta tela." />} />
+        </Route>
+        <Route path="*" element={<Navigate to={studentPaths.dashboard} replace />} />
+      </Routes>
+    );
+  }
   if (selectedAthlete && selectedView === "profile") return <AthleteProfileView athlete={selectedAthlete} onClose={() => setSelectedAthlete(null)} onRemove={() => handleDeleteAthlete(selectedAthlete.id)} />;
 
   if (selectedAthlete && selectedView === "ipt") {

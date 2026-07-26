@@ -55,3 +55,65 @@
   .app-topbar-heading p,.app-user-name { display:none; }
   .app-shell-content { padding:18px 14px 36px; }
 }
+
+/* ROUTED STUDENT PORTAL */
+.routed-student-page {
+  min-height: auto;
+  background: transparent;
+}
+
+.routed-student-page > .student-header,
+.routed-student-page > .student-hero,
+.routed-student-page > .portal-menu,
+.routed-student-page .student-content > .student-nav {
+  display: none;
+}
+
+.routed-student-page .student-content {
+  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.routed-student-page .goals-card,
+.routed-student-page .calculator-card,
+.routed-student-page .connection-card,
+.routed-student-page .student-stats,
+.routed-student-page .activity-card,
+.routed-student-page .student-plan,
+.routed-student-page .student-empty {
+  display: none;
+}
+
+.routed-student-page[data-view="dashboard"] .connection-card,
+.routed-student-page[data-view="dashboard"] .student-plan,
+.routed-student-page[data-view="dashboard"] .student-empty {
+  display: flex;
+}
+
+.routed-student-page[data-view="dashboard"] .student-stats {
+  display: grid;
+}
+
+.routed-student-page[data-view="training"] .student-plan,
+.routed-student-page[data-view="training"] .student-empty,
+.routed-student-page[data-view="goals"] .goals-card,
+.routed-student-page[data-view="calculators"] .calculator-card,
+.routed-student-page[data-view="activities"] .connection-card,
+.routed-student-page[data-view="activities"] .activity-card {
+  display: flex;
+}
+
+.routed-student-page[data-view="goals"] .goals-card,
+.routed-student-page[data-view="calculators"] .calculator-card,
+.routed-student-page[data-view="activities"] .activity-card {
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .routed-student-page .student-content {
+    padding: 0;
+  }
+}

@@ -132,7 +132,7 @@ function activityMetric(activity) {
   return `Velocidade média: ${(activity.distance / (activity.moving_time / 3600)).toFixed(1)} km/h`;
 }
 
-export default function StudentPortal({ user, onLogout }) {
+export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const [strava, setStrava] = useState(null);
   const [error, setError] = useState("");
   const [activities, setActivities] = useState([]);
@@ -271,10 +271,26 @@ export default function StudentPortal({ user, onLogout }) {
   const velocity = paceSeconds ? 3600 / paceSeconds : 0;
   const predictedTime = paceSeconds * calculatorDistance;
 
-  if (showProfile) return <ProfilePanel onClose={() => setShowProfile(false)} />;
+  useEffect(() => {
+    if (view === "activities") {
+      setShowActivities(true);
+    }
+
+    if (view === "calculators") {
+      setCalculator((current) => current || "pace");
+    }
+  }, [view]);
+
+  if (showProfile || view === "profile") {
+    return (
+      <ProfilePanel
+        onClose={() => setShowProfile(false)}
+      />
+    );
+  }
 
   return (
-    <main className="student-page">
+    <main className="student-page routed-student-page" data-view={view}>
       <header className="student-header">
         <div className="brand"><span className="brand-logo"><img src="/logo-horizontal.png?v=1" alt="RunCore" />
         </span><div><h1>RunCore</h1><p>Área do aluno</p></div></div>

@@ -25,6 +25,7 @@ import IptAssessmentView from "./IptAssessmentView";
 import AppShell from "./layout/AppShell";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import SettingsPage from "./pages/SettingsPage";
+import PlanningPage from "./pages/PlanningPage";
 import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
@@ -489,11 +490,6 @@ export default function App() {
   };
 
   const coachPlaceholders = {
-    [coachPaths.planning]: [
-      "PLANEJAMENTO",
-      "Planejamento",
-      "Macrociclos, mesociclos e organização dos ciclos serão concentrados nesta tela.",
-    ],
     [coachPaths.workouts]: [
       "TREINOS",
       "Treinos",
@@ -516,6 +512,23 @@ export default function App() {
     ],
   };
 
+
+
+  if (
+    !selectedAthlete
+    && location.pathname === coachPaths.planning
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <PlanningPage
+          athletes={athletes}
+          loading={loading}
+          error={error}
+          onOpenPlanning={openTraining}
+        />
+      </AppShell>
+    );
+  }
 
   if (
     !selectedAthlete

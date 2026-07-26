@@ -26,6 +26,7 @@ import AppShell from "./layout/AppShell";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import SettingsPage from "./pages/SettingsPage";
 import PlanningPage from "./pages/PlanningPage";
+import WorkoutsPage from "./pages/WorkoutsPage";
 import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
@@ -490,11 +491,6 @@ export default function App() {
   };
 
   const coachPlaceholders = {
-    [coachPaths.workouts]: [
-      "TREINOS",
-      "Treinos",
-      "Sessões e biblioteca de treinos serão organizadas nesta tela.",
-    ],
     [coachPaths.calendar]: [
       "AGENDA",
       "Agenda",
@@ -513,6 +509,23 @@ export default function App() {
   };
 
 
+
+
+  if (
+    !selectedAthlete
+    && location.pathname === coachPaths.workouts
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <WorkoutsPage
+          athletes={athletes}
+          loading={loading}
+          error={error}
+          onOpenTraining={openTraining}
+        />
+      </AppShell>
+    );
+  }
 
   if (
     !selectedAthlete

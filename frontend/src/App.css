@@ -1070,3 +1070,48 @@ button {
   flex: 1;
   text-align: center;
 }
+
+/* IPT FORM LAYOUT START */
+.ipt-form .form-grid {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns:
+    minmax(220px, 1.15fr)
+    minmax(190px, 1fr)
+    minmax(190px, 1fr);
+}
+
+.ipt-form .form-grid > label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  gap: 7px;
+  min-width: 0;
+}
+
+.ipt-form .form-grid select,
+.ipt-form .form-grid input {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  min-height: 42px;
+  min-width: 0;
+  padding: 9px 11px;
+  width: 100%;
+}
+
+.ipt-form .form-grid small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+@media (max-width: 860px) {
+  .ipt-form .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* IPT FORM LAYOUT END */

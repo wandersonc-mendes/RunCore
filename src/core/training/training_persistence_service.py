@@ -57,6 +57,7 @@ class TrainingPersistenceService:
             vdot,
             total_weeks,
             ipt_profile,
+            target_distance=target_distance,
         )
 
         return training
@@ -85,6 +86,15 @@ class TrainingPersistenceService:
 
         total_weeks = total_weeks or current_total_weeks
 
+        training = self.training_repository.get_by_id(
+            training_id
+        )
+        target_distance = (
+            training.target_distance
+            if training
+            else None
+        )
+
         for session in sessions:
 
             self.session_repository.delete(
@@ -96,6 +106,7 @@ class TrainingPersistenceService:
             vdot,
             total_weeks,
             ipt_profile,
+            target_distance=target_distance,
         )
 
     def _generate_sessions(
@@ -104,12 +115,14 @@ class TrainingPersistenceService:
         vdot: float,
         total_weeks: int,
         ipt_profile: str | None = None,
+        target_distance: float | None = None,
     ):
 
         cycle = TrainingCycleBuilder.base(
             vdot,
             total_weeks,
             ipt_profile=ipt_profile,
+            target_distance=target_distance,
         )
 
         sessions = (

@@ -36,12 +36,14 @@ class TrainingPlanService:
         interval_reps: int = 8,
         ipt_profile: str | None = None,
         total_weeks: int = 8,
+        target_distance: float | None = None,
     ) -> TrainingWeek:
 
         week = TrainingWeek(number=week_number)
 
         normalized_profile = (ipt_profile or "").strip().lower()
         total_weeks = max(total_weeks, 1)
+        is_race_week = week_number == total_weeks
         phase_ratio = week_number / total_weeks
         block_position = (week_number - 1) % 4
 
@@ -107,13 +109,25 @@ class TrainingPlanService:
             threshold_name = "Limiar reduzido"
             threshold_factor = 0.65
 
-        adjusted_interval_reps = max(1, round(work_volume / interval_distance))
+        adjusted_interval_reps = max(
+            1,
+            round(work_volume / interval_distance),
+        )
 
         if phase == "Polimento":
             adjusted_interval_reps = max(
                 2,
                 round(adjusted_interval_reps * 0.65),
             )
+
+        if is_race_week:
+            adjusted_interval_reps = min(
+                adjusted_interval_reps,
+                4,
+            )
+            interval_name = "Ativação pré-prova"
+            threshold_name = "Corrida leve pré-prova"
+            threshold_factor = 0.45
 
         interval_recovery = max(100, interval_distance // 2)
 
@@ -177,14 +191,31 @@ class TrainingPlanService:
             )
         )
 
+        final_workout = WorkoutBuilder.long(
+            target_distance
+            if is_race_week and target_distance
+            else long_run
+        )
+
+        if is_race_week and target_distance:
+            final_workout.name = "Prova-alvo"
+            final_note = (
+                "Executar a prova conforme a estratégia definida "
+                "com o treinador."
+            )
+            final_objective = "Competição"
+        else:
+            final_note = (
+                f"Marathon: {PaceService.marathon(vdot)}"
+            )
+            final_objective = "Resistência"
+
         week.add(
             TrainingPlanService._build_day(
                 name="Domingo",
-                workout=WorkoutBuilder.long(
-                    long_run
-                ),
-                note=f"Marathon: {PaceService.marathon(vdot)}",
-                objective="Resistência",
+                workout=final_workout,
+                note=final_note,
+                objective=final_objective,
                 priority=4,
             )
         )

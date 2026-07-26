@@ -111,6 +111,9 @@ def goal_training_data(goal, start_date):
 
 
 def phase_for_week(week: int, total_weeks: int) -> str:
+    if week == total_weeks:
+        return "Competição"
+
     ratio = week / max(total_weeks, 1)
     if ratio <= .40:
         return "Base"

@@ -34,7 +34,7 @@ class IptPhaseProgressionTest(unittest.TestCase):
         self.assertEqual(base.name, "Intervalado moderado")
         self.assertEqual(development.name, "Intervalado longo")
         self.assertEqual(specific.name, "Resistência de velocidade")
-        self.assertEqual(taper.name, "Ativação intervalada")
+        self.assertEqual(taper.name, "Ativação pré-prova")
         self.assertGreater(development.distance, base.distance)
         self.assertLess(
             taper.repetitions * taper.distance,
@@ -50,7 +50,7 @@ class IptPhaseProgressionTest(unittest.TestCase):
         self.assertEqual(base.name, "Velocidade e economia")
         self.assertEqual(development.name, "Intervalado curto")
         self.assertEqual(specific.name, "Intervalado específico")
-        self.assertEqual(taper.name, "Ativação de velocidade")
+        self.assertEqual(taper.name, "Ativação pré-prova")
 
     def test_threshold_changes_by_phase(self):
         base = workout(self.build(2, "Potente"), "Sexta")
@@ -61,7 +61,7 @@ class IptPhaseProgressionTest(unittest.TestCase):
         self.assertEqual(base.name, "Limiar controlado")
         self.assertEqual(development.name, "Limiar sustentado")
         self.assertEqual(specific.name, "Limiar específico")
-        self.assertEqual(taper.name, "Limiar reduzido")
+        self.assertEqual(taper.name, "Corrida leve pré-prova")
         self.assertLess(taper.distance, development.distance)
 
 

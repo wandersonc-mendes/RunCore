@@ -12,6 +12,7 @@ class TrainingCycleBuilder:
         vdot: float,
         total_weeks: int = 8,
         ipt_profile: str | None = None,
+        target_distance: float | None = None,
     ) -> TrainingCycle:
 
         cycle = TrainingCycle(
@@ -51,6 +52,11 @@ class TrainingCycleBuilder:
             6,
         ]
 
+        peak_block = max(
+            0,
+            ((max(total_weeks - 3, 1) - 1) // 4),
+        )
+
         for week_number in range(
             1,
             total_weeks + 1,
@@ -59,9 +65,14 @@ class TrainingCycleBuilder:
                 week_number - 1
             ) % 4
 
-            block_number = (
+            raw_block_number = (
                 week_number - 1
             ) // 4
+
+            block_number = min(
+                raw_block_number,
+                peak_block,
+            )
 
             long_run = (
                 long_run_pattern[pattern_index]
@@ -82,6 +93,34 @@ class TrainingCycleBuilder:
                 interval_pattern[pattern_index]
             )
 
+            weeks_remaining = total_weeks - week_number
+
+            if weeks_remaining == 2:
+                volume_factor = 0.75
+            elif weeks_remaining == 1:
+                volume_factor = 0.55
+            elif weeks_remaining == 0:
+                volume_factor = 0.35
+            else:
+                volume_factor = 1.0
+
+            easy_run = round(
+                easy_run * volume_factor,
+                1,
+            )
+            threshold_run = round(
+                threshold_run * volume_factor,
+                1,
+            )
+            long_run = round(
+                long_run * volume_factor,
+                1,
+            )
+            interval_reps = max(
+                2,
+                round(interval_reps * volume_factor),
+            )
+
             cycle.add(
                 TrainingPlanService.generate_base_week(
                     vdot=vdot,
@@ -92,6 +131,7 @@ class TrainingCycleBuilder:
                     interval_reps=interval_reps,
                     ipt_profile=ipt_profile,
                     total_weeks=total_weeks,
+                    target_distance=target_distance,
                 )
             )
 

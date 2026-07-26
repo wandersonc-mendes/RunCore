@@ -1115,3 +1115,63 @@ button {
   }
 }
 /* IPT FORM LAYOUT END */
+
+/* IPT FORM FOOTER START */
+.ipt-protocol-help {
+  display: none;
+}
+
+.ipt-form-footer {
+  align-items: end;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 18px;
+}
+
+.ipt-notes-field {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 90px minmax(0, 1fr);
+  min-width: 0;
+}
+
+.ipt-notes-field > span {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ipt-notes-field textarea {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  min-height: 76px;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+}
+
+.ipt-submit-button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .ipt-form-footer {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .ipt-notes-field {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .ipt-submit-button {
+    justify-self: start;
+  }
+}
+/* IPT FORM FOOTER END */

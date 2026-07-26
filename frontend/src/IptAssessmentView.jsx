@@ -399,36 +399,29 @@ export default function IptAssessmentView({
               </>
             )}
           </div>
+          <div className="ipt-form-footer">
+            <label className="ipt-notes-field">
+              <span>{TEXT.notes}</span>
 
-          {selectedProtocol && (
-            <p className="ipt-protocol-help">
-              {selectedProtocol.protocol_type === "distance"
-                ? `Distancias fixas: ${selectedProtocol.short_value} m e ${selectedProtocol.long_value} m.`
-                : `Duracoes fixas: ${selectedProtocol.short_value / 60} min e ${selectedProtocol.long_value / 60} min.`}
-            </p>
-          )}
+              <textarea
+                rows={3}
+                value={form.notes}
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    notes: event.target.value,
+                  })
+                }
+              />
+            </label>
 
-          <label>
-            {TEXT.notes}
-
-            <textarea
-              rows={3}
-              value={form.notes}
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  notes: event.target.value,
-                })
-              }
-            />
-          </label>
-
-          <button
-            className="btn-primary"
-            disabled={!selectedProtocol || saving}
-          >
-            {saving ? TEXT.saving : TEXT.save}
-          </button>
+            <button
+              className="btn-primary ipt-submit-button"
+              disabled={!selectedProtocol || saving}
+            >
+              {saving ? TEXT.saving : TEXT.save}
+            </button>
+          </div>
         </form>
 
         <section className="section-heading">

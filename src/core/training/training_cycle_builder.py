@@ -8,44 +8,89 @@ from models.training_session import TrainingSession
 class TrainingCycleBuilder:
 
     @staticmethod
-    def base(vdot: float) -> TrainingCycle:
+    def base(
+        vdot: float,
+        total_weeks: int = 8,
+    ) -> TrainingCycle:
 
         cycle = TrainingCycle(
             name="Base"
         )
 
-        cycle.add(
-            TrainingPlanService.generate_base_week(
-                vdot=vdot,
-                week_number=1,
-                long_run=18,
-            )
+        total_weeks = max(
+            1,
+            total_weeks,
         )
 
-        cycle.add(
-            TrainingPlanService.generate_base_week(
-                vdot=vdot,
-                week_number=2,
-                long_run=20,
-            )
-        )
+        long_run_pattern = [
+            18,
+            20,
+            22,
+            16,
+        ]
 
-        cycle.add(
-            TrainingPlanService.generate_base_week(
-                vdot=vdot,
-                week_number=3,
-                long_run=22,
-            )
-        )
+        interval_pattern = [
+            8,
+            8,
+            8,
+            6,
+        ]
 
-        cycle.add(
-            TrainingPlanService.generate_base_week(
-                vdot=vdot,
-                week_number=4,
-                long_run=16,
-                interval_reps=6,
+        easy_run_pattern = [
+            10,
+            11,
+            12,
+            9,
+        ]
+
+        threshold_pattern = [
+            8,
+            8,
+            9,
+            6,
+        ]
+
+        for week_number in range(
+            1,
+            total_weeks + 1,
+        ):
+            pattern_index = (
+                week_number - 1
+            ) % 4
+
+            block_number = (
+                week_number - 1
+            ) // 4
+
+            long_run = (
+                long_run_pattern[pattern_index]
+                + block_number
             )
-        )
+
+            easy_run = (
+                easy_run_pattern[pattern_index]
+                + (block_number * 0.5)
+            )
+
+            threshold_run = (
+                threshold_pattern[pattern_index]
+                + (block_number * 0.5)
+            )
+
+            interval_reps = (
+                interval_pattern[pattern_index]
+            )
+
+            cycle.add(
+                TrainingPlanService.generate_base_week(
+                    vdot=vdot,
+                    week_number=week_number,
+                    long_run=long_run,
+                    easy_run=easy_run,
+                    threshold_run=threshold_run,
+                    interval_reps=interval_reps,
+                )
+            )
 
         return cycle
 

@@ -15,112 +15,117 @@ class EvaluationRepository:
         distance,
         time_seconds,
         vdot,
+        test_date=None,
     ):
         session = SessionLocal()
 
-        evaluation = Evaluation(
-            athlete_id=athlete_id,
-            weight=weight,
-            height=height,
-            max_hr=max_hr,
-            resting_hr=resting_hr,
-            test_type=test_type,
-            distance=distance,
-            time_seconds=time_seconds,
-            vdot=vdot,
-        )
+        try:
+            evaluation = Evaluation(
+                athlete_id=athlete_id,
+                weight=weight,
+                height=height,
+                max_hr=max_hr,
+                resting_hr=resting_hr,
+                test_type=test_type,
+                distance=distance,
+                time_seconds=time_seconds,
+                vdot=vdot,
+                test_date=test_date,
+            )
 
-        session.add(evaluation)
-        session.commit()
-        session.refresh(evaluation)
-        session.close()
+            session.add(evaluation)
+            session.commit()
+            session.refresh(evaluation)
 
-        return evaluation
+            return evaluation
+
+        except Exception:
+            session.rollback()
+            raise
+
+        finally:
+            session.close()
 
     def update(self, evaluation):
-
         session = SessionLocal()
 
-        evaluation = session.merge(evaluation)
+        try:
+            evaluation = session.merge(evaluation)
 
-        session.commit()
+            session.commit()
+            session.refresh(evaluation)
 
-        session.refresh(evaluation)
+            return evaluation
 
-        session.close()
+        except Exception:
+            session.rollback()
+            raise
 
-        return evaluation
+        finally:
+            session.close()
 
     def get_by_id(self, evaluation_id):
-
         session = SessionLocal()
 
-        evaluation = (
-            session.query(Evaluation)
-            .filter(Evaluation.id == evaluation_id)
-            .first()
-        )
+        try:
+            return (
+                session.query(Evaluation)
+                .filter(Evaluation.id == evaluation_id)
+                .first()
+            )
 
-        session.close()
-
-        return evaluation
+        finally:
+            session.close()
 
     def list_by_athlete(self, athlete_id):
-
         session = SessionLocal()
 
-        evaluations = (
-            session.query(Evaluation)
-            .filter(
-                Evaluation.athlete_id == athlete_id
+        try:
+            return (
+                session.query(Evaluation)
+                .filter(Evaluation.athlete_id == athlete_id)
+                .order_by(Evaluation.created_at.desc())
+                .all()
             )
-            .order_by(
-                Evaluation.created_at.desc()
-            )
-            .all()
-        )
 
-        session.close()
-
-        return evaluations
+        finally:
+            session.close()
 
     def last_evaluation(self, athlete_id):
-
         session = SessionLocal()
 
-        evaluation = (
-            session.query(Evaluation)
-            .filter(
-                Evaluation.athlete_id == athlete_id
+        try:
+            return (
+                session.query(Evaluation)
+                .filter(Evaluation.athlete_id == athlete_id)
+                .order_by(Evaluation.created_at.desc())
+                .first()
             )
-            .order_by(
-                Evaluation.created_at.desc()
-            )
-            .first()
-        )
 
-        session.close()
-
-        return evaluation
+        finally:
+            session.close()
 
     def delete(self, evaluation_id):
-
         session = SessionLocal()
 
-        evaluation = (
-            session.query(Evaluation)
-            .filter(
-                Evaluation.id == evaluation_id
+        try:
+            evaluation = (
+                session.query(Evaluation)
+                .filter(Evaluation.id == evaluation_id)
+                .first()
             )
-            .first()
-        )
 
-        if evaluation is None:
+            if evaluation is None:
+                return False
+
+            session.delete(evaluation)
+            session.commit()
+
+            return True
+
+        except Exception:
+            session.rollback()
+            raise
+
+        finally:
             session.close()
-            return False
-
-        session.delete(evaluation)
-        session.commit()
-        session.close()
-
-        return True

@@ -24,48 +24,54 @@ class TrainingStep(Base):
     )
 
     session_id: Mapped[int] = mapped_column(
-        ForeignKey("training_sessions.id")
+        ForeignKey("training_sessions.id"),
+        nullable=False,
     )
 
     order: Mapped[int] = mapped_column(
-        Integer
+        Integer,
     )
 
     type: Mapped[str] = mapped_column(
-        String(30)
+        String(30),
     )
 
     distance: Mapped[float] = mapped_column(
         Float,
-        default=0
+        default=0,
+    )
+
+    distance_unit: Mapped[str | None] = mapped_column(
+        String(4),
+        nullable=True,
     )
 
     duration: Mapped[int] = mapped_column(
         Integer,
-        default=0
+        default=0,
     )
 
     repetitions: Mapped[int] = mapped_column(
         Integer,
-        default=0
+        default=0,
     )
 
     recovery: Mapped[str] = mapped_column(
         String(80),
-        default=""
+        default="",
     )
 
     pace_min: Mapped[str] = mapped_column(
         String(10),
-        default=""
+        default="",
     )
 
     pace_max: Mapped[str] = mapped_column(
         String(10),
-        default=""
+        default="",
     )
 
     notes: Mapped[str] = mapped_column(
         Text,
-        default=""
+        default="",
     )

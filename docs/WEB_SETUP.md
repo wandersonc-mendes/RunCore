@@ -1,5 +1,9 @@
 # RunCore Web — como rodar localmente
 
+> **Atualizado:** o backend canônico agora está em `D:\RunCore2\src`.
+> Use o guia em `D:\RunCore2\docs\WEB_SETUP.md`; não execute mais
+> `RunCore-web\src` como uma API independente.
+
 Versão web do RunCore, construída em cima da mesma lógica de negócio do app
 desktop (`core/`, `models/`, `repositories/`, `database/`). O app desktop
 (PySide6) continua funcionando normalmente e não foi alterado.

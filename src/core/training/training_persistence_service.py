@@ -1,3 +1,5 @@
+from datetime import date
+
 from core.training.training_cycle_builder import (
     TrainingCycleBuilder,
 )
@@ -30,6 +32,9 @@ class TrainingPersistenceService:
         methodology: str,
         objective: str,
         target_distance: float,
+        start_date: date | None = None,
+        target_date: date | None = None,
+        total_weeks: int = 8,
     ):
 
         training = Training()
@@ -39,6 +44,8 @@ class TrainingPersistenceService:
         training.methodology = methodology
         training.objective = objective
         training.target_distance = target_distance
+        training.start_date = start_date
+        training.target_date = target_date
 
         training = self.training_repository.create(
             training
@@ -47,6 +54,7 @@ class TrainingPersistenceService:
         self._generate_sessions(
             training.id,
             vdot,
+            total_weeks,
         )
 
         return training
@@ -63,6 +71,14 @@ class TrainingPersistenceService:
             )
         )
 
+        total_weeks = max(
+            (
+                session.week
+                for session in sessions
+            ),
+            default=8,
+        )
+
         for session in sessions:
 
             self.session_repository.delete(
@@ -72,16 +88,19 @@ class TrainingPersistenceService:
         self._generate_sessions(
             training_id,
             vdot,
+            total_weeks,
         )
 
     def _generate_sessions(
         self,
         training_id: int,
         vdot: float,
+        total_weeks: int,
     ):
 
         cycle = TrainingCycleBuilder.base(
-            vdot
+            vdot,
+            total_weeks,
         )
 
         sessions = (

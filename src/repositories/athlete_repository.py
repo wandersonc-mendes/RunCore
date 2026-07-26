@@ -1,4 +1,5 @@
 from sqlalchemy import func
+from sqlalchemy import select
 
 from database.database import SessionLocal
 from models.athlete import Athlete
@@ -8,129 +9,278 @@ class AthleteRepository:
 
     def create(
         self,
-        name,
-        phone,
-        email,
-        goal,
-        active,
-        notes,
-    ):
-        session = SessionLocal()
+        name: str,
+        phone: str = "",
+        email: str = "",
+        goal: str = "",
+        active: bool = True,
+        notes: str = "",
+        user_id: int | None = None,
+        coach_user_id: int | None = None,
+    ) -> Athlete:
 
         athlete = Athlete(
-            name=name,
-            phone=phone,
-            email=email,
-            goal=goal,
+            name=name.strip(),
+            phone=phone.strip(),
+            email=email.strip().lower(),
+            goal=goal.strip(),
             active=active,
-            notes=notes,
+            notes=notes.strip(),
+            user_id=user_id,
+            coach_user_id=coach_user_id,
         )
 
-        session.add(athlete)
-        session.commit()
-        session.refresh(athlete)
-        session.close()
+        with SessionLocal() as session:
+
+            session.add(athlete)
+            session.commit()
+            session.refresh(athlete)
+            session.expunge(athlete)
 
         return athlete
 
-    def list_all(self):
+    def create_for_user(
+        self,
+        user_id: int,
+        coach_user_id: int,
+        name: str,
+        email: str,
+    ) -> Athlete:
 
-        session = SessionLocal()
-
-        athletes = (
-            session.query(Athlete)
-            .order_by(Athlete.name)
-            .all()
+        existing = self.get_by_user_id(
+            user_id,
         )
 
-        session.close()
+        if existing is not None:
+            return existing
 
-        return athletes
+        return self.create(
+            user_id=user_id,
+            coach_user_id=coach_user_id,
+            name=name,
+            email=email,
+            phone="",
+            goal="",
+            active=True,
+            notes="Cadastro criado automaticamente após aprovação.",
+        )
 
-    def search(self, text):
+    def list_all(
+        self,
+    ) -> list[Athlete]:
 
-        session = SessionLocal()
+        with SessionLocal() as session:
 
-        text = text.lower()
-
-        athletes = (
-            session.query(Athlete)
-            .filter(
-                func.lower(Athlete.name).like(f"%{text}%")
+            statement = (
+                select(Athlete)
+                .order_by(Athlete.name)
             )
-            .order_by(Athlete.name)
-            .all()
-        )
 
-        session.close()
+            athletes = list(
+                session.scalars(statement)
+            )
 
-        return athletes
+            for athlete in athletes:
+                session.expunge(athlete)
 
-    def get_by_id(self, athlete_id):
+            return athletes
 
-        session = SessionLocal()
+    def list_by_coach(
+        self,
+        coach_user_id: int,
+    ) -> list[Athlete]:
 
-        athlete = (
-            session.query(Athlete)
-            .filter(Athlete.id == athlete_id)
-            .first()
-        )
+        with SessionLocal() as session:
 
-        session.close()
+            statement = (
+                select(Athlete)
+                .where(
+                    Athlete.coach_user_id == coach_user_id,
+                )
+                .order_by(Athlete.name)
+            )
 
-        return athlete
+            athletes = list(
+                session.scalars(statement)
+            )
+
+            for athlete in athletes:
+                session.expunge(athlete)
+
+            return athletes
+
+    def search(
+        self,
+        text: str,
+    ) -> list[Athlete]:
+
+        normalized_text = text.strip().lower()
+
+        with SessionLocal() as session:
+
+            statement = (
+                select(Athlete)
+                .where(
+                    func.lower(Athlete.name).like(
+                        f"%{normalized_text}%"
+                    )
+                )
+                .order_by(Athlete.name)
+            )
+
+            athletes = list(
+                session.scalars(statement)
+            )
+
+            for athlete in athletes:
+                session.expunge(athlete)
+
+            return athletes
+
+    def search_by_coach(
+        self,
+        coach_user_id: int,
+        text: str,
+    ) -> list[Athlete]:
+
+        normalized_text = text.strip().lower()
+
+        with SessionLocal() as session:
+
+            statement = (
+                select(Athlete)
+                .where(
+                    Athlete.coach_user_id == coach_user_id,
+                    func.lower(Athlete.name).like(
+                        f"%{normalized_text}%"
+                    ),
+                )
+                .order_by(Athlete.name)
+            )
+
+            athletes = list(
+                session.scalars(statement)
+            )
+
+            for athlete in athletes:
+                session.expunge(athlete)
+
+            return athletes
+
+    def get_by_id(
+        self,
+        athlete_id: int,
+    ) -> Athlete | None:
+
+        with SessionLocal() as session:
+
+            athlete = session.get(
+                Athlete,
+                athlete_id,
+            )
+
+            if athlete is not None:
+                session.expunge(athlete)
+
+            return athlete
+
+    def get_by_user_id(
+        self,
+        user_id: int,
+    ) -> Athlete | None:
+
+        with SessionLocal() as session:
+
+            statement = (
+                select(Athlete)
+                .where(
+                    Athlete.user_id == user_id,
+                )
+            )
+
+            athlete = session.scalar(
+                statement,
+            )
+
+            if athlete is not None:
+                session.expunge(athlete)
+
+            return athlete
 
     def update(
         self,
-        athlete_id,
-        name,
-        phone,
-        email,
-        goal,
-        active,
-        notes,
-    ):
+        athlete_id: int,
+        name: str,
+        phone: str,
+        email: str,
+        goal: str,
+        active: bool,
+        notes: str,
+    ) -> bool:
 
-        session = SessionLocal()
+        with SessionLocal() as session:
 
-        athlete = (
-            session.query(Athlete)
-            .filter(Athlete.id == athlete_id)
-            .first()
-        )
+            athlete = session.get(
+                Athlete,
+                athlete_id,
+            )
 
-        if athlete is None:
-            session.close()
-            return False
+            if athlete is None:
+                return False
 
-        athlete.name = name
-        athlete.phone = phone
-        athlete.email = email
-        athlete.goal = goal
-        athlete.active = active
-        athlete.notes = notes
+            athlete.name = name.strip()
+            athlete.phone = phone.strip()
+            athlete.email = email.strip().lower()
+            athlete.goal = goal.strip()
+            athlete.active = active
+            athlete.notes = notes.strip()
 
-        session.commit()
-        session.close()
+            session.commit()
 
-        return True
+            return True
 
-    def delete(self, athlete_id):
+    def link_user_and_coach(
+        self,
+        athlete_id: int,
+        user_id: int,
+        coach_user_id: int,
+    ) -> Athlete | None:
 
-        session = SessionLocal()
+        with SessionLocal() as session:
 
-        athlete = (
-            session.query(Athlete)
-            .filter(Athlete.id == athlete_id)
-            .first()
-        )
+            athlete = session.get(
+                Athlete,
+                athlete_id,
+            )
 
-        if athlete is None:
-            session.close()
-            return False
+            if athlete is None:
+                return None
 
-        session.delete(athlete)
-        session.commit()
-        session.close()
+            athlete.user_id = user_id
+            athlete.coach_user_id = coach_user_id
 
-        return True
+            session.commit()
+            session.refresh(athlete)
+            session.expunge(athlete)
+
+            return athlete
+
+    def delete(
+        self,
+        athlete_id: int,
+    ) -> bool:
+
+        with SessionLocal() as session:
+
+            athlete = session.get(
+                Athlete,
+                athlete_id,
+            )
+
+            if athlete is None:
+                return False
+
+            session.delete(athlete)
+            session.commit()
+
+            return True

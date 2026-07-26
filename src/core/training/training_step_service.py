@@ -34,11 +34,6 @@ class TrainingStepService:
         return result
 
     def save(self, session_id, steps):
-
-        self.repository.delete_by_session(
-            session_id
-        )
-
         objects = []
 
         for order, item in enumerate(
@@ -61,6 +56,7 @@ class TrainingStepService:
 
             objects.append(step)
 
-        self.repository.create_many(
+        self.repository.replace_by_session(
+            session_id,
             objects
         )

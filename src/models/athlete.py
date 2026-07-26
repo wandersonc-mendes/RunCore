@@ -2,8 +2,10 @@ from datetime import datetime
 
 from sqlalchemy import Boolean
 from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
+from sqlalchemy import UniqueConstraint
 
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -16,10 +18,31 @@ class Athlete(Base):
 
     __tablename__ = "athletes"
 
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            name="uq_athletes_user_id",
+        ),
+    )
+
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         autoincrement=True,
+    )
+
+    user_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=True,
+        index=True,
+    )
+
+    coach_user_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=True,
+        index=True,
     )
 
     name: Mapped[str] = mapped_column(
@@ -55,6 +78,16 @@ class Athlete(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.now,
+    )
+
+    user = relationship(
+        "User",
+        foreign_keys=[user_id],
+    )
+
+    coach = relationship(
+        "User",
+        foreign_keys=[coach_user_id],
     )
 
     trainings = relationship(

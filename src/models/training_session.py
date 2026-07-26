@@ -1,7 +1,9 @@
+from datetime import date
 from datetime import datetime
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -32,16 +34,20 @@ class TrainingSession(Base):
         nullable=False,
     )
 
-    week: Mapped[int] = mapped_column(Integer)
+    week: Mapped[int] = mapped_column(
+        Integer,
+    )
 
-    weekday: Mapped[int] = mapped_column(Integer)
+    weekday: Mapped[int] = mapped_column(
+        Integer,
+    )
 
     workout_name: Mapped[str] = mapped_column(
-        String(80)
+        String(80),
     )
 
     zone: Mapped[str] = mapped_column(
-        String(30)
+        String(30),
     )
 
     planned_distance: Mapped[float] = mapped_column(
@@ -91,6 +97,11 @@ class TrainingSession(Base):
 
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime,
+        nullable=True,
+    )
+
+    scheduled_date: Mapped[date | None] = mapped_column(
+        Date,
         nullable=True,
     )
 

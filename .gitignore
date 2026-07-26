@@ -1,17 +1,70 @@
+# ==========================
 # Ambiente virtual
+# ==========================
+
 .venv/
 
+# ==========================
 # Cache do Python
-__pycache__/
-*.pyc
+# ==========================
 
-# Configurações do VS Code
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ==========================
+# VS Code
+# ==========================
+
 .vscode/
 
+# ==========================
 # Arquivos do sistema
+# ==========================
+
 Thumbs.db
 .DS_Store
 
-# SQLite (quando criarmos)
+# ==========================
+# Banco SQLite
+# ==========================
+
 *.db
 *.sqlite
+*.sqlite3
+
+# ==========================
+# Arquivos de ambiente
+# ==========================
+
+.env
+.env.*
+!.env.example
+
+# ==========================
+# Logs
+# ==========================
+
+*.log
+
+# ==========================
+# Python
+# ==========================
+
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ==========================
+# Node.js / React
+# ==========================
+
+frontend/node_modules/
+frontend/dist/
+
+# ==========================
+# IDEs
+# ==========================
+
+.idea/

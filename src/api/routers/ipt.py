@@ -34,7 +34,7 @@ def list_assessments(athlete_id: int):
     if athlete_repository.get_by_id(athlete_id) is None:
         raise HTTPException(
             status_code=404,
-            detail="Atleta nÃ£o encontrado",
+            detail="Atleta n\u00e3o encontrado",
         )
 
     return repository.list_by_athlete(athlete_id)
@@ -53,7 +53,7 @@ def create_assessment(
     if athlete_repository.get_by_id(athlete_id) is None:
         raise HTTPException(
             status_code=404,
-            detail="Atleta nÃ£o encontrado",
+            detail="Atleta n\u00e3o encontrado",
         )
 
     repository.ensure_default_protocols()
@@ -63,7 +63,7 @@ def create_assessment(
     if protocol is None or not protocol.active:
         raise HTTPException(
             status_code=404,
-            detail="Protocolo IPT nÃ£o encontrado",
+            detail="Protocolo IPT n\u00e3o encontrado",
         )
 
     try:
@@ -99,5 +99,5 @@ def delete_assessment(assessment_id: int):
     if not repository.delete(assessment_id):
         raise HTTPException(
             status_code=404,
-            detail="AvaliaÃ§Ã£o IPT nÃ£o encontrada",
+            detail="Avalia\u00e7\u00e3o IPT n\u00e3o encontrada",
         )

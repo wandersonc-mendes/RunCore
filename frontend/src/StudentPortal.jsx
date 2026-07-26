@@ -306,6 +306,24 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
         <button onClick={() => setShowProfile(true)}>Meu perfil</button>
       </nav>
       <section className="student-content">
+        {view === "dashboard" && (
+          <section className="student-dashboard-hero">
+            <div>
+              <p className="eyebrow">VISÃO GERAL</p>
+              <h2>Olá, {user.name}.</h2>
+              <p>
+                Acompanhe sua semana de treino, suas atividades
+                e sua evolução em um único lugar.
+              </p>
+            </div>
+
+            <div className="student-dashboard-hero-brand">
+              <span>RUNCORE</span>
+              <strong>Seu treinamento em movimento</strong>
+            </div>
+          </section>
+        )}
+
         <nav className="student-nav" aria-label="Navegação da área do aluno">
           <button onClick={() => document.getElementById("planilha")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Planilha</button>
           <button onClick={() => setShowProfile(true)}>Perfil</button>
@@ -381,9 +399,62 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           </div>}
         </article>}
         {training ? <article id="planilha" className="student-plan">
-          <div className="student-plan-heading"><div><p className="eyebrow">SUA PLANILHA · {training.current_phase}</p><h3>{training.name}</h3><p>Meta: {training.target_distance.toFixed(3)} km</p></div><span>Semana {training.current_week} de {training.total_weeks}</span></div>
-          <p className="week-date">{training.start_date && currentWeekSessions[0]?.session_date ? `Semana de ${new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date(`${currentWeekSessions[0].session_date}T00:00:00`))}` : "Semana atual"}</p>
-          <div className="student-sessions">{currentWeekSessions.map((session) => <article key={session.id}><span>{weekdays[session.weekday] || "Treino"}</span><strong>{session.workout_name}</strong><small>{session.zone}</small><b>{session.repetitions ? `${session.repetitions} × ${session.planned_distance} m` : `${session.planned_distance.toFixed(1)} km`}</b><p>{session.steps?.[0]?.notes || "Confira os detalhes do treino com seu treinador."}</p><button className="btn-link" onClick={() => setSelectedSession(session)}>Ver estrutura e benefícios</button></article>)}</div>
+          <div className="student-plan-heading">
+            <div className="student-plan-title-block">
+              <div className="student-plan-kicker">
+                <p className="eyebrow">
+                  SUA PLANILHA · {training.current_phase}
+                </p>
+
+                <span>
+                  Semana {training.current_week} de {training.total_weeks}
+                </span>
+              </div>
+
+              <div className="student-plan-name-row">
+                <h3>{training.name}</h3>
+
+                <strong>
+                  Meta: {
+                    goals.find(
+                      (goal) =>
+                        goal.priority === "Principal"
+                        && goal.target_date
+                        && new Date(`${goal.target_date}T23:59:59`)
+                          >= new Date(),
+                    )?.name
+                    || training.objective
+                    || `${training.target_distance.toFixed(1)} km`
+                  }
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="student-sessions">
+            {currentWeekSessions.map((session) => (
+              <article key={session.id}>
+                <span>{weekdays[session.weekday] || "Treino"}</span>
+                <strong>{session.workout_name}</strong>
+                <small>{session.zone}</small>
+                <b>
+                  {session.repetitions
+                    ? `${session.repetitions} × ${session.planned_distance} m`
+                    : `${session.planned_distance.toFixed(1)} km`}
+                </b>
+                <p>
+                  {session.steps?.[0]?.notes
+                    || "Confira os detalhes do treino com seu treinador."}
+                </p>
+                <button
+                  className="btn-link"
+                  onClick={() => setSelectedSession(session)}
+                >
+                  Ver estrutura e benefícios
+                </button>
+              </article>
+            ))}
+          </div>
         </article> : <article id="planilha" className="student-empty"><h3>Planilha</h3><p>Seu plano e a execução dos treinos aparecerão aqui após o vínculo com seu treinador.</p></article>}
       </section>
       {selectedSession && <div className="student-session-modal-backdrop" role="presentation" onMouseDown={() => setSelectedSession(null)}><section className="student-session-modal" role="dialog" aria-modal="true" aria-labelledby="student-session-title" onMouseDown={(event) => event.stopPropagation()}><header><div><span>{weekdays[selectedSession.weekday] || "Treino"} · Semana {selectedSession.week}</span><h3 id="student-session-title">{selectedSession.workout_name}</h3><p>{selectedSession.zone} · {selectedSession.repetitions ? `${selectedSession.repetitions} × ${selectedSession.planned_distance} m` : `${selectedSession.planned_distance.toFixed(1)} km`}</p></div><button className="modal-close" onClick={() => setSelectedSession(null)} aria-label="Fechar">×</button></header><WorkoutChart steps={selectedSession.steps} /><section><h4>Como executar</h4><ol>{selectedSession.steps?.map((step) => <li className={`workout-step ${stepTone(step.type)}`} key={step.order}><strong>{step.type}</strong><span>{step.repetitions ? `${step.repetitions} × ${stepDistance(step)}` : stepDistance(step)} · {step.pace_min}–{step.pace_max}/km{step.recovery ? ` · recuperação: ${step.recovery}` : ""}</span><small>{step.notes}</small></li>)}</ol></section><section className="student-adaptations"><h4>Benefícios e adaptações</h4><ul>{selectedSession.adaptations?.map((adaptation) => <li key={adaptation}>{adaptation}</li>)}</ul></section><footer><button className="btn-ghost" onClick={() => setSelectedSession(null)}>Fechar</button></footer></section></div>}

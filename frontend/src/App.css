@@ -1433,3 +1433,121 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* STUDENT DASHBOARD HERO AND PLAN HEADER */
+.student-dashboard-hero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 28px 30px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #198d71 0%, #16836d 55%, #14735f 100%);
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(20, 115, 95, 0.18);
+}
+
+.student-dashboard-hero .eyebrow {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.student-dashboard-hero h2 {
+  margin: 5px 0 7px;
+  color: #fff;
+}
+
+.student-dashboard-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.student-dashboard-hero-brand {
+  display: grid;
+  align-content: center;
+  min-width: 245px;
+  padding-left: 28px;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.student-dashboard-hero-brand span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.student-dashboard-hero-brand strong {
+  margin-top: 6px;
+  color: #fff;
+  font-size: 15px;
+}
+
+.student-plan {
+  display: grid;
+  gap: 18px;
+}
+
+.student-plan-heading {
+  display: block;
+}
+
+.student-plan-title-block {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.student-plan-kicker,
+.student-plan-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.student-plan-kicker .eyebrow,
+.student-plan-name-row h3 {
+  margin: 0;
+}
+
+.student-plan-kicker > span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.student-plan-name-row > strong {
+  color: var(--text);
+  font-size: 14px;
+  text-align: right;
+}
+
+.student-plan .week-date {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .student-dashboard-hero {
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .student-dashboard-hero-brand {
+    min-width: 0;
+    padding-top: 18px;
+    padding-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.28);
+    border-left: 0;
+  }
+
+  .student-plan-kicker,
+  .student-plan-name-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .student-plan-name-row > strong {
+    text-align: left;
+  }
+}

@@ -1,0 +1,132 @@
+.settings-page {
+  display: grid;
+  gap: 24px;
+}
+
+.settings-heading,
+.settings-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.settings-heading h2,
+.settings-section-title h3 {
+  margin: 4px 0;
+}
+
+.settings-role {
+  padding: 8px 12px;
+  border: 1px solid var(--shell-border);
+  border-radius: 999px;
+  background: var(--shell-surface);
+  color: var(--shell-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.settings-card {
+  padding: 24px;
+  border: 1px solid var(--shell-border);
+  border-radius: 16px;
+  background: var(--shell-surface);
+  box-shadow: var(--shell-shadow);
+}
+
+.settings-section-title {
+  margin-bottom: 22px;
+}
+
+.settings-section-title p {
+  margin: 4px 0 0;
+  color: var(--shell-muted);
+}
+
+.settings-section-title > span {
+  color: var(--shell-muted);
+  font-size: 13px;
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.theme-option {
+  display: grid;
+  grid-template-columns: 48px 1fr 20px;
+  align-items: center;
+  gap: 13px;
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface-soft);
+  color: var(--shell-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.theme-option:hover {
+  transform: translateY(-2px);
+  border-color: var(--shell-accent);
+}
+
+.theme-option.active {
+  border-color: var(--shell-accent);
+  box-shadow: 0 0 0 3px var(--shell-accent-soft);
+}
+
+.theme-preview {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--shell-border);
+  border-radius: 12px;
+  background: var(--shell-surface);
+  font-size: 23px;
+}
+
+.theme-option-copy {
+  display: grid;
+  gap: 5px;
+}
+
+.theme-option-copy small {
+  color: var(--shell-muted);
+  line-height: 1.4;
+}
+
+.theme-radio {
+  width: 17px;
+  height: 17px;
+  border: 2px solid var(--shell-border);
+  border-radius: 50%;
+}
+
+.theme-option.active .theme-radio {
+  border: 5px solid var(--shell-accent);
+}
+
+@media (max-width: 760px) {
+  .settings-heading,
+  .settings-section-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .theme-options {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-card {
+    padding: 18px;
+  }
+}

@@ -181,3 +181,50 @@
   margin: 0;
   padding: 0;
 }
+
+
+/* DARK THEME */
+:root[data-theme="dark"] {
+  --shell-bg: #0d100f;
+  --shell-sidebar: #090b0a;
+  --shell-sidebar-border: rgba(255,255,255,.08);
+  --shell-surface: #171b19;
+  --shell-surface-soft: #202522;
+  --shell-border: #303732;
+  --shell-text: #edf3ef;
+  --shell-muted: #9ba8a1;
+  --shell-accent: #31a879;
+  --shell-accent-soft: rgba(49,168,121,.2);
+  --shell-danger: #f06a6a;
+  --shell-shadow: 0 14px 36px rgba(0,0,0,.34);
+}
+
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] #root {
+  background: var(--shell-bg);
+  color: var(--shell-text);
+}
+
+:root[data-theme="dark"] .app-topbar {
+  background: rgba(23,27,25,.92);
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  border-color: var(--shell-border);
+  background: var(--shell-surface-soft);
+  color: var(--shell-text);
+}
+
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .goals-card,
+:root[data-theme="dark"] .calculator-card,
+:root[data-theme="dark"] .connection-card,
+:root[data-theme="dark"] .student-plan,
+:root[data-theme="dark"] .activity-card {
+  border-color: var(--shell-border);
+  background: var(--shell-surface);
+  color: var(--shell-text);
+}

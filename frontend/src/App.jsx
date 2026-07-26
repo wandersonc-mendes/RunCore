@@ -24,6 +24,7 @@ import AthleteProfileView from "./AthleteProfileView";
 import IptAssessmentView from "./IptAssessmentView";
 import AppShell from "./layout/AppShell";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import SettingsPage from "./pages/SettingsPage";
 import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
@@ -475,7 +476,7 @@ export default function App() {
           <Route path={studentPaths.profile} element={<StudentPortal user={currentUser} onLogout={studentLogout} view="profile" />} />
           <Route path={studentPaths.evolution} element={<PlaceholderPage eyebrow="EVOLUÇÃO" title="Sua evolução" description="Gráficos e indicadores de evolução serão organizados nesta tela." />} />
           <Route path={studentPaths.calendar} element={<PlaceholderPage eyebrow="AGENDA" title="Agenda do atleta" description="Treinos, avaliações e provas aparecerão nesta tela." />} />
-          <Route path={studentPaths.settings} element={<PlaceholderPage eyebrow="CONFIGURAÇÕES" title="Configurações" description="Preferências de conta e aparência serão disponibilizadas nesta tela." />} />
+          <Route path={studentPaths.settings} element={<SettingsPage user={currentUser} />} />
         </Route>
         <Route path="*" element={<Navigate to={studentPaths.dashboard} replace />} />
       </Routes>
@@ -513,12 +514,19 @@ export default function App() {
       "Relatórios",
       "Indicadores de evolução, volume e aderência serão exibidos nesta tela.",
     ],
-    [coachPaths.settings]: [
-      "CONFIGURAÇÕES",
-      "Configurações",
-      "Preferências da conta, aparência e notificações serão configuradas nesta tela.",
-    ],
   };
+
+
+  if (
+    !selectedAthlete
+    && location.pathname === coachPaths.settings
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <SettingsPage user={currentUser} />
+      </AppShell>
+    );
+  }
 
   if (!selectedAthlete && coachPlaceholders[location.pathname]) {
     const [eyebrow, title, description] =

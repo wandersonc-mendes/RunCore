@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { coachPaths, studentPaths } from "../router/paths";
 
 function initials(name = "") {
   return name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "RC";
@@ -6,6 +8,7 @@ function initials(name = "") {
 
 export default function Topbar({ user, title, onMenu, onLogout }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="app-topbar">
@@ -36,7 +39,7 @@ export default function Topbar({ user, title, onMenu, onLogout }) {
             <div className="app-user-dropdown">
               <button type="button">Meu perfil</button>
               <button type="button">Minha conta</button>
-              <button type="button">Aparência</button>
+              <button type="button" onClick={() => { setUserMenuOpen(false); navigate(user?.role === "student" ? studentPaths.settings : coachPaths.settings); }}>Aparência</button>
               <button type="button">Alterar senha</button>
               <hr />
               <button type="button" className="danger" onClick={onLogout}>Sair</button>

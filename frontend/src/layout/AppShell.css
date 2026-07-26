@@ -1,0 +1,57 @@
+:root {
+  --shell-bg: #f4f6f5;
+  --shell-sidebar: #111513;
+  --shell-sidebar-border: rgba(255,255,255,.08);
+  --shell-surface: #fff;
+  --shell-surface-soft: #f7f9f8;
+  --shell-border: #dde4e0;
+  --shell-text: #16201b;
+  --shell-muted: #66736c;
+  --shell-accent: #18855f;
+  --shell-danger: #c94545;
+  --shell-shadow: 0 12px 30px rgba(16,35,27,.08);
+}
+.app-shell { min-height:100vh; background:var(--shell-bg); color:var(--shell-text); }
+.app-sidebar { position:fixed; inset:0 auto 0 0; z-index:40; width:248px; overflow-y:auto; border-right:1px solid var(--shell-sidebar-border); background:radial-gradient(circle at 20% 10%,rgba(24,133,95,.18),transparent 35%),var(--shell-sidebar); }
+.app-sidebar-brand { display:grid; place-items:center; min-height:112px; padding:18px; border-bottom:1px solid var(--shell-sidebar-border); }
+.app-sidebar-brand img { width:150px; max-width:100%; }
+.app-sidebar-nav { display:grid; gap:7px; padding:18px 14px; }
+.app-sidebar-link { display:flex; align-items:center; gap:13px; min-height:46px; padding:0 14px; border-radius:9px; color:#c5cec9; text-decoration:none; transition:.16s ease; }
+.app-sidebar-link:hover { color:#fff; background:rgba(255,255,255,.06); transform:translateX(2px); }
+.app-sidebar-link.active { color:#fff; background:linear-gradient(90deg,rgba(24,133,95,.88),rgba(31,151,107,.7)); box-shadow:0 10px 24px rgba(11,91,62,.22); }
+.app-sidebar-icon { display:grid; place-items:center; width:22px; font-size:19px; }
+.app-shell-main { min-height:100vh; margin-left:248px; }
+.app-topbar { position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; min-height:82px; padding:14px 30px; border-bottom:1px solid var(--shell-border); background:rgba(255,255,255,.92); backdrop-filter:blur(14px); }
+.app-topbar-heading,.app-topbar-actions,.app-user-trigger { display:flex; align-items:center; }
+.app-topbar-heading { gap:13px; }
+.app-topbar-heading h1 { margin:0; font-size:22px; }
+.app-topbar-heading p { margin:3px 0 0; color:var(--shell-muted); font-size:13px; }
+.app-topbar-actions { gap:9px; }
+.app-icon-button,.app-menu-button,.app-user-trigger { border:1px solid var(--shell-border); background:var(--shell-surface); color:var(--shell-text); cursor:pointer; }
+.app-icon-button,.app-menu-button { position:relative; display:grid; place-items:center; width:42px; height:42px; border-radius:10px; font-size:18px; }
+.app-menu-button { display:none; }
+.notification-dot { position:absolute; top:8px; right:8px; width:7px; height:7px; border-radius:50%; background:#ff6a22; box-shadow:0 0 0 3px var(--shell-surface); }
+.app-user-menu { position:relative; }
+.app-user-trigger { gap:9px; min-height:44px; padding:4px 10px 4px 5px; border-radius:12px; }
+.app-user-avatar { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; color:#fff; background:linear-gradient(135deg,#176f51,#ff6a22); font-size:12px; font-weight:800; }
+.app-user-name { max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.app-user-dropdown { position:absolute; top:calc(100% + 9px); right:0; display:grid; width:210px; padding:8px; border:1px solid var(--shell-border); border-radius:13px; background:var(--shell-surface); box-shadow:var(--shell-shadow); }
+.app-user-dropdown button { padding:10px 11px; border:0; border-radius:8px; background:transparent; color:var(--shell-text); text-align:left; cursor:pointer; }
+.app-user-dropdown button:hover { background:var(--shell-surface-soft); }
+.app-user-dropdown button.danger { color:var(--shell-danger); }
+.app-user-dropdown hr { width:100%; border:0; border-top:1px solid var(--shell-border); }
+.app-shell-content { padding:28px 30px 50px; }
+.app-shell-backdrop { display:none; }
+@media (max-width:900px) {
+  .app-sidebar { transform:translateX(-102%); transition:transform .18s ease; }
+  .app-sidebar.is-open { transform:translateX(0); }
+  .app-shell-main { margin-left:0; }
+  .app-menu-button { display:grid; }
+  .app-shell-backdrop { position:fixed; inset:0; z-index:35; display:block; border:0; background:rgba(3,10,7,.62); }
+}
+@media (max-width:620px) {
+  .app-topbar { min-height:70px; padding:10px 14px; }
+  .app-topbar-heading h1 { font-size:18px; }
+  .app-topbar-heading p,.app-user-name { display:none; }
+  .app-shell-content { padding:18px 14px 36px; }
+}

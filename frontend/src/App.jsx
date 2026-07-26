@@ -29,6 +29,7 @@ import PlanningPage from "./pages/PlanningPage";
 import WorkoutsPage from "./pages/WorkoutsPage";
 import AgendaPage from "./pages/AgendaPage";
 import EvaluationsPage from "./pages/EvaluationsPage";
+import ReportsPage from "./pages/ReportsPage";
 import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
@@ -493,17 +494,28 @@ export default function App() {
   };
 
   const coachPlaceholders = {
-    [coachPaths.reports]: [
-      "RELATÓRIOS",
-      "Relatórios",
-      "Indicadores de evolução, volume e aderência serão exibidos nesta tela.",
-    ],
   };
 
 
 
 
 
+
+
+  if (
+    !selectedAthlete
+    && location.pathname === coachPaths.reports
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <ReportsPage
+          athletes={athletes}
+          onOpenPlanning={openTraining}
+          onOpenEvaluations={openEvaluations}
+        />
+      </AppShell>
+    );
+  }
 
   if (
     !selectedAthlete

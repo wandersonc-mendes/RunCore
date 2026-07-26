@@ -47,6 +47,12 @@ function formatTestTimeInput(value) {
     .join(":");
 }
 
+function formatPaceInput(value) {
+  const digits = value.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
 function formatDate(value) {
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
@@ -120,12 +126,12 @@ function SessionAdjustment({ value, onChange, onSave, saving }) {
         <label>Distância<div className="distance-input"><input type="number" step="0.1" min="0" value={step.distance} onChange={(event) => changeStep(index, "distance", event.target.value)} /><select value={step.distance_unit || (step.repetitions ? "m" : "km")} onChange={(event) => changeStep(index, "distance_unit", event.target.value)}><option value="km">km</option><option value="m">m</option></select></div></label>
         <label>Repetições<input type="number" min="0" value={step.repetitions} onChange={(event) => changeStep(index, "repetitions", event.target.value)} /></label>
         <label>Recuperação<input value={step.recovery || ""} placeholder="Ex.: 200 m trote" onChange={(event) => changeStep(index, "recovery", event.target.value)} /></label>
-        <label>Ritmo mínimo<input value={step.pace_min || ""} placeholder="05:20" onChange={(event) => changeStep(index, "pace_min", event.target.value)} /></label>
-        <label>Ritmo máximo<input value={step.pace_max || ""} placeholder="05:00" onChange={(event) => changeStep(index, "pace_max", event.target.value)} /></label>
+        <label>Ritmo mínimo<input inputMode="numeric" maxLength={5} value={step.pace_min || ""} placeholder="05:20" onChange={(event) => changeStep(index, "pace_min", formatPaceInput(event.target.value))} /></label>
+        <label>Ritmo máximo<input inputMode="numeric" maxLength={5} value={step.pace_max || ""} placeholder="05:00" onChange={(event) => changeStep(index, "pace_max", formatPaceInput(event.target.value))} /></label>
       </div>
       <label>Instrução da etapa<textarea value={step.notes || ""} onChange={(event) => changeStep(index, "notes", event.target.value)} /></label>
     </section>)}
-    <button className="btn-primary" disabled={saving || value.steps.length === 0}>{saving ? "Salvando..." : "Salvar ajuste semanal"}</button>
+    <button className="btn-primary" disabled={saving || value.steps.length === 0}>{saving ? "Salvando..." : "Salvar treino"}</button>
   </form>;
 }
 

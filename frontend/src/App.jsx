@@ -20,6 +20,7 @@ import {
 import LoginScreen from "./LoginScreen";
 import StudentPortal from "./StudentPortal";
 import AthleteProfileView from "./AthleteProfileView";
+import IptAssessmentView from "./IptAssessmentView";
 import "./App.css";
 
 const emptyAthlete = { name: "", phone: "", email: "", goal: "", notes: "" };
@@ -253,6 +254,13 @@ export default function App() {
     setSelectedView("profile");
   }
 
+  function openIpt(athlete) {
+    setSelectedAthlete(athlete);
+    setSelectedView("ipt");
+    setSelectedWorkout(null);
+    setError(null);
+  }
+
   async function openTraining(athlete) {
     setSelectedAthlete(athlete);
     setSelectedView("training");
@@ -338,6 +346,17 @@ export default function App() {
   if (currentUser.role === "student") return <StudentPortal user={currentUser} onLogout={() => setCurrentUser(null)} />;
   if (selectedAthlete && selectedView === "profile") return <AthleteProfileView athlete={selectedAthlete} onClose={() => setSelectedAthlete(null)} onRemove={() => handleDeleteAthlete(selectedAthlete.id)} />;
 
+  if (selectedAthlete && selectedView === "ipt") {
+    return (
+      <IptAssessmentView
+        athlete={selectedAthlete}
+        onBack={() => setSelectedAthlete(null)}
+        onEvaluations={() => openEvaluations(selectedAthlete)}
+        onTraining={() => openTraining(selectedAthlete)}
+      />
+    );
+  }
+
   if (selectedAthlete && selectedView === "evaluations") {
     return (
       <div className="page">
@@ -349,7 +368,7 @@ export default function App() {
               <p>Aluno: {selectedAthlete.name}</p>
             </div>
           </div>
-          <div className="header-actions"><button className="btn-ghost" onClick={() => openTraining(selectedAthlete)}>Planejamento</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
+          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT</button><button className="btn-ghost" onClick={() => openTraining(selectedAthlete)}>Planejamento</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
         </header>
 
         <main className="content">
@@ -401,7 +420,7 @@ export default function App() {
       <div className="page">
         <header className="topbar">
           <div className="brand"><BrandLogo /><div><h1>Planejamento de treino</h1><p>Aluno: {selectedAthlete.name}</p></div></div>
-          <div className="header-actions"><button className="btn-ghost" onClick={() => openEvaluations(selectedAthlete)}>Avaliações</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
+          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT</button><button className="btn-ghost" onClick={() => openEvaluations(selectedAthlete)}>Avaliações</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
         </header>
         <main className="content">
           {error && <div className="alert">{error}</div>}
@@ -1010,6 +1029,16 @@ export default function App() {
                   </td>
 
                   <td className="table-actions">
+                    <button
+                      type="button"
+                      className="btn-link"
+                      onClick={() =>
+                        openIpt(athlete)
+                      }
+                    >
+                      IPT
+                    </button>
+
                     <button
                       type="button"
                       className="btn-link"

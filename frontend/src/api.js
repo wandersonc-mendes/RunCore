@@ -367,3 +367,35 @@ export function updateTrainingSession(
     },
   );
 }
+
+export function listIptProtocols() {
+  return request("/api/ipt/protocols");
+}
+
+export function listIptAssessments(athleteId) {
+  return request(
+    `/api/athletes/${athleteId}/ipt-assessments`,
+  );
+}
+
+export function createIptAssessment(
+  athleteId,
+  data,
+) {
+  return request(
+    `/api/athletes/${athleteId}/ipt-assessments`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export function deleteIptAssessment(assessmentId) {
+  return request(
+    `/api/ipt-assessments/${assessmentId}`,
+    {
+      method: "DELETE",
+    },
+  );
+}

@@ -1,0 +1,181 @@
+.evaluations-page {
+  display: grid;
+  gap: 22px;
+}
+
+.evaluations-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.evaluations-heading h2 {
+  margin: 4px 0;
+}
+
+.evaluations-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(105px, 1fr));
+  gap: 10px;
+}
+
+.evaluations-summary article {
+  display: grid;
+  padding: 14px 16px;
+  border: 1px solid var(--shell-border);
+  border-radius: 13px;
+  background: var(--shell-surface);
+  text-align: center;
+}
+
+.evaluations-summary strong {
+  color: var(--shell-accent);
+  font-size: 24px;
+}
+
+.evaluations-summary span,
+.evaluations-toolbar > span,
+.evaluation-data span {
+  color: var(--shell-muted);
+  font-size: 12px;
+}
+
+.evaluations-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+}
+
+.evaluations-toolbar label {
+  display: grid;
+  flex: 1;
+  gap: 7px;
+  color: var(--shell-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.evaluations-toolbar input {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--shell-border);
+  border-radius: 9px;
+  outline: none;
+  background: var(--shell-surface-soft);
+  color: var(--shell-text);
+  font: inherit;
+}
+
+.evaluations-toolbar input:focus {
+  border-color: var(--shell-accent);
+  box-shadow: 0 0 0 3px var(--shell-accent-soft);
+}
+
+.evaluations-list {
+  display: grid;
+  gap: 11px;
+}
+
+.evaluation-athlete-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 19px;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+}
+
+.evaluation-athlete-main,
+.evaluation-data {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.evaluation-avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--shell-accent),
+    #ff6a22
+  );
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.evaluation-athlete-main h3 {
+  margin: 0;
+}
+
+.evaluation-athlete-main p {
+  margin: 4px 0 0;
+  color: var(--shell-muted);
+  font-size: 13px;
+}
+
+.evaluation-data > div {
+  display: grid;
+  min-width: 82px;
+  gap: 4px;
+}
+
+.evaluation-data strong {
+  color: var(--shell-text);
+  font-size: 14px;
+}
+
+.evaluations-empty {
+  padding: 32px;
+  border: 1px dashed var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+  text-align: center;
+}
+
+.evaluations-empty h3,
+.evaluations-empty p {
+  margin: 0;
+}
+
+.evaluations-empty p {
+  margin-top: 7px;
+  color: var(--shell-muted);
+}
+
+@media (max-width: 900px) {
+  .evaluation-athlete-row,
+  .evaluation-data {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .evaluation-data {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .evaluations-heading,
+  .evaluations-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .evaluations-summary {
+    width: 100%;
+  }
+}

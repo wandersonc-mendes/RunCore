@@ -28,6 +28,7 @@ import SettingsPage from "./pages/SettingsPage";
 import PlanningPage from "./pages/PlanningPage";
 import WorkoutsPage from "./pages/WorkoutsPage";
 import AgendaPage from "./pages/AgendaPage";
+import EvaluationsPage from "./pages/EvaluationsPage";
 import { coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
@@ -492,11 +493,6 @@ export default function App() {
   };
 
   const coachPlaceholders = {
-    [coachPaths.evaluations]: [
-      "AVALIAÇÕES",
-      "Avaliações",
-      "A visão geral das avaliações dos atletas será disponibilizada nesta tela.",
-    ],
     [coachPaths.reports]: [
       "RELATÓRIOS",
       "Relatórios",
@@ -507,6 +503,21 @@ export default function App() {
 
 
 
+
+
+  if (
+    !selectedAthlete
+    && location.pathname === coachPaths.evaluations
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <EvaluationsPage
+          athletes={athletes}
+          onOpenEvaluations={openEvaluations}
+        />
+      </AppShell>
+    );
+  }
 
   if (
     !selectedAthlete

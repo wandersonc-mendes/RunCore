@@ -154,3 +154,30 @@
 .coach-routed-page[data-view="athletes"] #atletas {
   margin-top: 0;
 }
+
+
+/* ROUTED INTERNAL ATHLETE PAGES */
+.routed-profile-page,
+.routed-ipt-page,
+.routed-evaluations-page,
+.routed-training-page {
+  min-height: auto;
+  background: transparent;
+}
+
+.routed-evaluations-page > .topbar,
+.routed-training-page > .topbar {
+  position: static;
+  margin-bottom: 22px;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+}
+
+.routed-evaluations-page > .content,
+.routed-training-page > .content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}

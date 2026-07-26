@@ -215,6 +215,88 @@ export default function App() {
     return () => { window.clearInterval(interval); window.removeEventListener("focus", refreshInvitations); };
   }, [currentUser]);
 
+
+  useEffect(() => {
+    if (
+      currentUser?.role !== "coach"
+      || athletes.length === 0
+    ) {
+      return;
+    }
+
+    const routeMatch = location.pathname.match(
+      /^\/treinador\/atletas\/(\d+)(?:\/(planejamento|avaliacoes|ipt))?$/
+    );
+
+    if (!routeMatch) {
+      if (
+        location.pathname === coachPaths.athletes
+        || location.pathname === coachPaths.dashboard
+      ) {
+        setSelectedAthlete(null);
+      }
+      return;
+    }
+
+    const athleteId = Number(routeMatch[1]);
+    const routeSection = routeMatch[2] || "profile";
+    const viewSection = routeSection === "planejamento"
+      ? "training"
+      : routeSection === "avaliacoes"
+        ? "evaluations"
+        : routeSection;
+
+    const athlete = athletes.find(
+      (item) => item.id === athleteId,
+    );
+
+    if (!athlete) {
+      navigate(coachPaths.athletes, { replace: true });
+      return;
+    }
+
+    if (
+      selectedAthlete?.id === athlete.id
+      && selectedView === viewSection
+    ) {
+      return;
+    }
+
+    setSelectedAthlete(athlete);
+    setSelectedView(viewSection);
+    setSelectedWorkout(null);
+    setError(null);
+
+    if (viewSection === "evaluations") {
+      setEvaluationForm(emptyEvaluation);
+      loadEvaluations(athlete.id);
+    }
+
+    if (viewSection === "training") {
+      setWorkoutEdit(null);
+      setTrainingForm({
+        name: "Planejamento Principal",
+        objective: athlete.goal || "Preparação para prova",
+        target_distance: "",
+        start_date: new Date().toISOString().slice(0, 10),
+        target_date: "",
+        total_weeks: "8",
+      });
+      setLoading(true);
+      getTraining(athlete.id)
+        .then(setTraining)
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
+    }
+  }, [
+    athletes,
+    currentUser,
+    location.pathname,
+    navigate,
+    selectedAthlete,
+    selectedView,
+  ]);
+
   async function loadInvitations() {
     try { setInvitations(await listInvitations()); } catch (err) { setError(err.message); }
   }
@@ -267,12 +349,18 @@ export default function App() {
     setSelectedView("evaluations");
     setEvaluationForm(emptyEvaluation);
     setSelectedWorkout(null);
+    navigate(
+      coachPaths.athleteEvaluations(athlete.id),
+    );
     loadEvaluations(athlete.id);
   }
 
   function openProfile(athlete) {
     setSelectedAthlete(athlete);
     setSelectedView("profile");
+    navigate(
+      coachPaths.athleteProfile(athlete.id),
+    );
   }
 
   function openIpt(athlete) {
@@ -280,11 +368,17 @@ export default function App() {
     setSelectedView("ipt");
     setSelectedWorkout(null);
     setError(null);
+    navigate(
+      coachPaths.athleteIpt(athlete.id),
+    );
   }
 
   async function openTraining(athlete) {
     setSelectedAthlete(athlete);
     setSelectedView("training");
+    navigate(
+      coachPaths.athletePlanning(athlete.id),
+    );
     setSelectedWorkout(null);
     setWorkoutEdit(null);
     setTrainingForm({ name: "Planejamento Principal", objective: athlete.goal || "Preparação para prova", target_distance: "", start_date: new Date().toISOString().slice(0, 10), target_date: "", total_weeks: "8" });
@@ -441,22 +535,51 @@ export default function App() {
     );
   }
 
-  if (selectedAthlete && selectedView === "profile") return <AthleteProfileView athlete={selectedAthlete} onClose={() => setSelectedAthlete(null)} onRemove={() => handleDeleteAthlete(selectedAthlete.id)} />;
+  if (selectedAthlete && selectedView === "profile") {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <div className="page routed-profile-page">
+          <AthleteProfileView
+            athlete={selectedAthlete}
+            onClose={() => {
+              setSelectedAthlete(null);
+              navigate(coachPaths.athletes);
+            }}
+            onRemove={() =>
+              handleDeleteAthlete(selectedAthlete.id)
+            }
+          />
+        </div>
+      </AppShell>
+    );
+  }
 
   if (selectedAthlete && selectedView === "ipt") {
     return (
-      <IptAssessmentView
-        athlete={selectedAthlete}
-        onBack={() => setSelectedAthlete(null)}
-        onEvaluations={() => openEvaluations(selectedAthlete)}
-        onTraining={() => openTraining(selectedAthlete)}
-      />
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <div className="page routed-ipt-page">
+          <IptAssessmentView
+            athlete={selectedAthlete}
+            onBack={() => {
+              setSelectedAthlete(null);
+              navigate(coachPaths.athletes);
+            }}
+            onEvaluations={() =>
+              openEvaluations(selectedAthlete)
+            }
+            onTraining={() =>
+              openTraining(selectedAthlete)
+            }
+          />
+        </div>
+      </AppShell>
     );
   }
 
   if (selectedAthlete && selectedView === "evaluations") {
     return (
-      <div className="page">
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <div className="page routed-evaluations-page">
         <header className="topbar">
           <div className="brand">
             <BrandLogo />
@@ -503,7 +626,8 @@ export default function App() {
             </table>
           )}
         </main>
-      </div>
+        </div>
+      </AppShell>
     );
   }
 
@@ -514,7 +638,8 @@ export default function App() {
     }, {});
 
     return (
-      <div className="page">
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <div className="page routed-training-page">
         <header className="topbar">
           <div className="brand"><BrandLogo /><div><h1>Planejamento de treino</h1><p>Aluno: {selectedAthlete.name}</p></div></div>
           <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT</button><button className="btn-ghost" onClick={() => openEvaluations(selectedAthlete)}>Avaliações</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
@@ -570,7 +695,8 @@ export default function App() {
             </section>
           </div>
         )}
-      </div>
+        </div>
+      </AppShell>
     );
   }
 

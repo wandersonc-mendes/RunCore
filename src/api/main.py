@@ -15,6 +15,7 @@ from api.routers import auth
 from api.routers import evaluations
 from api.routers import goals
 from api.routers import integrations
+from api.routers import ipt
 from api.routers import invitations
 from api.routers import profiles
 from api.routers import student
@@ -97,6 +98,14 @@ app.include_router(
     ],
 )
 
+
+app.include_router(
+    ipt.router,
+    prefix="/api",
+    dependencies=[
+        Depends(require_coach),
+    ],
+)
 
 @app.get("/health")
 def health():

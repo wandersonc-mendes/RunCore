@@ -314,3 +314,46 @@ class ActivityFeedbackPayload(BaseModel):
         default="",
         max_length=1500,
     )
+
+class IptProtocolOut(BaseModel):
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    code: str
+    name: str
+    protocol_type: str
+    short_value: float
+    long_value: float
+    input_mode: str
+    active: bool
+
+
+class IptAssessmentCreate(BaseModel):
+
+    protocol_id: int = Field(gt=0)
+    short_result: float = Field(gt=0)
+    long_result: float = Field(gt=0)
+    notes: str = Field(
+        default="",
+        max_length=1000,
+    )
+
+
+class IptAssessmentOut(BaseModel):
+
+    id: int
+    athlete_id: int
+    protocol_id: int
+    protocol_code: str
+    protocol_name: str
+    short_result: float
+    long_result: float
+    short_speed: float
+    long_speed: float
+    ipt_percentage: float
+    profile: str
+    interpretation: str
+    emphasis: str
+    notes: str
+    created_at: datetime

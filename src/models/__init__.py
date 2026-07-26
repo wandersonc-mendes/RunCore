@@ -8,6 +8,8 @@ from models.external_integration import ExternalIntegration
 from models.goal import Goal
 from models.imported_activity import ImportedActivity
 from models.invitation import Invitation
+from models.ipt_assessment import IptAssessment
+from models.ipt_protocol import IptProtocol
 from models.training import Training
 from models.training_session import TrainingSession
 from models.training_step import TrainingStep

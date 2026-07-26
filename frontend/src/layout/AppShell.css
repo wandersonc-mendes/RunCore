@@ -409,3 +409,77 @@
     justify-content: space-between;
   }
 }
+
+
+/* STUDENT PLAN FULL WIDTH FIX */
+.routed-student-page[data-view="dashboard"] .student-plan,
+.routed-student-page[data-view="training"] .student-plan {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  gap: 18px;
+}
+
+.routed-student-page .student-plan-heading {
+  display: block;
+  width: 100%;
+}
+
+.routed-student-page .student-plan-title-block {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+}
+
+.routed-student-page .student-plan-kicker,
+.routed-student-page .student-plan-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
+}
+
+.routed-student-page .student-plan-kicker > *,
+.routed-student-page .student-plan-name-row > * {
+  margin: 0;
+}
+
+.routed-student-page .student-plan-name-row h3 {
+  font-size: 23px;
+}
+
+.routed-student-page .student-plan-name-row > strong {
+  max-width: 46%;
+  text-align: right;
+}
+
+.routed-student-page .student-sessions {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(150px, 1fr));
+  width: 100%;
+  gap: 12px;
+}
+
+.routed-student-page .student-sessions > article {
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .routed-student-page .student-plan-kicker,
+  .routed-student-page .student-plan-name-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .routed-student-page .student-plan-name-row > strong {
+    max-width: none;
+    text-align: left;
+  }
+
+  .routed-student-page .student-sessions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -25,7 +25,9 @@ class TrainingStepService:
             result.append({
                 "type": item.type,
                 "distance": item.distance,
+                "distance_unit": item.distance_unit,
                 "repetitions": item.repetitions,
+                "recovery": item.recovery,
                 "pace_min": item.pace_min,
                 "pace_max": item.pace_max,
                 "notes": item.notes,
@@ -47,9 +49,13 @@ class TrainingStepService:
             step.order = order
             step.type = item["type"]
             step.distance = item["distance"]
+            step.distance_unit = item.get(
+                "distance_unit",
+                "m" if item.get("repetitions") else "km",
+            )
             step.duration = 0
             step.repetitions = item["repetitions"]
-            step.recovery = ""
+            step.recovery = item.get("recovery", "")
             step.pace_min = item["pace_min"]
             step.pace_max = item["pace_max"]
             step.notes = item["notes"]

@@ -83,6 +83,27 @@ class TrainingSessionRepository:
 
         return session_data
 
+    def delete_by_training(self, training_id):
+        session = SessionLocal()
+
+        try:
+            items = session.scalars(
+                select(TrainingSession)
+                .where(
+                    TrainingSession.training_id == training_id
+                )
+            ).all()
+
+            for item in items:
+                session.delete(item)
+
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def delete(self, session_id):
 
         session = SessionLocal()

@@ -150,8 +150,24 @@ def serialize_step(step):
     }
 
 
-def serialized_steps_for_session(session):
-    steps = [serialize_step(step) for step in step_repository.list_by_session(session.id)]
+def serialized_steps_for_session(
+    session,
+    steps_by_session=None,
+):
+    if steps_by_session is None:
+        source_steps = step_repository.list_by_session(
+            session.id
+        )
+    else:
+        source_steps = steps_by_session.get(
+            session.id,
+            [],
+        )
+
+    steps = [
+        serialize_step(step)
+        for step in source_steps
+    ]
     has_recovery_step = any("recupera" in item["type"].lower() or "descanso" in item["type"].lower() for item in steps)
     interval_step = next((item for item in steps if item["repetitions"] and item.get("recovery")), None)
     if interval_step and not has_recovery_step:
@@ -179,6 +195,9 @@ def serialized_steps_for_session(session):
 
 def serialize_training(training):
     sessions = session_repository.list_by_training(training.id)
+    steps_by_session = step_repository.list_by_sessions(
+        [session.id for session in sessions]
+    )
     total_weeks = max((item.week for item in sessions), default=1)
     current_week = 1
     if training.start_date:
@@ -211,7 +230,7 @@ def serialize_training(training):
                 "session_date": session.scheduled_date or ((training.start_date + timedelta(days=((session.week - 1) * 7) + session.weekday)) if training.start_date else None),
                 "phase": phase_for_week(session.week, total_weeks),
                 "adaptations": adaptations_for(session.zone),
-                "steps": serialized_steps_for_session(session),
+                "steps": serialized_steps_for_session(session, steps_by_session),
             }
             for session in sessions
         ],

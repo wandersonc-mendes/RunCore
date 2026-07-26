@@ -95,11 +95,9 @@ class TrainingPersistenceService:
             else None
         )
 
-        for session in sessions:
-
-            self.session_repository.delete(
-                session.id
-            )
+        self.session_repository.delete_by_training(
+            training_id
+        )
 
         self._generate_sessions(
             training_id,

@@ -67,6 +67,42 @@ class TrainingStepRepository:
 
         return items
 
+    def list_by_sessions(
+        self,
+        session_ids,
+    ):
+        if not session_ids:
+            return {}
+
+        session = SessionLocal()
+
+        try:
+            items = session.scalars(
+                select(TrainingStep)
+                .where(
+                    TrainingStep.session_id.in_(session_ids)
+                )
+                .order_by(
+                    TrainingStep.session_id,
+                    TrainingStep.order,
+                )
+            ).all()
+
+            grouped = {
+                session_id: []
+                for session_id in session_ids
+            }
+
+            for item in items:
+                grouped.setdefault(
+                    item.session_id,
+                    [],
+                ).append(item)
+
+            return grouped
+        finally:
+            session.close()
+
     def delete_by_session(
         self,
         session_id,

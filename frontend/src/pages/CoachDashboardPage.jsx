@@ -8,27 +8,6 @@ import {
 import "./CoachDashboardPage.css";
 
 
-const WEEKDAYS = [
-  "Seg",
-  "Ter",
-  "Qua",
-  "Qui",
-  "Sex",
-  "Sáb",
-  "Dom",
-];
-
-
-function initials(name = "") {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "RC";
-}
-
-
 function dateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -59,29 +38,24 @@ function endOfWeek(date) {
 }
 
 
-function formatToday() {
-  return new Intl.DateTimeFormat("pt-BR", {
+function formatDashboardDate() {
+  const value = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
   }).format(new Date());
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 
-function formatSessionDistance(session) {
-  const repetitions = Number(
-    session.repetitions || 0,
+function formatDate(value) {
+  if (!value) return "Sem data";
+
+  return new Intl.DateTimeFormat("pt-BR").format(
+    new Date(`${value}T12:00:00`),
   );
-
-  const distance = Number(
-    session.planned_distance || 0,
-  );
-
-  if (repetitions > 0) {
-    return `${repetitions} × ${distance} m`;
-  }
-
-  return `${distance.toFixed(1)} km`;
 }
 
 
@@ -89,12 +63,6 @@ export default function CoachDashboardPage({
   user,
   athletes,
   invitations,
-  inviteEmail,
-  setInviteEmail,
-  inviteLink,
-  onCreateInvitation,
-  onApproveInvitation,
-  onOpenProfile,
   onOpenTraining,
   onOpenEvaluations,
 }) {
@@ -157,350 +125,282 @@ export default function CoachDashboardPage({
     const weekStart = startOfWeek(now);
     const weekEnd = endOfWeek(now);
 
-    const sessions = records.flatMap(
-      ({ athlete, training }) =>
-        (training?.sessions || []).map((session) => ({
-          ...session,
-          athlete,
-        })),
+    const sessions = records.flatMap(({ athlete, training }) =>
+      (training?.sessions || []).map((session) => ({
+        ...session,
+        athlete,
+      })),
     );
 
     const weekSessions = sessions.filter((session) => {
       if (!session.session_date) return false;
 
-      const date = new Date(`${session.session_date}T12:00:00`);
-      return date >= weekStart && date <= weekEnd;
-    });
-
-    const todaySessions = sessions
-      .filter((session) => session.session_date === today)
-      .sort((first, second) =>
-        first.athlete.name.localeCompare(
-          second.athlete.name,
-          "pt-BR",
-        ),
+      const sessionDate = new Date(
+        `${session.session_date}T12:00:00`,
       );
 
-    const weeklyTotals = Array.from({ length: 7 }, () => 0);
-
-    weekSessions.forEach((session) => {
-      const date = new Date(`${session.session_date}T12:00:00`);
-      const day = date.getDay();
-      const index = day === 0 ? 6 : day - 1;
-      weeklyTotals[index] += 1;
+      return sessionDate >= weekStart && sessionDate <= weekEnd;
     });
+
+    const completedSessions = weekSessions.filter(
+      (session) => session.completed,
+    );
+
+    const pendingSessions = weekSessions.filter(
+      (session) => !session.completed,
+    );
+
+    const activeAthletes = athletes.filter(
+      (athlete) => athlete.active,
+    );
 
     const pendingEvaluations = records.filter(
       ({ athlete, evaluations }) =>
         athlete.active && evaluations.length === 0,
     );
 
-    return {
-      activeAthletes: athletes.filter(
-        (athlete) => athlete.active,
-      ).length,
-      weekSessions,
-      todaySessions,
-      weeklyTotals,
-      pendingEvaluations,
-    };
-  }, [athletes, records]);
+    const inactiveAthletes = athletes.filter(
+      (athlete) => !athlete.active,
+    );
 
-  const maxWeekly = Math.max(...dashboard.weeklyTotals, 1);
+    const weeklyVolume = weekSessions.reduce(
+      (total, session) =>
+        total + Number(session.planned_distance || 0),
+      0,
+    );
+
+    const todaySessions = weekSessions.filter(
+      (session) => session.session_date === today,
+    );
+
+    const attentionItems = [];
+
+    if (pendingEvaluations.length > 0) {
+      attentionItems.push({
+        id: "evaluations",
+        icon: "●",
+        tone: "orange",
+        title: `${pendingEvaluations.length} atleta(s) sem avaliação`,
+        detail: "Avaliação necessária para prescrição individualizada",
+        action: () =>
+          onOpenEvaluations(pendingEvaluations[0].athlete),
+      });
+    }
+
+    if (invitations.pending.length > 0) {
+      attentionItems.push({
+        id: "invitations",
+        icon: "⚑",
+        tone: "purple",
+        title: `${invitations.pending.length} convite(s) aguardando aprovação`,
+        detail: "Há cadastros pendentes de análise",
+      });
+    }
+
+    if (inactiveAthletes.length > 0) {
+      attentionItems.push({
+        id: "inactive",
+        icon: "!",
+        tone: "red",
+        title: `${inactiveAthletes.length} atleta(s) inativo(s)`,
+        detail: "Revise a situação cadastral dos atletas",
+      });
+    }
+
+    if (todaySessions.length === 0) {
+      attentionItems.push({
+        id: "today",
+        icon: "↻",
+        tone: "blue",
+        title: "Nenhum treino programado para hoje",
+        detail: "Confira o planejamento semanal dos atletas",
+      });
+    }
+
+    return {
+      activeAthletes,
+      weekSessions,
+      completedSessions,
+      pendingSessions,
+      weeklyVolume,
+      averageVolume:
+        activeAthletes.length > 0
+          ? weeklyVolume / activeAthletes.length
+          : 0,
+      attentionItems,
+    };
+  }, [
+    athletes,
+    invitations.pending.length,
+    onOpenEvaluations,
+    records,
+  ]);
+
+  const totalSessions = dashboard.weekSessions.length;
+  const completedPercent =
+    totalSessions > 0
+      ? (dashboard.completedSessions.length / totalSessions) * 100
+      : 0;
+
+  const firstActiveAthlete = dashboard.activeAthletes[0];
 
   return (
-    <section className="coach-dashboard-page">
-      <header className="coach-dashboard-welcome">
+    <section className="coach-dashboard-page dashboard-v2">
+      <header className="dashboard-v2-header">
         <div>
-          <h2>Olá, {user?.name?.split(" ")[0] || "Treinador"}</h2>
-          <p>
-            Bem-vindo ao seu painel. Veja o resumo operacional
-            da sua assessoria.
-          </p>
+          <h2>
+            Bom dia, {user?.name?.split(" ")[0] || "Treinador"}!{" "}
+            <span aria-hidden="true">☀</span>
+          </h2>
+          <p>{formatDashboardDate()}</p>
         </div>
 
-        <div className="coach-dashboard-date">
-          <span aria-hidden="true">▣</span>
-          <strong>{formatToday()}</strong>
-        </div>
+        <button
+          type="button"
+          className="dashboard-plan-week"
+          disabled={!firstActiveAthlete}
+          onClick={() => {
+            if (firstActiveAthlete) {
+              onOpenTraining(firstActiveAthlete);
+            }
+          }}
+        >
+          <span aria-hidden="true">＋</span>
+          Planejar semana
+        </button>
       </header>
 
       {error && <div className="alert">{error}</div>}
 
-      <section className="coach-dashboard-metrics">
-        <article>
-          <div>
-            <span>Atletas ativos</span>
-            <strong>{dashboard.activeAthletes}</strong>
-            <small>{athletes.length} cadastrados</small>
-          </div>
-          <b aria-hidden="true">♙</b>
+      <section className="dashboard-v2-metrics">
+        <article className="metric-blue">
+          <span className="metric-icon">♟</span>
+          <strong>{dashboard.activeAthletes.length}</strong>
+          <p>Atletas ativos</p>
         </article>
 
-        <article>
-          <div>
-            <span>Treinos esta semana</span>
-            <strong>{dashboard.weekSessions.length}</strong>
-            <small>sessões programadas</small>
-          </div>
-          <b aria-hidden="true">↗</b>
+        <article className="metric-purple">
+          <span className="metric-icon">▣</span>
+          <strong>{dashboard.weekSessions.length}</strong>
+          <p>Treinos programados</p>
         </article>
 
-        <article>
-          <div>
-            <span>Avaliações pendentes</span>
-            <strong>
-              {dashboard.pendingEvaluations.length}
-            </strong>
-            <small>atletas sem avaliação</small>
-          </div>
-          <b aria-hidden="true">✓</b>
+        <article className="metric-green">
+          <span className="metric-icon">✓</span>
+          <strong>{dashboard.completedSessions.length}</strong>
+          <p>Concluídos esta semana</p>
         </article>
 
-        <article>
-          <div>
-            <span>Convites pendentes</span>
-            <strong>{invitations.pending.length}</strong>
-            <small>aguardando aprovação</small>
-          </div>
-          <b aria-hidden="true">⚑</b>
+        <article className="metric-orange">
+          <span className="metric-icon">◷</span>
+          <strong>{dashboard.pendingSessions.length}</strong>
+          <p>Pendentes esta semana</p>
+        </article>
+
+        <article className="metric-red">
+          <span className="metric-icon">×</span>
+          <strong>{invitations.pending.length}</strong>
+          <p>Convites pendentes</p>
         </article>
       </section>
 
-      <section className="coach-dashboard-main-grid">
-        <article className="coach-dashboard-card today-card">
+      <section className="dashboard-v2-content">
+        <article className="dashboard-v2-panel attention-panel">
           <header>
-            <div>
-              <h3>Próximos treinos de hoje</h3>
-              <p>{dashboard.todaySessions.length} sessão(ões)</p>
-            </div>
+            <h3>Atenções</h3>
           </header>
 
           {loading ? (
-            <p className="coach-dashboard-empty">
-              Carregando treinos...
-            </p>
-          ) : dashboard.todaySessions.length === 0 ? (
-            <p className="coach-dashboard-empty">
-              Nenhum treino programado para hoje.
-            </p>
+            <p className="dashboard-v2-empty">Carregando alertas...</p>
+          ) : dashboard.attentionItems.length === 0 ? (
+            <p className="dashboard-v2-empty">Nenhuma atenção pendente.</p>
           ) : (
-            <div className="today-training-list">
-              {dashboard.todaySessions
-                .slice(0, 6)
-                .map((session) => (
-                  <button
-                    type="button"
-                    key={`${session.athlete.id}-${session.id}`}
-                    onClick={() =>
-                      onOpenTraining(session.athlete)
-                    }
-                  >
-                    <span className="dashboard-athlete-avatar">
-                      {initials(session.athlete.name)}
-                    </span>
-
-                    <span className="today-training-main">
-                      <strong>{session.athlete.name}</strong>
-                      <small>
-                        {session.workout_name}
-                        {" · "}
-                        {formatSessionDistance(session)}
-                      </small>
-                    </span>
-
-                    <span className="today-training-zone">
-                      {session.zone || "Treino"}
-                    </span>
-
-                    <span aria-hidden="true">›</span>
-                  </button>
-                ))}
+            <div className="attention-list">
+              {dashboard.attentionItems.slice(0, 4).map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={`attention-item ${item.tone}`}
+                  onClick={item.action}
+                  disabled={!item.action}
+                >
+                  <span className="attention-icon">{item.icon}</span>
+                  <span className="attention-copy">
+                    <strong>{item.title}</strong>
+                    <small>{item.detail}</small>
+                  </span>
+                  <span aria-hidden="true">›</span>
+                </button>
+              ))}
             </div>
           )}
         </article>
 
-        <article className="coach-dashboard-card weekly-card">
+        <article className="dashboard-v2-panel weekly-summary-panel">
           <header>
-            <div>
-              <h3>Resumo semanal</h3>
-              <p>Quantidade de sessões por dia</p>
-            </div>
+            <h3>Resumo da semana</h3>
           </header>
 
-          <div className="weekly-chart">
-            {dashboard.weeklyTotals.map((total, index) => (
-              <div className="weekly-chart-column" key={WEEKDAYS[index]}>
-                <div className="weekly-chart-value">
-                  <span>{total}</span>
-                  <b
-                    style={{
-                      height: `${Math.max(
-                        total ? 20 : 3,
-                        (total / maxWeekly) * 100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-                <small>{WEEKDAYS[index]}</small>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="coach-dashboard-secondary-grid">
-        <article className="coach-dashboard-card pending-card">
-          <header>
-            <div>
-              <h3>Avaliações pendentes</h3>
-              <p>Atletas ativos ainda sem registro</p>
-            </div>
-
-            <button
-              type="button"
-              className="dashboard-link-button"
-              onClick={() => {
-                const first =
-                  dashboard.pendingEvaluations[0]?.athlete;
-
-                if (first) onOpenEvaluations(first);
-              }}
-              disabled={
-                dashboard.pendingEvaluations.length === 0
-              }
+          <div className="weekly-summary-main">
+            <div
+              className="weekly-donut"
+              style={{ "--completed": `${completedPercent}%` }}
             >
-              Abrir
-            </button>
-          </header>
-
-          {dashboard.pendingEvaluations.length === 0 ? (
-            <p className="coach-dashboard-empty">
-              Todos os atletas ativos possuem avaliação.
-            </p>
-          ) : (
-            <div className="pending-athlete-list">
-              {dashboard.pendingEvaluations
-                .slice(0, 4)
-                .map(({ athlete }) => (
-                  <button
-                    type="button"
-                    key={athlete.id}
-                    onClick={() =>
-                      onOpenEvaluations(athlete)
-                    }
-                  >
-                    <span className="dashboard-athlete-avatar">
-                      {initials(athlete.name)}
-                    </span>
-                    <span>
-                      <strong>{athlete.name}</strong>
-                      <small>
-                        {athlete.goal
-                          || "Sem objetivo informado"}
-                      </small>
-                    </span>
-                    <b>+</b>
-                  </button>
-                ))}
+              <div>
+                <strong>{totalSessions}</strong>
+                <span>treinos</span>
+              </div>
             </div>
-          )}
-        </article>
 
-        <article className="coach-dashboard-card invitations-compact">
-          <header>
-            <div>
-              <h3>Convites e aprovações</h3>
-              <p>Cadastre novos atletas por convite</p>
+            <div className="weekly-summary-legend">
+              <div>
+                <span className="legend-dot completed" />
+                <strong>{dashboard.completedSessions.length}</strong>
+                <small>Concluídos</small>
+              </div>
+
+              <div>
+                <span className="legend-dot pending" />
+                <strong>{dashboard.pendingSessions.length}</strong>
+                <small>Pendentes</small>
+              </div>
+
+              <div>
+                <span className="legend-dot invitation" />
+                <strong>{invitations.pending.length}</strong>
+                <small>Convites</small>
+              </div>
             </div>
-          </header>
-
-          <form onSubmit={onCreateInvitation}>
-            <input
-              type="email"
-              value={inviteEmail}
-              onChange={(event) =>
-                setInviteEmail(event.target.value)
-              }
-              placeholder="E-mail do aluno (opcional)"
-            />
-            <button className="btn-primary">
-              Gerar convite
-            </button>
-          </form>
-
-          {inviteLink && (
-            <div className="dashboard-invite-link">
-              <input
-                readOnly
-                value={inviteLink}
-                onFocus={(event) =>
-                  event.target.select()
-                }
-              />
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={() =>
-                  navigator.clipboard?.writeText(
-                    inviteLink,
-                  )
-                }
-              >
-                Copiar
-              </button>
-            </div>
-          )}
-
-          <div className="dashboard-pending-invitations">
-            {invitations.pending.length === 0 ? (
-              <p className="coach-dashboard-empty">
-                Nenhum aluno aguardando aprovação.
-              </p>
-            ) : (
-              invitations.pending.slice(0, 3).map(
-                (invitation) => (
-                  <div key={invitation.id}>
-                    <button
-                      type="button"
-                      className="pending-invitation-profile"
-                      onClick={() => {
-                        if (invitation.athlete_id) {
-                          onOpenProfile({
-                            id: invitation.athlete_id,
-                            name:
-                              invitation.student_name
-                              || "Novo aluno",
-                          });
-                        }
-                      }}
-                    >
-                      <strong>
-                        {invitation.student_name
-                          || "Novo aluno"}
-                      </strong>
-                      <small>
-                        {invitation.email
-                          || "Cadastro por link"}
-                      </small>
-                    </button>
-
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      onClick={() =>
-                        onApproveInvitation(
-                          invitation.id,
-                        )
-                      }
-                    >
-                      Aprovar
-                    </button>
-                  </div>
-                ),
-              )
-            )}
           </div>
+
+          <footer className="weekly-summary-footer">
+            <div>
+              <span>Volume da semana</span>
+              <strong>
+                {dashboard.weeklyVolume.toLocaleString("pt-BR", {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })} km
+              </strong>
+              <small>
+                Planejado de{" "}
+                {formatDate(dashboard.weekSessions[0]?.session_date)}
+              </small>
+            </div>
+
+            <div>
+              <span>Média por atleta</span>
+              <strong>
+                {dashboard.averageVolume.toLocaleString("pt-BR", {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })} km
+              </strong>
+              <small>
+                {dashboard.activeAthletes.length} atleta(s) ativo(s)
+              </small>
+            </div>
+          </footer>
         </article>
       </section>
     </section>

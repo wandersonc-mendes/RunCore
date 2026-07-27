@@ -1449,6 +1449,8 @@ export default function App() {
             onRemove={() =>
               handleDeleteAthlete(selectedAthlete.id)
             }
+            onOpenTraining={openTraining}
+            onOpenEvaluations={openEvaluations}
           />
         </div>
       </AppShell>

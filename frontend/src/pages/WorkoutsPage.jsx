@@ -188,6 +188,7 @@ function stepSummary(step) {
 export default function WorkoutsPage({
   athletes = [],
   onApplyTemplate,
+  onCreateFromTemplate,
 }) {
   const [templates, setTemplates] = useState(loadTemplates);
   const [search, setSearch] = useState("");
@@ -226,8 +227,10 @@ export default function WorkoutsPage({
     setApplying({
       template,
       athleteId: "",
+      sessionDate: "",
       sessions: [],
       loading: false,
+      creating: false,
       error: "",
     });
   }
@@ -259,6 +262,44 @@ export default function WorkoutsPage({
         ...current,
         sessions: [],
         loading: false,
+        error: error.message,
+      }));
+    }
+  }
+
+  async function createNewSession() {
+    const athlete = athletes.find(
+      (item) =>
+        String(item.id)
+        === String(applying.athleteId),
+    );
+
+    if (
+      !athlete
+      || !applying.sessionDate
+      || !applying?.template
+    ) {
+      return;
+    }
+
+    setApplying((current) => ({
+      ...current,
+      creating: true,
+      error: "",
+    }));
+
+    try {
+      await onCreateFromTemplate(
+        athlete,
+        applying.sessionDate,
+        applying.template,
+      );
+
+      setApplying(null);
+    } catch (error) {
+      setApplying((current) => ({
+        ...current,
+        creating: false,
         error: error.message,
       }));
     }
@@ -510,6 +551,45 @@ export default function WorkoutsPage({
                 ))}
               </select>
             </label>
+
+            {applying.athleteId && (
+              <section className="workout-create-session">
+                <div>
+                  <strong>Criar nova sessão</strong>
+                  <span>
+                    Adicione o modelo em uma nova data,
+                    sem substituir um treino existente.
+                  </span>
+                </div>
+
+                <div>
+                  <input
+                    type="date"
+                    value={applying.sessionDate}
+                    onChange={(event) =>
+                      setApplying((current) => ({
+                        ...current,
+                        sessionDate: event.target.value,
+                      }))
+                    }
+                  />
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    disabled={
+                      !applying.sessionDate
+                      || applying.creating
+                    }
+                    onClick={createNewSession}
+                  >
+                    {applying.creating
+                      ? "Criando..."
+                      : "Criar sessão"}
+                  </button>
+                </div>
+              </section>
+            )}
 
             {applying.loading && <p className="muted">Carregando sessões...</p>}
             {applying.error && <div className="alert">{applying.error}</div>}

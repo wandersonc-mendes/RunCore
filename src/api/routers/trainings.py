@@ -2,7 +2,13 @@ from datetime import date, timedelta
 
 from fastapi import APIRouter, HTTPException, status
 
-from api.schemas import TrainingCreate, TrainingOut, TrainingSessionUpdate
+from api.schemas import (
+    TrainingCreate,
+    TrainingOut,
+    TrainingSessionCreate,
+    TrainingSessionOut,
+    TrainingSessionUpdate,
+)
 from core.training.training_persistence_service import TrainingPersistenceService
 from repositories.athlete_repository import AthleteRepository
 from repositories.evaluation_repository import EvaluationRepository
@@ -10,6 +16,7 @@ from repositories.ipt_repository import IptRepository
 from database.database import SessionLocal
 from models.athlete import Athlete
 from models.goal import Goal
+from models.training_session import TrainingSession
 from repositories.training_repository import TrainingRepository
 from repositories.training_session_repository import TrainingSessionRepository
 from repositories.training_step_repository import TrainingStepRepository
@@ -315,6 +322,95 @@ def regenerate_training(athlete_id: int):
         total_weeks=total_weeks,
     )
     return serialize_training(training_repository.get_by_id(training.id))
+
+
+@router.post(
+    "/sessions",
+    response_model=TrainingSessionOut,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_session(
+    athlete_id: int,
+    payload: TrainingSessionCreate,
+):
+    training = training_repository.get_active_by_athlete(
+        athlete_id
+    )
+
+    if training is None:
+        raise HTTPException(
+            status_code=404,
+            detail="O atleta não possui planejamento ativo.",
+        )
+
+    if training.start_date:
+        day_offset = (
+            payload.session_date - training.start_date
+        ).days
+        week = max(1, (day_offset // 7) + 1)
+    else:
+        week = 1
+
+    session = TrainingSession()
+    session.training_id = training.id
+    session.week = week
+    session.weekday = payload.session_date.weekday()
+    session.workout_name = payload.workout_name
+    session.zone = payload.zone
+    session.planned_distance = payload.planned_distance
+    session.completed_distance = 0
+    session.planned_duration = 0
+    session.completed_duration = 0
+    session.repetitions = payload.repetitions
+    session.recovery = 0
+    session.rpe = 0
+    session.notes = payload.notes
+    session.completed = False
+    session.scheduled_date = payload.session_date
+
+    created = session_repository.create(session)
+
+    step_service.save(
+        created.id,
+        [
+            step.model_dump()
+            for step in payload.steps
+        ],
+    )
+
+    refreshed = session_repository.get_by_id(created.id)
+    total_weeks = max(
+        (
+            item.week
+            for item in session_repository.list_by_training(
+                training.id
+            )
+        ),
+        default=1,
+    )
+
+    return {
+        "id": refreshed.id,
+        "week": refreshed.week,
+        "weekday": refreshed.weekday,
+        "workout_name": refreshed.workout_name,
+        "zone": refreshed.zone,
+        "planned_distance": refreshed.planned_distance,
+        "repetitions": refreshed.repetitions,
+        "recovery": refreshed.recovery,
+        "completed": refreshed.completed,
+        "session_date": refreshed.scheduled_date,
+        "phase": phase_for_week(
+            refreshed.week,
+            total_weeks,
+        ),
+        "adaptations": adaptations_for(
+            refreshed.zone
+        ),
+        "steps": serialized_steps_for_session(
+            refreshed
+        ),
+    }
 
 
 @router.patch(

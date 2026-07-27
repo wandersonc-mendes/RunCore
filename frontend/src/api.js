@@ -372,6 +372,20 @@ export function regenerateTraining(athleteId) {
   );
 }
 
+export function createTrainingSession(
+  athleteId,
+  data,
+) {
+  return request(
+    `/api/athletes/${athleteId}/training/sessions`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+
 export function updateTrainingSession(
   athleteId,
   sessionId,

@@ -203,6 +203,43 @@ class TrainingCreate(BaseModel):
     )
 
 
+class TrainingSessionCreate(BaseModel):
+
+    session_date: date
+
+    workout_name: str = Field(
+        min_length=2,
+        max_length=80,
+    )
+
+    zone: str = Field(
+        min_length=2,
+        max_length=30,
+    )
+
+    planned_distance: float = Field(
+        ge=0,
+        le=1000,
+    )
+
+    repetitions: int = Field(
+        default=0,
+        ge=0,
+        le=100,
+    )
+
+    notes: str = Field(
+        default="",
+        max_length=1000,
+    )
+
+    steps: list["TrainingStepUpdate"] = Field(
+        default_factory=list,
+        min_length=1,
+        max_length=20,
+    )
+
+
 class TrainingSessionUpdate(BaseModel):
 
     session_date: date | None = None

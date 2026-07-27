@@ -11,6 +11,7 @@ import {
   listEvaluations,
   getTraining,
   regenerateTraining,
+  createTrainingSession,
   updateTrainingSession,
   getCurrentUser,
   hasSession,
@@ -1149,6 +1150,69 @@ export default function App() {
     );
   }
 
+  async function createSessionFromTemplate(
+    athlete,
+    sessionDate,
+    template,
+  ) {
+    const createdSession = await createTrainingSession(
+      athlete.id,
+      {
+        session_date: sessionDate,
+        workout_name: template.name,
+        zone: template.zone,
+        planned_distance: Number(
+          template.estimatedDistance || 0,
+        ),
+        repetitions: 0,
+        notes: [
+          template.notes,
+          template.objective,
+        ].filter(Boolean).join("\n"),
+        steps: template.steps.map((step) => ({
+          type: step.type,
+          distance:
+            step.unit === "min"
+              ? 0
+              : Number(step.distance || 0),
+          distance_unit:
+            step.unit === "m" ? "m" : "km",
+          repetitions: Number(
+            step.repetitions || 0,
+          ),
+          recovery: step.recovery || "",
+          pace_min: step.pace || "",
+          pace_max: step.pace || "",
+          notes:
+            step.unit === "min"
+              ? `Duração: ${step.distance} min`
+              : "",
+        })),
+      },
+    );
+
+    setTraining((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        sessions: [
+          ...current.sessions,
+          createdSession,
+        ].sort((first, second) =>
+          String(first.session_date || "")
+            .localeCompare(
+              String(second.session_date || ""),
+            )
+        ),
+      };
+    });
+
+    openTraining(athlete, createdSession);
+  }
+
   function applyWorkoutTemplate(
     athlete,
     session,
@@ -1496,6 +1560,7 @@ export default function App() {
         <WorkoutsPage
           athletes={athletes}
           onApplyTemplate={applyWorkoutTemplate}
+          onCreateFromTemplate={createSessionFromTemplate}
         />
       </AppShell>
     );

@@ -180,3 +180,48 @@
     flex-direction: column;
   }
 }
+
+
+/* RUNCORE CREATE SESSION FROM TEMPLATE */
+.workout-create-session {
+  display: grid;
+  gap: 13px;
+  padding: 16px;
+  border: 1px solid var(--shell-border);
+  border-radius: 12px;
+  background: var(--shell-accent-soft);
+}
+
+.workout-create-session > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.workout-create-session > div:first-child span {
+  color: var(--shell-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.workout-create-session > div:last-child {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.workout-create-session input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid var(--shell-border);
+  border-radius: 9px;
+  background: var(--shell-surface);
+  color: var(--shell-text);
+  font: inherit;
+}
+
+@media (max-width: 620px) {
+  .workout-create-session > div:last-child {
+    grid-template-columns: 1fr;
+  }
+}

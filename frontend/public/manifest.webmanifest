@@ -1,12 +1,11 @@
 {
   "name": "RunCore",
   "short_name": "RunCore",
-  "description": "Planejamento e acompanhamento de treinos de corrida.",
+  "description": "Plataforma de gestão de treinamento esportivo.",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#117e67",
+  "background_color": "#071f1b",
+  "theme_color": "#0c8f7d",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -21,7 +20,7 @@
       "purpose": "any"
     },
     {
-      "src": "/maskable-icon-512.png",
+      "src": "/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

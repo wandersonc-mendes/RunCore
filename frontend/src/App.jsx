@@ -105,6 +105,31 @@ function weekdayForDate(value) {
   return new Intl.DateTimeFormat("pt-BR", { weekday: "long" }).format(new Date(`${value}T12:00:00`));
 }
 
+function availableTrainingWeeks(startDate, targetDate) {
+  if (!startDate || !targetDate) return null;
+
+  const start = new Date(`${startDate}T00:00:00Z`);
+  const target = new Date(`${targetDate}T00:00:00Z`);
+
+  if (
+    Number.isNaN(start.getTime())
+    || Number.isNaN(target.getTime())
+    || target < start
+  ) {
+    return null;
+  }
+
+  const dayInMilliseconds = 24 * 60 * 60 * 1000;
+  const weekInMilliseconds = 7 * dayInMilliseconds;
+  const inclusiveDuration =
+    target.getTime() - start.getTime() + dayInMilliseconds;
+
+  return Math.max(
+    1,
+    Math.ceil(inclusiveDuration / weekInMilliseconds),
+  );
+}
+
 function BrandLogo() {
   return <span className="brand-logo"><img src="/logo-horizontal.png?v=1" alt="RunCore" /></span>;
 }
@@ -213,6 +238,35 @@ export default function App() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (!trainingForm.target_date) {
+      return;
+    }
+
+    const calculatedWeeks = availableTrainingWeeks(
+      trainingForm.start_date,
+      trainingForm.target_date,
+    );
+
+    setTrainingForm((current) => {
+      const nextValue = calculatedWeeks
+        ? String(calculatedWeeks)
+        : "";
+
+      if (current.total_weeks === nextValue) {
+        return current;
+      }
+
+      return {
+        ...current,
+        total_weeks: nextValue,
+      };
+    });
+  }, [
+    trainingForm.start_date,
+    trainingForm.target_date,
+  ]);
 
   useEffect(() => {
     if (!hasSession()) { setAuthLoading(false); return; }
@@ -784,7 +838,7 @@ export default function App() {
         <main className="content">
           {error && <div className="alert">{error}</div>}
           {loading ? <p className="muted">Carregando...</p> : !training ? (
-            <section className="card training-config"><p className="eyebrow">NOVO MACROCICLO</p><h2>Monte o ciclo a partir da meta do aluno</h2><p className="muted">Use a data da prova para calcular as semanas disponíveis ou informe a duração do ciclo.</p><div className="form-grid"><label>Planejamento<input value={trainingForm.name} onChange={(event) => setTrainingForm((form) => ({ ...form, name: event.target.value }))} /></label><label>Objetivo principal<input required value={trainingForm.objective} onChange={(event) => setTrainingForm((form) => ({ ...form, objective: event.target.value }))} placeholder="Ex.: Meia Maratona de Vitória" /></label><label>Distância-alvo (km)<input required type="number" min="0.1" step="0.1" value={trainingForm.target_distance} onChange={(event) => setTrainingForm((form) => ({ ...form, target_distance: event.target.value }))} placeholder="21.1" /></label><label>Início do ciclo<input required type="date" value={trainingForm.start_date} onChange={(event) => setTrainingForm((form) => ({ ...form, start_date: event.target.value }))} /></label><label>Data da prova (opcional)<input type="date" value={trainingForm.target_date} onChange={(event) => setTrainingForm((form) => ({ ...form, target_date: event.target.value }))} /></label><label>Semanas disponíveis {trainingForm.target_date && <small>(calculadas pela data)</small>}<input disabled={Boolean(trainingForm.target_date)} type="number" min="4" max="52" value={trainingForm.total_weeks} onChange={(event) => setTrainingForm((form) => ({ ...form, total_weeks: event.target.value }))} /></label></div><button className="btn-primary" disabled={savingTraining || !trainingForm.objective || !trainingForm.target_distance} onClick={() => handleCreateTraining()}>{savingTraining ? "Gerando ciclo..." : "Gerar macrociclo"}</button></section>
+            <section className="card training-config"><p className="eyebrow">NOVO MACROCICLO</p><h2>Monte o ciclo a partir da meta do aluno</h2><p className="muted">Use a data da prova para calcular as semanas disponíveis ou informe a duração do ciclo.</p><div className="form-grid"><label>Planejamento<input value={trainingForm.name} onChange={(event) => setTrainingForm((form) => ({ ...form, name: event.target.value }))} /></label><label>Objetivo principal<input required value={trainingForm.objective} onChange={(event) => setTrainingForm((form) => ({ ...form, objective: event.target.value }))} placeholder="Ex.: Meia Maratona de Vitória" /></label><label>Distância-alvo (km)<input required type="number" min="0.1" step="0.1" value={trainingForm.target_distance} onChange={(event) => setTrainingForm((form) => ({ ...form, target_distance: event.target.value }))} placeholder="21.1" /></label><label>Início do ciclo<input required type="date" value={trainingForm.start_date} onChange={(event) => setTrainingForm((form) => ({ ...form, start_date: event.target.value }))} /></label><label>Data da prova (opcional)<input type="date" value={trainingForm.target_date} onChange={(event) => setTrainingForm((form) => ({ ...form, target_date: event.target.value }))} /></label><label>Semanas disponíveis {trainingForm.target_date && <small>(calculadas entre o início e a prova)</small>}<input disabled={Boolean(trainingForm.target_date)} type="number" min="1" max="52" value={trainingForm.total_weeks} onChange={(event) => setTrainingForm((form) => ({ ...form, total_weeks: event.target.value }))} /></label></div><button className="btn-primary" disabled={savingTraining || !trainingForm.objective || !trainingForm.target_distance} onClick={() => handleCreateTraining()}>{savingTraining ? "Gerando ciclo..." : "Gerar macrociclo"}</button></section>
           ) : (
             <>
               <section className="card training-summary"><div><p className="eyebrow">MACROCICLO · FASE ATUAL: {training.current_phase}</p><h2>{training.name}</h2><p>Meta: {training.target_distance} km</p><small>Semana {training.current_week} de {training.total_weeks} · início {formatTestDate(training.start_date)}{training.target_date ? ` · prova ${formatTestDate(training.target_date)}` : ""}</small></div><button className="btn-ghost" disabled={savingTraining} onClick={() => handleCreateTraining(true)}>{savingTraining ? "Atualizando..." : "Atualizar planilha"}</button></section>

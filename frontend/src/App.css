@@ -1694,3 +1694,88 @@ button {
 :root[data-theme="dark"] .dashboard-link-button {
   color: #54d6a2;
 }
+
+
+/* SESSION EDITOR USABILITY FIX */
+.session-editor-overlay {
+  align-items: flex-start !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding: 24px !important;
+}
+
+.session-editor-modal {
+  display: flex !important;
+  flex-direction: column;
+  width: min(100%, 980px) !important;
+  max-height: calc(100dvh - 48px) !important;
+  margin: auto !important;
+  overflow: hidden !important;
+}
+
+.session-editor-modal > header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  flex: 0 0 auto;
+  background: var(--surface);
+}
+
+.session-editor-modal > .workout-adjustment {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 8px;
+  scrollbar-gutter: stable;
+}
+
+.workout-adjustment-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 0 2px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.workout-adjustment-actions .btn-primary,
+.workout-adjustment-actions .btn-ghost {
+  min-width: 130px;
+}
+
+:root[data-theme="dark"] .session-editor-modal > header,
+:root[data-theme="dark"] .workout-adjustment-actions {
+  background: var(--shell-surface);
+}
+
+@media (max-width: 760px) {
+  .session-editor-overlay {
+    padding: 0 !important;
+  }
+
+  .session-editor-modal {
+    width: 100% !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .session-editor-modal > .workout-adjustment {
+    padding-right: 0;
+  }
+
+  .workout-adjustment-actions {
+    flex-direction: column-reverse;
+  }
+
+  .workout-adjustment-actions .btn-primary,
+  .workout-adjustment-actions .btn-ghost {
+    width: 100%;
+  }
+}

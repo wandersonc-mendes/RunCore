@@ -109,7 +109,7 @@ function BrandLogo() {
   return <span className="brand-logo"><img src="/logo-horizontal.png?v=1" alt="RunCore" /></span>;
 }
 
-function SessionAdjustment({ value, onChange, onSave, saving }) {
+function SessionAdjustment({ value, onChange, onSave, onCancel, saving }) {
   const [openTypePicker, setOpenTypePicker] = useState(null);
   const stepTypes = ["Aquecimento", "Corrida", "Caminhada", "Recuperação", "Descanso", "Desaquecimento", "Outros"];
   function changeStep(index, field, nextValue) {
@@ -144,7 +144,23 @@ function SessionAdjustment({ value, onChange, onSave, saving }) {
       </div>
       <label>Instrução da etapa<textarea value={step.notes || ""} onChange={(event) => changeStep(index, "notes", event.target.value)} /></label>
     </section>)}
-    <button className="btn-primary" disabled={saving || value.steps.length === 0}>{saving ? "Salvando..." : "Salvar treino"}</button>
+    <div className="workout-adjustment-actions">
+      <button
+        type="button"
+        className="btn-ghost"
+        onClick={onCancel}
+        disabled={saving}
+      >
+        Cancelar
+      </button>
+
+      <button
+        className="btn-primary"
+        disabled={saving || value.steps.length === 0}
+      >
+        {saving ? "Salvando..." : "Salvar treino"}
+      </button>
+    </div>
   </form>;
 }
 
@@ -224,6 +240,32 @@ export default function App() {
     return () => { window.clearInterval(interval); window.removeEventListener("focus", refreshInvitations); };
   }, [currentUser]);
 
+
+  useEffect(() => {
+    closeWorkoutEditor();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!selectedWorkout) {
+      document.body.style.overflow = "";
+      return undefined;
+    }
+
+    document.body.style.overflow = "hidden";
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") {
+        closeWorkoutEditor();
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [selectedWorkout]);
 
   useEffect(() => {
     if (
@@ -417,6 +459,11 @@ export default function App() {
     } finally {
       setSavingTraining(false);
     }
+  }
+
+  function closeWorkoutEditor() {
+    setSelectedWorkout(null);
+    setWorkoutEdit(null);
   }
 
   async function handleUpdateWorkout(event) {
@@ -752,7 +799,7 @@ export default function App() {
           <div
             className="session-editor-overlay"
             role="presentation"
-            onMouseDown={() => setSelectedWorkout(null)}
+            onMouseDown={closeWorkoutEditor}
           >
             <section
               className="session-editor-modal"
@@ -769,7 +816,7 @@ export default function App() {
 
                 <button
                   className="modal-close"
-                  onClick={() => setSelectedWorkout(null)}
+                  onClick={closeWorkoutEditor}
                   aria-label="Fechar edição"
                 >
                   ×
@@ -780,6 +827,7 @@ export default function App() {
                 value={workoutEdit}
                 onChange={setWorkoutEdit}
                 onSave={handleUpdateWorkout}
+                onCancel={closeWorkoutEditor}
                 saving={savingTraining}
               />
             </section>

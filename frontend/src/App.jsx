@@ -134,60 +134,636 @@ function BrandLogo() {
   return <span className="brand-logo"><img src="/logo-horizontal.png?v=2" alt="RunCore" /></span>;
 }
 
-function SessionAdjustment({ value, onChange, onSave, onCancel, saving }) {
+function SessionAdjustment({
+  value,
+  onChange,
+  onSave,
+  onCancel,
+  saving,
+  athlete,
+}) {
   const [openTypePicker, setOpenTypePicker] = useState(null);
-  const stepTypes = ["Aquecimento", "Corrida", "Caminhada", "Recuperação", "Descanso", "Desaquecimento", "Outros"];
-  function changeStep(index, field, nextValue) {
-    onChange((session) => ({ ...session, steps: session.steps.map((step, position) => position === index ? { ...step, [field]: nextValue } : step) }));
-  }
-  function addStep() {
-    onChange((session) => ({ ...session, steps: [...session.steps, { type: "Corrida", distance: 1, distance_unit: "km", repetitions: 0, recovery: "", pace_min: "", pace_max: "", notes: "" }] }));
-  }
-  function removeStep(index) {
-    onChange((session) => ({ ...session, steps: session.steps.filter((_, position) => position !== index) }));
-  }
-  return <form className="workout-adjustment" onSubmit={onSave}>
-    <h3>Ajustar esta sessão</h3>
-    <div className="form-grid">
-      <label>Dia do treino<input type="date" value={value.session_date || ""} onChange={(event) => onChange((item) => ({ ...item, session_date: event.target.value }))} /><small>{weekdayForDate(value.session_date)}</small></label>
-      <label>Nome<input value={value.workout_name} onChange={(event) => onChange((item) => ({ ...item, workout_name: event.target.value }))} /></label>
-      <label>Zona<input value={value.zone} onChange={(event) => onChange((item) => ({ ...item, zone: event.target.value }))} /></label>
-      <label>Distância total<input type="number" step="0.1" min="0" value={value.planned_distance} onChange={(event) => onChange((item) => ({ ...item, planned_distance: event.target.value }))} /></label>
-      <label>Repetições da sessão<input type="number" min="0" value={value.repetitions} onChange={(event) => onChange((item) => ({ ...item, repetitions: event.target.value }))} /></label>
-    </div>
-    <label>Orientação geral do treinador<textarea value={value.notes} onChange={(event) => onChange((item) => ({ ...item, notes: event.target.value }))} /></label>
-    <div className="step-editor-heading"><h3>Estrutura do treino</h3><button type="button" className="btn-ghost" onClick={addStep}>+ Adicionar etapa</button></div>
-    {value.steps.map((step, index) => <section className={`step-editor ${stepTone(step.type)}`} key={step.id || index}>
-      <div className="step-editor-title"><strong>Etapa {index + 1}</strong>{value.steps.length > 1 && <button type="button" className="btn-link-danger" onClick={() => removeStep(index)}>Remover</button>}</div>
-      <div className="form-grid step-fields">
-        <label>Tipo<div className="step-type-picker"><button type="button" onClick={() => setOpenTypePicker((current) => current === index ? null : index)}>{step.type}<span>⌄</span></button>{openTypePicker === index && <div className="step-type-menu">{stepTypes.map((type) => <button type="button" className={step.type === type ? "active" : ""} key={type} onClick={() => { changeStep(index, "type", type); setOpenTypePicker(null); }}>{type}</button>)}</div>}</div></label>
-        <label>Distância<div className="distance-input"><input type="number" step="0.1" min="0" value={step.distance} onChange={(event) => changeStep(index, "distance", event.target.value)} /><select value={step.distance_unit || (step.repetitions ? "m" : "km")} onChange={(event) => changeStep(index, "distance_unit", event.target.value)}><option value="km">km</option><option value="m">m</option></select></div></label>
-        <label>Repetições<input type="number" min="0" value={step.repetitions} onChange={(event) => changeStep(index, "repetitions", event.target.value)} /></label>
-        <label>Recuperação<input value={step.recovery || ""} placeholder="Ex.: 200 m trote" onChange={(event) => changeStep(index, "recovery", event.target.value)} /></label>
-        <label>Ritmo mínimo<input inputMode="numeric" maxLength={5} value={step.pace_min || ""} placeholder="05:20" onChange={(event) => changeStep(index, "pace_min", formatPaceInput(event.target.value))} /></label>
-        <label>Ritmo máximo<input inputMode="numeric" maxLength={5} value={step.pace_max || ""} placeholder="05:00" onChange={(event) => changeStep(index, "pace_max", formatPaceInput(event.target.value))} /></label>
-      </div>
-      <label>Instrução da etapa<textarea value={step.notes || ""} onChange={(event) => changeStep(index, "notes", event.target.value)} /></label>
-    </section>)}
-    <div className="workout-adjustment-actions">
-      <button
-        type="button"
-        className="btn-ghost"
-        onClick={onCancel}
-        disabled={saving}
-      >
-        Cancelar
-      </button>
 
-      <button
-        className="btn-primary"
-        disabled={saving || value.steps.length === 0}
-      >
-        {saving ? "Salvando..." : "Salvar treino"}
-      </button>
-    </div>
-  </form>;
+  const stepTypes = [
+    "Aquecimento",
+    "Corrida",
+    "Caminhada",
+    "Recuperação",
+    "Descanso",
+    "Desaquecimento",
+    "Outros",
+  ];
+
+  const frequentBlocks = [
+    {
+      label: "Aquecimento",
+      type: "Aquecimento",
+      distance: 2,
+      distance_unit: "km",
+      repetitions: 0,
+      recovery: "",
+      pace_min: "",
+      pace_max: "",
+      notes: "Corrida leve e mobilidade.",
+    },
+    {
+      label: "Intervalado",
+      type: "Corrida",
+      distance: 400,
+      distance_unit: "m",
+      repetitions: 8,
+      recovery: "200 m trote",
+      pace_min: "",
+      pace_max: "",
+      notes: "Intervalado controlado.",
+    },
+    {
+      label: "Ritmo",
+      type: "Corrida",
+      distance: 6,
+      distance_unit: "km",
+      repetitions: 0,
+      recovery: "",
+      pace_min: "",
+      pace_max: "",
+      notes: "Ritmo contínuo.",
+    },
+    {
+      label: "Tempo Run",
+      type: "Corrida",
+      distance: 5,
+      distance_unit: "km",
+      repetitions: 0,
+      recovery: "",
+      pace_min: "",
+      pace_max: "",
+      notes: "Trecho sustentado próximo ao limiar.",
+    },
+    {
+      label: "Fartlek",
+      type: "Corrida",
+      distance: 1,
+      distance_unit: "km",
+      repetitions: 6,
+      recovery: "1 min leve",
+      pace_min: "",
+      pace_max: "",
+      notes: "Alternar ritmo forte e leve.",
+    },
+    {
+      label: "Longão",
+      type: "Corrida",
+      distance: 16,
+      distance_unit: "km",
+      repetitions: 0,
+      recovery: "",
+      pace_min: "",
+      pace_max: "",
+      notes: "Corrida longa em intensidade controlada.",
+    },
+    {
+      label: "Desaquecimento",
+      type: "Desaquecimento",
+      distance: 1,
+      distance_unit: "km",
+      repetitions: 0,
+      recovery: "",
+      pace_min: "",
+      pace_max: "",
+      notes: "Corrida muito leve.",
+    },
+  ];
+
+  function changeStep(index, field, nextValue) {
+    onChange((session) => ({
+      ...session,
+      steps: session.steps.map((step, position) =>
+        position === index
+          ? { ...step, [field]: nextValue }
+          : step
+      ),
+    }));
+  }
+
+  function addStep(preset = null) {
+    const baseStep = preset || {
+      type: "Corrida",
+      distance: 1,
+      distance_unit: "km",
+      repetitions: 0,
+      recovery: "",
+      pace_min: "",
+      pace_max: "",
+      notes: "",
+    };
+
+    onChange((session) => ({
+      ...session,
+      steps: [
+        ...session.steps,
+        { ...baseStep },
+      ],
+    }));
+  }
+
+  function removeStep(index) {
+    onChange((session) => ({
+      ...session,
+      steps: session.steps.filter(
+        (_, position) => position !== index,
+      ),
+    }));
+  }
+
+  function stepDistanceKm(step) {
+    const distance = Number(step.distance || 0);
+    const repetitions = Math.max(
+      Number(step.repetitions || 0),
+      1,
+    );
+    const unit = step.distance_unit || (
+      Number(step.repetitions || 0) > 0
+        ? "m"
+        : "km"
+    );
+
+    const total = distance * repetitions;
+
+    return unit === "m"
+      ? total / 1000
+      : total;
+  }
+
+  function paceToSeconds(value) {
+    if (!value || !String(value).includes(":")) {
+      return null;
+    }
+
+    const [minutes, seconds] = String(value)
+      .split(":")
+      .map(Number);
+
+    if (
+      Number.isNaN(minutes)
+      || Number.isNaN(seconds)
+    ) {
+      return null;
+    }
+
+    return minutes * 60 + seconds;
+  }
+
+  const totalDistance = value.steps.reduce(
+    (total, step) =>
+      total + stepDistanceKm(step),
+    0,
+  );
+
+  const estimatedSeconds = value.steps.reduce(
+    (total, step) => {
+      const distance = stepDistanceKm(step);
+      const minPace = paceToSeconds(step.pace_min);
+      const maxPace = paceToSeconds(step.pace_max);
+      const paces = [
+        minPace,
+        maxPace,
+      ].filter(Boolean);
+
+      if (paces.length === 0) {
+        return total;
+      }
+
+      const averagePace = paces.reduce(
+        (sum, pace) => sum + pace,
+        0,
+      ) / paces.length;
+
+      return total + distance * averagePace;
+    },
+    0,
+  );
+
+  function formatDuration(seconds) {
+    if (!seconds) {
+      return "Não calculado";
+    }
+
+    const rounded = Math.round(seconds);
+    const hours = Math.floor(rounded / 3600);
+    const minutes = Math.floor(
+      (rounded % 3600) / 60,
+    );
+    const remainder = rounded % 60;
+
+    return [hours, minutes, remainder]
+      .map((part) =>
+        String(part).padStart(2, "0")
+      )
+      .join(":");
+  }
+
+  const estimatedLoad = value.steps.reduce(
+    (total, step) => {
+      const zoneMatch = String(
+        value.zone || step.notes || "",
+      ).match(/z\s*([1-5])/i);
+
+      const zoneFactor = zoneMatch
+        ? Number(zoneMatch[1])
+        : 2;
+
+      return total
+        + stepDistanceKm(step) * zoneFactor;
+    },
+    0,
+  );
+
+  return (
+    <form
+      className="workout-editor-v2"
+      onSubmit={onSave}
+    >
+      <header className="workout-editor-v2-header">
+        <div>
+          <p className="eyebrow">EDIÇÃO COMPLETA</p>
+          <h2>Editar treino</h2>
+        </div>
+
+        <div>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={onCancel}
+            disabled={saving}
+          >
+            Cancelar
+          </button>
+
+          <button
+            className="btn-primary"
+            disabled={
+              saving
+              || value.steps.length === 0
+            }
+          >
+            {saving ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
+      </header>
+
+      <div className="workout-editor-v2-grid">
+        <aside className="workout-editor-sidebar">
+          <section className="workout-athlete-summary">
+            <span className="workout-athlete-avatar">
+              {(athlete?.name || "RC")
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part) => part[0])
+                .join("")
+                .toUpperCase()}
+            </span>
+
+            <div>
+              <strong>
+                {athlete?.name || "Atleta"}
+              </strong>
+              <small>
+                {athlete?.goal
+                  || "Objetivo não informado"}
+              </small>
+            </div>
+          </section>
+
+          <label>
+            Data do treino
+            <input
+              type="date"
+              value={value.session_date || ""}
+              onChange={(event) =>
+                onChange((item) => ({
+                  ...item,
+                  session_date: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            Dia da semana
+            <input
+              readOnly
+              value={
+                weekdayForDate(value.session_date)
+                || "Não definido"
+              }
+            />
+          </label>
+
+          <section className="workout-editor-summary-card">
+            <h3>Resumo</h3>
+
+            <div>
+              <span>Distância total</span>
+              <strong>
+                {totalDistance.toLocaleString(
+                  "pt-BR",
+                  {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 2,
+                  },
+                )} km
+              </strong>
+            </div>
+
+            <div>
+              <span>Tempo estimado</span>
+              <strong>
+                {formatDuration(estimatedSeconds)}
+              </strong>
+            </div>
+
+            <div>
+              <span>Carga estimada</span>
+              <strong>
+                {estimatedLoad.toFixed(0)} pts
+              </strong>
+            </div>
+          </section>
+        </aside>
+
+        <main className="workout-editor-main">
+          <section className="workout-editor-session-fields">
+            <label>
+              Nome do treino
+              <input
+                required
+                value={value.workout_name}
+                onChange={(event) =>
+                  onChange((item) => ({
+                    ...item,
+                    workout_name: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              Zona geral
+              <input
+                value={value.zone}
+                onChange={(event) =>
+                  onChange((item) => ({
+                    ...item,
+                    zone: event.target.value,
+                  }))
+                }
+              />
+            </label>
+          </section>
+
+          <div className="workout-blocks-heading">
+            <h3>Blocos do treino</h3>
+
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => addStep()}
+            >
+              + Adicionar bloco
+            </button>
+          </div>
+
+          <div className="workout-block-list">
+            {value.steps.map((step, index) => (
+              <section
+                className={`workout-block-card ${stepTone(step.type)}`}
+                key={step.id || index}
+              >
+                <header>
+                  <span>{index + 1}</span>
+
+                  <strong>
+                    {step.type || `Bloco ${index + 1}`}
+                  </strong>
+
+                  {value.steps.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeStep(index)}
+                      aria-label={`Remover bloco ${index + 1}`}
+                    >
+                      ×
+                    </button>
+                  )}
+                </header>
+
+                <div className="workout-block-fields">
+                  <label>
+                    Tipo
+                    <div className="step-type-picker">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenTypePicker((current) =>
+                            current === index
+                              ? null
+                              : index
+                          )
+                        }
+                      >
+                        {step.type}
+                        <span>⌄</span>
+                      </button>
+
+                      {openTypePicker === index && (
+                        <div className="step-type-menu">
+                          {stepTypes.map((type) => (
+                            <button
+                              type="button"
+                              className={
+                                step.type === type
+                                  ? "active"
+                                  : ""
+                              }
+                              key={type}
+                              onClick={() => {
+                                changeStep(
+                                  index,
+                                  "type",
+                                  type,
+                                );
+                                setOpenTypePicker(null);
+                              }}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </label>
+
+                  <label>
+                    Distância
+                    <div className="distance-input">
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={step.distance}
+                        onChange={(event) =>
+                          changeStep(
+                            index,
+                            "distance",
+                            event.target.value,
+                          )
+                        }
+                      />
+
+                      <select
+                        value={
+                          step.distance_unit
+                          || (
+                            step.repetitions
+                              ? "m"
+                              : "km"
+                          )
+                        }
+                        onChange={(event) =>
+                          changeStep(
+                            index,
+                            "distance_unit",
+                            event.target.value,
+                          )
+                        }
+                      >
+                        <option value="km">km</option>
+                        <option value="m">m</option>
+                      </select>
+                    </div>
+                  </label>
+
+                  <label>
+                    Repetições
+                    <input
+                      type="number"
+                      min="0"
+                      value={step.repetitions}
+                      onChange={(event) =>
+                        changeStep(
+                          index,
+                          "repetitions",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Recuperação
+                    <input
+                      value={step.recovery || ""}
+                      placeholder="Ex.: 200 m trote"
+                      onChange={(event) =>
+                        changeStep(
+                          index,
+                          "recovery",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Ritmo mínimo
+                    <input
+                      inputMode="numeric"
+                      maxLength={5}
+                      value={step.pace_min || ""}
+                      placeholder="05:20"
+                      onChange={(event) =>
+                        changeStep(
+                          index,
+                          "pace_min",
+                          formatPaceInput(
+                            event.target.value,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Ritmo máximo
+                    <input
+                      inputMode="numeric"
+                      maxLength={5}
+                      value={step.pace_max || ""}
+                      placeholder="05:00"
+                      onChange={(event) =>
+                        changeStep(
+                          index,
+                          "pace_max",
+                          formatPaceInput(
+                            event.target.value,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+
+                <label className="workout-block-notes">
+                  Instrução do bloco
+                  <textarea
+                    value={step.notes || ""}
+                    onChange={(event) =>
+                      changeStep(
+                        index,
+                        "notes",
+                        event.target.value,
+                      )
+                    }
+                  />
+                </label>
+              </section>
+            ))}
+          </div>
+
+          <label className="workout-general-notes">
+            Orientação geral do treinador
+            <textarea
+              value={value.notes}
+              onChange={(event) =>
+                onChange((item) => ({
+                  ...item,
+                  notes: event.target.value,
+                }))
+              }
+            />
+          </label>
+        </main>
+
+        <aside className="workout-frequent-blocks">
+          <h3>Blocos frequentes</h3>
+
+          {frequentBlocks.map((block) => (
+            <button
+              type="button"
+              key={block.label}
+              onClick={() => addStep(block)}
+            >
+              <span>＋</span>
+              {block.label}
+            </button>
+          ))}
+        </aside>
+      </div>
+    </form>
+  );
 }
+
 
 export default function App() {
   const location = useLocation();
@@ -950,6 +1526,7 @@ export default function App() {
                 onSave={handleUpdateWorkout}
                 onCancel={closeWorkoutEditor}
                 saving={savingTraining}
+                athlete={selectedAthlete}
               />
             </section>
           </div>

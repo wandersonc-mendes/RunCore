@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { getTraining } from "../api";
 import "./WorkoutsPage.css";
 
 
@@ -184,11 +185,15 @@ function stepSummary(step) {
 }
 
 
-export default function WorkoutsPage() {
+export default function WorkoutsPage({
+  athletes = [],
+  onApplyTemplate,
+}) {
   const [templates, setTemplates] = useState(loadTemplates);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
   const [editing, setEditing] = useState(null);
+  const [applying, setApplying] = useState(null);
 
   const filteredTemplates = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("pt-BR");
@@ -215,6 +220,59 @@ export default function WorkoutsPage() {
   function persist(nextTemplates) {
     setTemplates(nextTemplates);
     saveTemplates(nextTemplates);
+  }
+
+  function beginApply(template) {
+    setApplying({
+      template,
+      athleteId: "",
+      sessions: [],
+      loading: false,
+      error: "",
+    });
+  }
+
+  async function selectApplyAthlete(athleteId) {
+    setApplying((current) => ({
+      ...current,
+      athleteId,
+      sessions: [],
+      loading: Boolean(athleteId),
+      error: "",
+    }));
+
+    if (!athleteId) return;
+
+    try {
+      const plan = await getTraining(Number(athleteId));
+
+      setApplying((current) => ({
+        ...current,
+        sessions: plan?.sessions || [],
+        loading: false,
+        error: plan
+          ? ""
+          : "O atleta ainda não possui planejamento.",
+      }));
+    } catch (error) {
+      setApplying((current) => ({
+        ...current,
+        sessions: [],
+        loading: false,
+        error: error.message,
+      }));
+    }
+  }
+
+  function applyToSession(session) {
+    const athlete = athletes.find(
+      (item) => String(item.id) === String(applying.athleteId),
+    );
+
+    if (!athlete || !session || !applying?.template) return;
+
+    onApplyTemplate(athlete, session, applying.template);
+    setApplying(null);
   }
 
   function openEditor(template) {
@@ -420,8 +478,9 @@ export default function WorkoutsPage() {
             </div>
 
             <footer>
+              <button type="button" className="btn-primary" onClick={() => beginApply(template)}>Aplicar</button>
               <button type="button" className="btn-ghost" onClick={() => duplicateTemplate(template)}>Duplicar</button>
-              <button type="button" className="btn-primary" onClick={() => openEditor(template)}>Editar</button>
+              <button type="button" className="btn-ghost" onClick={() => openEditor(template)}>Editar</button>
               {!template.system && (
                 <button type="button" className="btn-link-danger" onClick={() => deleteTemplate(template)}>Excluir</button>
               )}
@@ -429,6 +488,48 @@ export default function WorkoutsPage() {
           </article>
         ))}
       </div>
+
+      {applying && (
+        <div className="workout-apply-overlay" role="dialog" aria-modal="true" aria-label="Aplicar modelo ao planejamento">
+          <section className="workout-apply-dialog">
+            <header>
+              <div>
+                <p className="eyebrow">APLICAR MODELO</p>
+                <h2>{applying.template.name}</h2>
+                <p>Escolha o atleta e a sessão que receberá este modelo.</p>
+              </div>
+              <button type="button" className="btn-ghost" onClick={() => setApplying(null)}>Cancelar</button>
+            </header>
+
+            <label>
+              Atleta
+              <select value={applying.athleteId} onChange={(event) => selectApplyAthlete(event.target.value)}>
+                <option value="">Selecione um atleta</option>
+                {athletes.filter((athlete) => athlete.active).map((athlete) => (
+                  <option key={athlete.id} value={athlete.id}>{athlete.name}</option>
+                ))}
+              </select>
+            </label>
+
+            {applying.loading && <p className="muted">Carregando sessões...</p>}
+            {applying.error && <div className="alert">{applying.error}</div>}
+
+            {!applying.loading && applying.sessions.length > 0 && (
+              <div className="workout-apply-session-list">
+                {applying.sessions.map((session) => (
+                  <button type="button" key={session.id} onClick={() => applyToSession(session)}>
+                    <div>
+                      <strong>{session.workout_name}</strong>
+                      <span>Semana {session.week} · {session.session_date || "Sem data"}</span>
+                    </div>
+                    <span>Aplicar →</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
 
       {editing && (
         <div className="workout-template-editor-overlay" role="dialog" aria-modal="true" aria-label="Editar modelo de treino">

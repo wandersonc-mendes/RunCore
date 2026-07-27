@@ -995,14 +995,66 @@ export default function App() {
             );
 
             if (requestedWorkout) {
-              setSelectedWorkout(requestedWorkout);
-              setWorkoutEdit({
+              let preparedWorkout = {
                 ...requestedWorkout,
                 notes: requestedWorkout.notes || "",
                 steps: (requestedWorkout.steps || []).map(
                   (step) => ({ ...step }),
                 ),
-              });
+              };
+
+              try {
+                const pending = JSON.parse(
+                  window.sessionStorage.getItem(
+                    "runcore.pending-workout-template",
+                  ) || "null",
+                );
+
+                if (
+                  pending
+                  && String(pending.athleteId) === String(athlete.id)
+                  && String(pending.sessionId) === String(requestedWorkout.id)
+                ) {
+                  const template = pending.template;
+
+                  preparedWorkout = {
+                    ...preparedWorkout,
+                    workout_name: template.name,
+                    zone: template.zone,
+                    planned_distance: Number(template.estimatedDistance || 0),
+                    repetitions: 0,
+                    notes: [template.notes, template.objective]
+                      .filter(Boolean)
+                      .join("\n"),
+                    steps: template.steps.map((step, index) => ({
+                      id: `template-${Date.now()}-${index}`,
+                      type: step.type,
+                      distance: step.unit === "min"
+                        ? 0
+                        : Number(step.distance || 0),
+                      distance_unit: step.unit === "m" ? "m" : "km",
+                      repetitions: Number(step.repetitions || 0),
+                      recovery: step.recovery || "",
+                      pace_min: step.pace || "",
+                      pace_max: step.pace || "",
+                      notes: step.unit === "min"
+                        ? `Duração: ${step.distance} min`
+                        : "",
+                    })),
+                  };
+
+                  window.sessionStorage.removeItem(
+                    "runcore.pending-workout-template",
+                  );
+                }
+              } catch {
+                window.sessionStorage.removeItem(
+                  "runcore.pending-workout-template",
+                );
+              }
+
+              setSelectedWorkout(requestedWorkout);
+              setWorkoutEdit(preparedWorkout);
             } else {
               setError("A sessão solicitada não foi encontrada.");
             }
@@ -1095,6 +1147,23 @@ export default function App() {
     navigate(
       coachPaths.athleteIpt(athlete.id),
     );
+  }
+
+  function applyWorkoutTemplate(
+    athlete,
+    session,
+    template,
+  ) {
+    window.sessionStorage.setItem(
+      "runcore.pending-workout-template",
+      JSON.stringify({
+        athleteId: athlete.id,
+        sessionId: session.id,
+        template,
+      }),
+    );
+
+    openTraining(athlete, session);
   }
 
   async function openTraining(
@@ -1429,9 +1498,7 @@ export default function App() {
       <AppShell user={currentUser} onLogout={coachLogout}>
         <WorkoutsPage
           athletes={athletes}
-          loading={loading}
-          error={error}
-          onOpenTraining={openTraining}
+          onApplyTemplate={applyWorkoutTemplate}
         />
       </AppShell>
     );

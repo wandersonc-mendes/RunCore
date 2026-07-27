@@ -403,33 +403,12 @@ def get_me(
 def forgot_password(
     payload: ForgotPasswordRequest,
 ):
-    reset_token = password_reset_service.request_reset(
+    normalized_email = normalize_email(
         payload.email,
     )
 
-    response = {
-        "message": (
-            "Se o e-mail estiver cadastrado, "
-            "você receberá as instruções para redefinir a senha."
-        ),
-    }
-
-    # Temporário para desenvolvimento.
-    # Em produção, o token será enviado por e-mail.
-    if reset_token is not None:
-        response["reset_token"] = reset_token
-
-        return response
-
-@router.post(
-    "/forgot-password",
-    status_code=status.HTTP_200_OK,
-)
-def forgot_password(
-    payload: ForgotPasswordRequest,
-):
     reset_token = password_reset_service.request_reset(
-        payload.email,
+        normalized_email,
     )
 
     response = {
@@ -445,3 +424,45 @@ def forgot_password(
         response["reset_token"] = reset_token
 
     return response
+
+
+@router.post(
+    "/reset-password",
+    status_code=status.HTTP_200_OK,
+)
+def reset_password(
+    payload: ResetPasswordRequest,
+):
+    if len(payload.password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A nova senha deve ter pelo menos 8 caracteres",
+        )
+
+    if len(payload.password) > 128:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A nova senha deve ter no máximo 128 caracteres",
+        )
+
+    changed = password_reset_service.reset_password(
+        token=payload.token,
+        new_password=payload.password,
+    )
+
+    if not changed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "O link de recuperação é inválido, "
+                "já foi utilizado ou expirou"
+            ),
+        )
+
+    return {
+        "message": (
+            "Senha alterada com sucesso. "
+            "Faça o login com a nova senha."
+        ),
+    }
+

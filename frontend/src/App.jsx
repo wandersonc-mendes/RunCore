@@ -1295,7 +1295,28 @@ export default function App() {
     }
   }
 
-  if (authLoading) return <main className="login-page"><p className="muted">Carregando...</p></main>;
+  if (authLoading) {
+    return (
+      <main
+        className="app-bootstrap-loading"
+        aria-label="Carregando RunCore"
+      >
+        <section className="app-bootstrap-loading-card">
+          <img
+            src="/logo-horizontal.png?v=2"
+            alt="RunCore"
+          />
+
+          <span
+            className="app-bootstrap-spinner"
+            aria-hidden="true"
+          />
+
+          <p>Preparando seu painel...</p>
+        </section>
+      </main>
+    );
+  }
   if (!currentUser) return <LoginScreen onAuthenticated={setCurrentUser} />;
   if (currentUser.role === "student") {
     const studentLogout = () => {

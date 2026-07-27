@@ -948,9 +948,14 @@ export default function App() {
       return;
     }
 
+    const requestedWorkoutId = new URLSearchParams(
+      location.search,
+    ).get("sessao");
+
     if (
       selectedAthlete?.id === athlete.id
       && selectedView === viewSection
+      && !requestedWorkoutId
     ) {
       return;
     }
@@ -977,7 +982,30 @@ export default function App() {
       });
       setLoading(true);
       getTraining(athlete.id)
-        .then(setTraining)
+        .then((loadedTraining) => {
+          setTraining(loadedTraining);
+
+          if (requestedWorkoutId) {
+            const requestedWorkout = (
+              loadedTraining?.sessions || []
+            ).find(
+              (session) =>
+                String(session.id)
+                === String(requestedWorkoutId),
+            );
+
+            if (requestedWorkout) {
+              setSelectedWorkout(requestedWorkout);
+              setWorkoutEdit({
+                ...requestedWorkout,
+                notes: requestedWorkout.notes || "",
+                steps: requestedWorkout.steps || [],
+              });
+            } else {
+              setError("A sessão solicitada não foi encontrada.");
+            }
+          }
+        })
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
     }
@@ -985,6 +1013,7 @@ export default function App() {
     athletes,
     currentUser,
     location.pathname,
+    location.search,
     navigate,
     selectedAthlete,
     selectedView,
@@ -1066,38 +1095,45 @@ export default function App() {
     );
   }
 
-  async function openTraining(athlete, requestedWorkout = null) {
+  async function openTraining(
+    athlete,
+    requestedWorkout = null,
+  ) {
     setSelectedAthlete(athlete);
     setSelectedView("training");
-    navigate(
-      coachPaths.athletePlanning(athlete.id),
-    );
     setSelectedWorkout(null);
     setWorkoutEdit(null);
-    setTrainingForm({ name: "Planejamento Principal", objective: athlete.goal || "Preparação para prova", target_distance: "", start_date: new Date().toISOString().slice(0, 10), target_date: "", total_weeks: "8" });
-    setLoading(true);
     setError(null);
 
+    const planningPath =
+      coachPaths.athletePlanning(athlete.id);
+
+    if (requestedWorkout?.id) {
+      navigate(
+        `${planningPath}?sessao=${requestedWorkout.id}`,
+      );
+      return;
+    }
+
+    navigate(planningPath);
+
+    setTrainingForm({
+      name: "Planejamento Principal",
+      objective:
+        athlete.goal || "Preparação para prova",
+      target_distance: "",
+      start_date:
+        new Date().toISOString().slice(0, 10),
+      target_date: "",
+      total_weeks: "8",
+    });
+
+    setLoading(true);
+
     try {
-      const loadedTraining = await getTraining(athlete.id);
-      setTraining(loadedTraining);
-
-      if (requestedWorkout) {
-        const exactWorkout = (
-          loadedTraining?.sessions || []
-        ).find(
-          (session) =>
-            String(session.id)
-            === String(requestedWorkout.id),
-        ) || requestedWorkout;
-
-        setSelectedWorkout(exactWorkout);
-        setWorkoutEdit({
-          ...exactWorkout,
-          notes: exactWorkout.notes || "",
-          steps: exactWorkout.steps || [],
-        });
-      }
+      setTraining(
+        await getTraining(athlete.id),
+      );
     } catch (err) {
       setError(err.message);
     } finally {

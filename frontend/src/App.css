@@ -2685,3 +2685,60 @@ button {
     flex-direction: column;
   }
 }
+
+
+/* RUNCORE WORKOUT EDITOR SCROLL FIX */
+.dedicated-workout-editor-page {
+  display: block;
+  height: calc(100vh - 82px);
+  min-height: 0;
+  padding: 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dedicated-workout-editor-page .workout-editor-v2 {
+  min-height: max-content;
+  margin-bottom: 32px;
+}
+
+.dedicated-workout-editor-page .workout-editor-v2-grid,
+.dedicated-workout-editor-page .workout-editor-main,
+.dedicated-workout-editor-page .workout-block-list {
+  min-height: 0;
+  overflow: visible;
+}
+
+.dedicated-workout-editor-page .workout-editor-sidebar,
+.dedicated-workout-editor-page .workout-frequent-blocks {
+  align-self: start;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 980px) {
+  .dedicated-workout-editor-page {
+    height: calc(100vh - 82px);
+  }
+
+  .dedicated-workout-editor-page .workout-editor-sidebar,
+  .dedicated-workout-editor-page .workout-frequent-blocks {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 620px) {
+  .dedicated-workout-editor-page {
+    height: calc(100vh - 70px);
+    padding: 0;
+  }
+
+  .dedicated-workout-editor-page .workout-editor-v2 {
+    margin-bottom: 24px;
+  }
+}

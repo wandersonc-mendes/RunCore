@@ -483,3 +483,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* DEDICATED EDITOR SHELL */
+.app-shell-content:has(.dedicated-workout-editor-page) {
+  height: calc(100vh - 82px);
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 620px) {
+  .app-shell-content:has(.dedicated-workout-editor-page) {
+    height: calc(100vh - 70px);
+  }
+}

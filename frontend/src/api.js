@@ -50,11 +50,18 @@ function extractErrorMessage(body, status) {
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("runcore_token");
+  const controller = new AbortController();
+  const timeoutMilliseconds = options.timeout ?? 20000;
+  const timeoutId = window.setTimeout(
+    () => controller.abort(),
+    timeoutMilliseconds,
+  );
 
   let response;
 
   try {
     response = await fetch(`${API_URL}${path}`, {
+      signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
         ...(token
@@ -67,11 +74,22 @@ async function request(path, options = {}) {
       ...options,
     });
   } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error(
+        "A API demorou mais de 20 segundos para salvar. "
+        + "A operação foi interrompida para evitar que a tela fique travada.",
+      );
+    }
+
     throw new Error(
       "Não foi possível conectar à API. Verifique sua conexão e tente novamente.",
       {
         cause: error,
       },
+    );
+  } finally {
+    window.clearTimeout(
+      timeoutId,
     );
   }
 

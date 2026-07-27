@@ -1,4 +1,4 @@
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 
 from database.database import SessionLocal
 from models.training_step import (
@@ -129,12 +129,27 @@ class TrainingStepRepository:
         session = SessionLocal()
 
         try:
+            if session.bind.dialect.name == "postgresql":
+                session.execute(
+                    text(
+                        "SET LOCAL lock_timeout = '5s'"
+                    )
+                )
+                session.execute(
+                    text(
+                        "SET LOCAL statement_timeout = '15s'"
+                    )
+                )
+
             session.execute(
                 delete(TrainingStep).where(
                     TrainingStep.session_id == session_id
                 )
             )
-            session.add_all(steps)
+
+            session.add_all(
+                steps
+            )
             session.commit()
         except Exception:
             session.rollback()

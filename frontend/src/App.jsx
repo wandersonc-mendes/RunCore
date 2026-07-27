@@ -1532,11 +1532,14 @@ export default function App() {
     );
   }
 
+  const requestedWorkoutId = new URLSearchParams(
+    location.search,
+  ).get("sessao");
+
   if (
     selectedAthlete
     && selectedView === "training"
-    && selectedWorkout
-    && workoutEdit
+    && requestedWorkoutId
   ) {
     return (
       <AppShell
@@ -1544,14 +1547,30 @@ export default function App() {
         onLogout={coachLogout}
       >
         <div className="dedicated-workout-editor-page">
-          <SessionAdjustment
-            value={workoutEdit}
-            onChange={setWorkoutEdit}
-            onSave={handleUpdateWorkout}
-            onCancel={closeWorkoutEditor}
-            saving={savingTraining}
-            athlete={selectedAthlete}
-          />
+          {selectedWorkout && workoutEdit ? (
+            <SessionAdjustment
+              value={workoutEdit}
+              onChange={setWorkoutEdit}
+              onSave={handleUpdateWorkout}
+              onCancel={closeWorkoutEditor}
+              saving={savingTraining}
+              athlete={selectedAthlete}
+            />
+          ) : (
+            <section className="dedicated-workout-loading">
+              <span
+                className="dedicated-workout-spinner"
+                aria-hidden="true"
+              />
+              <div>
+                <p className="eyebrow">EDIÇÃO COMPLETA</p>
+                <h2>Carregando treino</h2>
+                <p>
+                  Preparando os blocos e dados da sessão.
+                </p>
+              </div>
+            </section>
+          )}
         </div>
       </AppShell>
     );

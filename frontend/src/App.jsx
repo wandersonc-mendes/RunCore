@@ -999,7 +999,9 @@ export default function App() {
               setWorkoutEdit({
                 ...requestedWorkout,
                 notes: requestedWorkout.notes || "",
-                steps: requestedWorkout.steps || [],
+                steps: (requestedWorkout.steps || []).map(
+                  (step) => ({ ...step }),
+                ),
               });
             } else {
               setError("A sessão solicitada não foi encontrada.");
@@ -1109,8 +1111,25 @@ export default function App() {
       coachPaths.athletePlanning(athlete.id);
 
     if (requestedWorkout?.id) {
+      const freshWorkout = (
+        training?.sessions || []
+      ).find(
+        (session) =>
+          String(session.id)
+          === String(requestedWorkout.id),
+      ) || requestedWorkout;
+
+      setSelectedWorkout(freshWorkout);
+      setWorkoutEdit({
+        ...freshWorkout,
+        notes: freshWorkout.notes || "",
+        steps: (freshWorkout.steps || []).map(
+          (step) => ({ ...step }),
+        ),
+      });
+
       navigate(
-        `${planningPath}?sessao=${requestedWorkout.id}`,
+        `${planningPath}?sessao=${freshWorkout.id}`,
       );
       return;
     }
@@ -1551,6 +1570,7 @@ export default function App() {
         <div className="dedicated-workout-editor-page">
           {selectedWorkout && workoutEdit ? (
             <SessionAdjustment
+              key={workoutEdit.id}
               value={workoutEdit}
               onChange={setWorkoutEdit}
               onSave={handleUpdateWorkout}

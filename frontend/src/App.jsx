@@ -522,14 +522,69 @@ export default function App() {
 
   async function handleUpdateWorkout(event) {
     event.preventDefault();
-    if (!workoutEdit || savingTraining) return;
+
+    if (!workoutEdit || savingTraining) {
+      return;
+    }
+
+    const normalizedWorkout = {
+      ...workoutEdit,
+      planned_distance: Number(
+        workoutEdit.planned_distance,
+      ),
+      repetitions: Number(
+        workoutEdit.repetitions,
+      ),
+      steps: workoutEdit.steps.map((step) => ({
+        ...step,
+        distance: Number(
+          step.distance,
+        ),
+        repetitions: Number(
+          step.repetitions,
+        ),
+      })),
+    };
+
     setSavingTraining(true);
+    setError(null);
+
     try {
-      const updated = await updateTrainingSession(selectedAthlete.id, workoutEdit.id, { ...workoutEdit, planned_distance: Number(workoutEdit.planned_distance), repetitions: Number(workoutEdit.repetitions), steps: workoutEdit.steps.map((step) => ({ ...step, distance: Number(step.distance), repetitions: Number(step.repetitions) })) });
-      setTraining(updated);
-      setSelectedWorkout(updated.sessions.find((session) => session.id === workoutEdit.id) || null);
+      await updateTrainingSession(
+        selectedAthlete.id,
+        workoutEdit.id,
+        normalizedWorkout,
+      );
+
+      setTraining((current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          sessions: current.sessions.map((session) => (
+            session.id === normalizedWorkout.id
+              ? {
+                  ...session,
+                  ...normalizedWorkout,
+                }
+              : session
+          )),
+        };
+      });
+
+      setSelectedWorkout(
+        normalizedWorkout,
+      );
       setWorkoutEdit(null);
-    } catch (err) { setError(err.message); } finally { setSavingTraining(false); }
+    } catch (err) {
+      setError(
+        err.message,
+      );
+    } finally {
+      setSavingTraining(false);
+    }
   }
 
   async function handleCreateEvaluation(event) {

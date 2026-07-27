@@ -317,20 +317,56 @@ def regenerate_training(athlete_id: int):
     return serialize_training(training_repository.get_by_id(training.id))
 
 
-@router.patch("/sessions/{session_id}", response_model=TrainingOut)
-def update_session(athlete_id: int, session_id: int, payload: TrainingSessionUpdate):
-    training = training_repository.get_active_by_athlete(athlete_id)
-    session = session_repository.get_by_id(session_id)
-    if training is None or session is None or session.training_id != training.id:
-        raise HTTPException(status_code=404, detail="Sessão de treino não encontrada.")
+@router.patch(
+    "/sessions/{session_id}",
+    status_code=status.HTTP_200_OK,
+)
+def update_session(
+    athlete_id: int,
+    session_id: int,
+    payload: TrainingSessionUpdate,
+):
+    training = training_repository.get_active_by_athlete(
+        athlete_id
+    )
+    session = session_repository.get_by_id(
+        session_id
+    )
+
+    if (
+        training is None
+        or session is None
+        or session.training_id != training.id
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Sessão de treino não encontrada.",
+        )
+
     session.workout_name = payload.workout_name
+
     if payload.session_date:
         session.scheduled_date = payload.session_date
         session.weekday = payload.session_date.weekday()
+
     session.zone = payload.zone
     session.planned_distance = payload.planned_distance
     session.repetitions = payload.repetitions
     session.notes = payload.notes
-    session_repository.update(session)
-    step_service.save(session.id, [step.model_dump() for step in payload.steps])
-    return serialize_training(training_repository.get_by_id(training.id))
+
+    session_repository.update(
+        session
+    )
+
+    step_service.save(
+        session.id,
+        [
+            step.model_dump()
+            for step in payload.steps
+        ],
+    )
+
+    return {
+        "message": "Treino salvo com sucesso.",
+        "session_id": session.id,
+    }

@@ -1161,6 +1161,18 @@ export default function App() {
   function closeWorkoutEditor() {
     setSelectedWorkout(null);
     setWorkoutEdit(null);
+
+    if (
+      selectedAthlete
+      && location.search.includes("sessao=")
+    ) {
+      navigate(
+        coachPaths.athletePlanning(
+          selectedAthlete.id,
+        ),
+        { replace: true },
+      );
+    }
   }
 
   async function handleUpdateWorkout(event) {
@@ -1520,6 +1532,31 @@ export default function App() {
     );
   }
 
+  if (
+    selectedAthlete
+    && selectedView === "training"
+    && selectedWorkout
+    && workoutEdit
+  ) {
+    return (
+      <AppShell
+        user={currentUser}
+        onLogout={coachLogout}
+      >
+        <div className="dedicated-workout-editor-page">
+          <SessionAdjustment
+            value={workoutEdit}
+            onChange={setWorkoutEdit}
+            onSave={handleUpdateWorkout}
+            onCancel={closeWorkoutEditor}
+            saving={savingTraining}
+            athlete={selectedAthlete}
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
   if (selectedAthlete && selectedView === "training") {
     const sessionsByWeek = (training?.sessions || []).reduce((weeks, session) => {
       (weeks[session.week] ||= []).push(session);
@@ -1546,46 +1583,6 @@ export default function App() {
             </>
           )}
         </main>
-
-        {selectedWorkout && workoutEdit && (
-          <div
-            className="session-editor-overlay"
-            role="presentation"
-            onMouseDown={closeWorkoutEditor}
-          >
-            <section
-              className="session-editor-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Ajustar sessão"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <header>
-                <div>
-                  <p className="eyebrow">EDIÇÃO COMPLETA</p>
-                  <h2>Ajustar sessão</h2>
-                </div>
-
-                <button
-                  className="modal-close"
-                  onClick={closeWorkoutEditor}
-                  aria-label="Fechar edição"
-                >
-                  ×
-                </button>
-              </header>
-
-              <SessionAdjustment
-                value={workoutEdit}
-                onChange={setWorkoutEdit}
-                onSave={handleUpdateWorkout}
-                onCancel={closeWorkoutEditor}
-                saving={savingTraining}
-                athlete={selectedAthlete}
-              />
-            </section>
-          </div>
-        )}
         </div>
       </AppShell>
     );

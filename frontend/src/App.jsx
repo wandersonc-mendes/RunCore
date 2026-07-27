@@ -1066,7 +1066,7 @@ export default function App() {
     );
   }
 
-  async function openTraining(athlete) {
+  async function openTraining(athlete, requestedWorkout = null) {
     setSelectedAthlete(athlete);
     setSelectedView("training");
     navigate(
@@ -1077,8 +1077,27 @@ export default function App() {
     setTrainingForm({ name: "Planejamento Principal", objective: athlete.goal || "Preparação para prova", target_distance: "", start_date: new Date().toISOString().slice(0, 10), target_date: "", total_weeks: "8" });
     setLoading(true);
     setError(null);
+
     try {
-      setTraining(await getTraining(athlete.id));
+      const loadedTraining = await getTraining(athlete.id);
+      setTraining(loadedTraining);
+
+      if (requestedWorkout) {
+        const exactWorkout = (
+          loadedTraining?.sessions || []
+        ).find(
+          (session) =>
+            String(session.id)
+            === String(requestedWorkout.id),
+        ) || requestedWorkout;
+
+        setSelectedWorkout(exactWorkout);
+        setWorkoutEdit({
+          ...exactWorkout,
+          notes: exactWorkout.notes || "",
+          steps: exactWorkout.steps || [],
+        });
+      }
     } catch (err) {
       setError(err.message);
     } finally {

@@ -420,7 +420,12 @@ export default function PlanningPage({
                           : "planning-session-cell empty"
                       }
                       key={`${athlete.id}-${key}`}
-                      onClick={() => onOpenPlanning(athlete)}
+                      onClick={() =>
+                        onOpenPlanning(
+                          athlete,
+                          session || null,
+                        )
+                      }
                     >
                       {session ? (
                         <>

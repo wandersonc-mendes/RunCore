@@ -292,7 +292,7 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   return (
     <main className="student-page routed-student-page" data-view={view}>
       <header className="student-header">
-        <div className="brand"><span className="brand-logo"><img src="/logo-horizontal.png?v=1" alt="RunCore" />
+        <div className="brand"><span className="brand-logo"><img src="/logo-horizontal.png?v=2" alt="RunCore" />
         </span><div><h1>RunCore</h1><p>Área do aluno</p></div></div>
         <button className="btn-ghost" onClick={() => { clearSession(); onLogout(); }}>Sair</button>
       </header>

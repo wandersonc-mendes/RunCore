@@ -207,7 +207,7 @@ export default function IptAssessmentView({
       <header className="topbar">
         <div className="brand">
           <span className="brand-logo">
-            <img src="/logo-horizontal.png?v=1" alt="RunCore" />
+            <img src="/logo-horizontal.png?v=2" alt="RunCore" />
           </span>
 
           <div>

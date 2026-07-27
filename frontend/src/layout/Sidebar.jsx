@@ -11,7 +11,7 @@ export default function Sidebar({ role, mobileOpen, onClose }) {
       )}
       <aside className={`app-sidebar ${mobileOpen ? "is-open" : ""}`}>
         <div className="app-sidebar-brand">
-          <img src="/logo-horizontal.png?v=1" alt="RunCore" />
+          <img src="/logo-horizontal.png?v=2" alt="RunCore" />
         </div>
         <nav className="app-sidebar-nav" aria-label="Menu principal">
           {menu.map((item) => (

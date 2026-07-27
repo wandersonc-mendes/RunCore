@@ -1221,7 +1221,7 @@ button {
   left: clamp(38px, 7vw, 72px);
   width: clamp(170px, 19vw, 250px);
   height: 82px;
-  background: url("/logo-horizontal.png?v=1") left center / contain no-repeat;
+  background: url("/logo-horizontal.png?v=2") left center / contain no-repeat;
   filter: brightness(0) invert(1);
   pointer-events: none;
 }
@@ -1251,7 +1251,7 @@ button {
   margin: 0 0 24px;
   overflow: hidden;
   color: transparent;
-  background: url("/logo-horizontal.png?v=1") left center / contain no-repeat;
+  background: url("/logo-horizontal.png?v=2") left center / contain no-repeat;
 }
 
 .login-card h1 {

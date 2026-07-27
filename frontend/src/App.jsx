@@ -1619,7 +1619,17 @@ export default function App() {
             <>
               <section className="card training-summary"><div><p className="eyebrow">MACROCICLO · FASE ATUAL: {training.current_phase}</p><h2>{training.name}</h2><p>Meta: {training.target_distance} km</p><small>Semana {training.current_week} de {training.total_weeks} · início {formatTestDate(training.start_date)}{training.target_date ? ` · prova ${formatTestDate(training.target_date)}` : ""}</small></div><button className="btn-ghost" disabled={savingTraining} onClick={() => handleCreateTraining(true)}>{savingTraining ? "Atualizando..." : "Atualizar planilha"}</button></section>
               {Object.entries(sessionsByWeek).map(([week, sessions]) => (
-                <section key={week} className="week-section"><h2>Semana {week} <small>· {sessions[0]?.phase}</small></h2><div className="session-grid">{sessions.map((session) => <article className="card session-card" key={session.id}><span className="session-day">{weekdays[session.weekday]} · {formatTestDate(session.session_date)}</span><h3>{session.workout_name}</h3><p className="zone">{session.zone}</p><p>{session.repetitions ? `${session.repetitions} × ${session.planned_distance} m` : `${session.planned_distance.toFixed(1)} km`}</p><button className="btn-link open-workout" onClick={() => { setSelectedWorkout(session); setWorkoutEdit({ ...session, notes: session.notes || "", steps: session.steps || [] }); }}>Abrir e ajustar</button></article>)}</div></section>
+                <section key={week} className="week-section"><h2>Semana {week} <small>· {sessions[0]?.phase}</small></h2><div className="session-grid">{sessions.map((session) => <article className="card session-card" key={session.id}><span className="session-day">{weekdays[session.weekday]} · {formatTestDate(session.session_date)}</span><h3>{session.workout_name}</h3><p className="zone">{session.zone}</p><p>{session.repetitions ? `${session.repetitions} × ${session.planned_distance} m` : `${session.planned_distance.toFixed(1)} km`}</p><button
+  className="btn-link open-workout"
+  onClick={() =>
+    openTraining(
+      selectedAthlete,
+      session,
+    )
+  }
+>
+  Abrir e ajustar
+</button></article>)}</div></section>
               ))}
             </>
           )}

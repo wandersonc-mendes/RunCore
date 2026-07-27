@@ -1317,10 +1317,7 @@ export default function App() {
         };
       });
 
-      setSelectedWorkout(
-        normalizedWorkout,
-      );
-      setWorkoutEdit(null);
+      closeWorkoutEditor();
     } catch (err) {
       setError(
         err.message,

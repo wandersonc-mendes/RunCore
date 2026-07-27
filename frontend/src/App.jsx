@@ -953,6 +953,26 @@ export default function App() {
       location.search,
     ).get("sessao");
 
+    const hasPendingTemplate = Boolean(
+      window.sessionStorage.getItem(
+        "runcore.pending-workout-template",
+      ),
+    );
+
+    const requestedWorkoutAlreadyReady = (
+      requestedWorkoutId
+      && selectedAthlete?.id === athlete.id
+      && selectedView === viewSection
+      && String(selectedWorkout?.id)
+        === String(requestedWorkoutId)
+      && workoutEdit
+      && !hasPendingTemplate
+    );
+
+    if (requestedWorkoutAlreadyReady) {
+      return;
+    }
+
     if (
       selectedAthlete?.id === athlete.id
       && selectedView === viewSection
@@ -1072,6 +1092,8 @@ export default function App() {
     navigate,
     selectedAthlete,
     selectedView,
+    selectedWorkout,
+    workoutEdit,
   ]);
 
   async function loadInvitations() {
@@ -1728,6 +1750,21 @@ export default function App() {
               saving={savingTraining}
               athlete={selectedAthlete}
             />
+          ) : error ? (
+            <section className="dedicated-workout-loading">
+              <div>
+                <p className="eyebrow">NÃO FOI POSSÍVEL ABRIR</p>
+                <h2>Erro ao carregar treino</h2>
+                <p>{error}</p>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={closeWorkoutEditor}
+                >
+                  Voltar ao planejamento
+                </button>
+              </div>
+            </section>
           ) : (
             <section className="dedicated-workout-loading">
               <span

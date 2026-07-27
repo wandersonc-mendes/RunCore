@@ -334,12 +334,24 @@ export default function App() {
     );
 
     if (!routeMatch) {
-      if (
-        location.pathname === coachPaths.athletes
-        || location.pathname === coachPaths.dashboard
-      ) {
+      const topLevelCoachPaths = new Set([
+        coachPaths.dashboard,
+        coachPaths.athletes,
+        coachPaths.planning,
+        coachPaths.workouts,
+        coachPaths.calendar,
+        coachPaths.evaluations,
+        coachPaths.reports,
+        coachPaths.settings,
+        coachPaths.profile,
+      ]);
+
+      if (topLevelCoachPaths.has(location.pathname)) {
         setSelectedAthlete(null);
+        setSelectedWorkout(null);
+        setWorkoutEdit(null);
       }
+
       return;
     }
 

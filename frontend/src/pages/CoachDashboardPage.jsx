@@ -68,6 +68,23 @@ function formatToday() {
 }
 
 
+function formatSessionDistance(session) {
+  const repetitions = Number(
+    session.repetitions || 0,
+  );
+
+  const distance = Number(
+    session.planned_distance || 0,
+  );
+
+  if (repetitions > 0) {
+    return `${repetitions} × ${distance} m`;
+  }
+
+  return `${distance.toFixed(1)} km`;
+}
+
+
 export default function CoachDashboardPage({
   user,
   athletes,
@@ -288,9 +305,7 @@ export default function CoachDashboardPage({
                       <small>
                         {session.workout_name}
                         {" · "}
-                        {Number(
-                          session.planned_distance || 0,
-                        ).toFixed(1)} km
+                        {formatSessionDistance(session)}
                       </small>
                     </span>
 

@@ -132,6 +132,50 @@ function activityMetric(activity) {
   return `Velocidade média: ${(activity.distance / (activity.moving_time / 3600)).toFixed(1)} km/h`;
 }
 
+
+function localDateKey(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function dateFromKey(value) {
+  if (!value) return null;
+  const date = new Date(`${value}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function StudentTrainingDonut({ completed, proposed, extra }) {
+  const total = completed + proposed + extra;
+  const completedEnd = total ? completed / total * 100 : 0;
+  const proposedEnd = total ? completedEnd + proposed / total * 100 : 0;
+
+  return (
+    <div className="student-training-donut-wrap">
+      <div
+        className="student-training-donut"
+        style={{
+          background: total
+            ? `conic-gradient(#19865f 0 ${completedEnd}%, #1598c8 ${completedEnd}% ${proposedEnd}%, #f29a1f ${proposedEnd}% 100%)`
+            : "conic-gradient(#dfe7e3 0 100%)",
+        }}
+      >
+        <div><strong>{total}</strong><span>treinos no mês</span></div>
+      </div>
+      <div className="student-training-donut-legend">
+        <span className="completed"><i />Feitos<strong>{completed}</strong></span>
+        <span className="proposed"><i />Propostos<strong>{proposed}</strong></span>
+        <span className="extra"><i />Feitos avulsos<strong>{extra}</strong></span>
+      </div>
+    </div>
+  );
+}
+
+
 export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const [strava, setStrava] = useState(null);
   const [error, setError] = useState("");
@@ -271,6 +315,51 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const velocity = paceSeconds ? 3600 / paceSeconds : 0;
   const predictedTime = paceSeconds * calculatorDistance;
 
+
+  const dashboardSummary = (() => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const monthRuns = runs.filter((activity) => {
+      const date = new Date(activity.start_at);
+      return !Number.isNaN(date.getTime())
+        && date.getMonth() === currentMonth
+        && date.getFullYear() === currentYear;
+    });
+
+    const recentDistance = runs.reduce((total, activity) => {
+      const date = new Date(activity.start_at);
+      return !Number.isNaN(date.getTime()) && date >= thirtyDaysAgo && date <= now
+        ? total + Number(activity.distance || 0)
+        : total;
+    }, 0);
+
+    const monthSessions = (training?.sessions || []).filter((session) => {
+      const date = dateFromKey(session.session_date);
+      return date && date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    });
+
+    const activityDates = new Set(monthRuns.map((activity) => localDateKey(activity.start_at)));
+    const plannedDates = new Set(monthSessions.map((session) => session.session_date).filter(Boolean));
+    const completed = monthSessions.filter((session) => activityDates.has(session.session_date)).length;
+    const proposed = monthSessions.filter((session) => !activityDates.has(session.session_date)).length;
+    const extra = monthRuns.filter((activity) => !plannedDates.has(localDateKey(activity.start_at))).length;
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const upcomingGoals = [...goals]
+      .filter((goal) => {
+        const date = dateFromKey(goal.target_date);
+        return date && date >= today;
+      })
+      .sort((a, b) => a.target_date.localeCompare(b.target_date))
+      .slice(0, 3);
+
+    return { recentDistance, completed, proposed, extra, upcomingGoals };
+  })();
+
   useEffect(() => {
     if (view === "activities") {
       setShowActivities(true);
@@ -306,22 +395,58 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
         <button onClick={() => setShowProfile(true)}>Meu perfil</button>
       </nav>
       <section className="student-content">
-        {view === "dashboard" && (
-          <section className="student-dashboard-hero">
-            <div>
-              <p className="eyebrow">VISÃO GERAL</p>
-              <h2>Olá, {user.name}.</h2>
-              <p>
-                Acompanhe sua semana de treino, suas atividades
-                e sua evolução em um único lugar.
-              </p>
-            </div>
+                {view === "dashboard" && (
+          <>
+            <section className="student-dashboard-hero">
+              <div>
+                <p className="eyebrow">VISÃO GERAL</p>
+                <h2>Olá, {user.name}.</h2>
+                <p>Acompanhe sua semana de treino, suas atividades e sua evolução em um único lugar.</p>
+              </div>
+              <div className="student-dashboard-hero-brand">
+                <span>RUNCORE</span>
+                <strong>Seu treinamento em movimento</strong>
+              </div>
+            </section>
 
-            <div className="student-dashboard-hero-brand">
-              <span>RUNCORE</span>
-              <strong>Seu treinamento em movimento</strong>
-            </div>
-          </section>
+            <section className="student-dashboard-overview">
+              <div className="student-dashboard-overview-main">
+                <article className="student-month-distance-card">
+                  <div className="student-dashboard-icon">KM</div>
+                  <div>
+                    <span>Quilometragem recente</span>
+                    <strong>{dashboardSummary.recentDistance.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km</strong>
+                    <small>percorridos nos últimos 30 dias</small>
+                  </div>
+                </article>
+
+                <article className="student-race-calendar-card">
+                  <header>
+                    <div><span>Calendário pessoal</span><h3>Próximas provas</h3></div>
+                    <button type="button" className="btn-ghost" onClick={() => document.getElementById("metas")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Gerenciar</button>
+                  </header>
+                  {dashboardSummary.upcomingGoals.length ? (
+                    <div className="student-race-calendar-list">
+                      {dashboardSummary.upcomingGoals.map((goal) => {
+                        const raceDate = dateFromKey(goal.target_date);
+                        return (
+                          <article key={goal.id}>
+                            <time><strong>{String(raceDate.getDate()).padStart(2, "0")}</strong><span>{new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(raceDate)}</span></time>
+                            <div><strong>{goal.name}</strong><span>{Number(goal.distance).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} km · {goal.priority}</span></div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  ) : <p className="muted">Nenhuma prova futura cadastrada.</p>}
+                </article>
+              </div>
+
+              <article className="student-training-status-card">
+                <header><div><span>Situação dos treinos</span><h3>Mês atual</h3></div></header>
+                <StudentTrainingDonut completed={dashboardSummary.completed} proposed={dashboardSummary.proposed} extra={dashboardSummary.extra} />
+              </article>
+            </section>
+          </>
         )}
 
         <nav className="student-nav" aria-label="Navegação da área do aluno">

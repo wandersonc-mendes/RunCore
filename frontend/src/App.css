@@ -2140,9 +2140,43 @@ button {
 .workout-block-card > header button {
   border: 0;
   background: transparent;
+  color: var(--shell-text-muted, #5f706b);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.workout-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.workout-block-actions button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px !important;
+}
+
+.workout-block-actions button:hover:not(:disabled) {
+  background: var(--shell-accent-soft, #e2f3ee);
+  color: var(--shell-accent, #0f6f5c);
+}
+
+.workout-block-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.workout-block-actions .remove-workout-block {
   color: #b3432f;
   font-size: 18px;
-  cursor: pointer;
+}
+
+.workout-block-actions .remove-workout-block:hover:not(:disabled) {
+  background: #fbe9e5;
+  color: #9f321f;
 }
 
 .workout-block-fields {

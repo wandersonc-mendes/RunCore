@@ -87,11 +87,57 @@ function formatDuration(seconds) {
   return [hours, minutes, remainder].map((part) => String(part).padStart(2, "0")).join(":");
 }
 
-function totalSessionDistance(session) {
-  return session.steps.reduce(
-    (total, step) => total + (step.distance * (step.repetitions || 1)),
+function stepDistanceInKm(step) {
+  const distance = Number(step?.distance || 0);
+  const repetitions = Math.max(Number(step?.repetitions || 0), 1);
+  const unit = step?.distance_unit
+    || (Number(step?.repetitions || 0) > 0 ? "m" : "km");
+
+  return distance * repetitions * (unit === "m" ? 0.001 : 1);
+}
+
+function workoutSummaryFromSteps(steps = []) {
+  const repeatedStep = steps.find((step) => (
+    Number(step?.repetitions || 0) > 1
+    && stepTone(step?.type) === "run"
+    && (step?.distance_unit || "m") === "m"
+  ));
+
+  if (repeatedStep) {
+    const repetitions = Number(repeatedStep.repetitions);
+    const distance = Number(repeatedStep.distance || 0);
+    const unit = repeatedStep.distance_unit || "m";
+
+    return {
+      label: `${repetitions} × ${distance.toLocaleString("pt-BR")} ${unit}`,
+      plannedDistance: distance,
+      repetitions,
+    };
+  }
+
+  const totalDistance = steps.reduce(
+    (total, step) => total + stepDistanceInKm(step),
     0,
   );
+
+  return {
+    label: `${totalDistance.toLocaleString("pt-BR", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 2,
+    })} km`,
+    plannedDistance: totalDistance,
+    repetitions: 0,
+  };
+}
+
+function formatWorkoutSummary(session) {
+  if (session?.steps?.length) {
+    return workoutSummaryFromSteps(session.steps).label;
+  }
+
+  return session?.repetitions
+    ? `${session.repetitions} × ${session.planned_distance} m`
+    : `${Number(session?.planned_distance || 0).toFixed(1)} km`;
 }
 
 function stepTone(type = "") {
@@ -275,6 +321,32 @@ function SessionAdjustment({
         (_, position) => position !== index,
       ),
     }));
+  }
+
+  function moveStep(index, direction) {
+    const nextIndex = index + direction;
+
+    onChange((session) => {
+      if (
+        nextIndex < 0
+        || nextIndex >= session.steps.length
+      ) {
+        return session;
+      }
+
+      const steps = [...session.steps];
+      [steps[index], steps[nextIndex]] = [
+        steps[nextIndex],
+        steps[index],
+      ];
+
+      return {
+        ...session,
+        steps,
+      };
+    });
+
+    setOpenTypePicker(null);
   }
 
   function stepDistanceKm(step) {
@@ -549,15 +621,39 @@ function SessionAdjustment({
                     {step.type || `Bloco ${index + 1}`}
                   </strong>
 
-                  {value.steps.length > 1 && (
+                  <div className="workout-block-actions">
                     <button
                       type="button"
-                      onClick={() => removeStep(index)}
-                      aria-label={`Remover bloco ${index + 1}`}
+                      onClick={() => moveStep(index, -1)}
+                      aria-label={`Mover bloco ${index + 1} para cima`}
+                      title="Mover para cima"
+                      disabled={index === 0}
                     >
-                      ×
+                      ↑
                     </button>
-                  )}
+
+                    <button
+                      type="button"
+                      onClick={() => moveStep(index, 1)}
+                      aria-label={`Mover bloco ${index + 1} para baixo`}
+                      title="Mover para baixo"
+                      disabled={index === value.steps.length - 1}
+                    >
+                      ↓
+                    </button>
+
+                    {value.steps.length > 1 && (
+                      <button
+                        type="button"
+                        className="remove-workout-block"
+                        onClick={() => removeStep(index)}
+                        aria-label={`Remover bloco ${index + 1}`}
+                        title="Remover bloco"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </header>
 
                 <div className="workout-block-fields">
@@ -1368,23 +1464,24 @@ export default function App() {
       return;
     }
 
-    const normalizedWorkout = {
-      ...workoutEdit,
-      planned_distance: Number(
-        workoutEdit.planned_distance,
+    const normalizedSteps = workoutEdit.steps.map((step) => ({
+      ...step,
+      distance: Number(
+        step.distance,
       ),
       repetitions: Number(
-        workoutEdit.repetitions,
+        step.repetitions,
       ),
-      steps: workoutEdit.steps.map((step) => ({
-        ...step,
-        distance: Number(
-          step.distance,
-        ),
-        repetitions: Number(
-          step.repetitions,
-        ),
-      })),
+    }));
+    const workoutSummary = workoutSummaryFromSteps(
+      normalizedSteps,
+    );
+
+    const normalizedWorkout = {
+      ...workoutEdit,
+      planned_distance: workoutSummary.plannedDistance,
+      repetitions: workoutSummary.repetitions,
+      steps: normalizedSteps,
     };
 
     setSavingTraining(true);
@@ -1852,7 +1949,7 @@ export default function App() {
             <>
               <section className="card training-summary"><div><p className="eyebrow">MACROCICLO · FASE ATUAL: {training.current_phase}</p><h2>{training.name}</h2><p>Meta: {training.target_distance} km</p><small>Semana {training.current_week} de {training.total_weeks} · início {formatTestDate(training.start_date)}{training.target_date ? ` · prova ${formatTestDate(training.target_date)}` : ""}</small></div><button className="btn-ghost" disabled={savingTraining} onClick={() => handleCreateTraining(true)}>{savingTraining ? "Atualizando..." : "Atualizar planilha"}</button></section>
               {Object.entries(sessionsByWeek).map(([week, sessions]) => (
-                <section key={week} className="week-section"><h2>Semana {week} <small>· {sessions[0]?.phase}</small></h2><div className="session-grid">{sessions.map((session) => <article className="card session-card" key={session.id}><span className="session-day">{weekdays[session.weekday]} · {formatTestDate(session.session_date)}</span><h3>{session.workout_name}</h3><p className="zone">{session.zone}</p><p>{session.repetitions ? `${session.repetitions} × ${session.planned_distance} m` : `${session.planned_distance.toFixed(1)} km`}</p><button
+                <section key={week} className="week-section"><h2>Semana {week} <small>· {sessions[0]?.phase}</small></h2><div className="session-grid">{sessions.map((session) => <article className="card session-card" key={session.id}><span className="session-day">{weekdays[session.weekday]} · {formatTestDate(session.session_date)}</span><h3>{session.workout_name}</h3><p className="zone">{session.zone}</p><p>{formatWorkoutSummary(session)}</p><button
   className="btn-link open-workout"
   onClick={() =>
     openTraining(

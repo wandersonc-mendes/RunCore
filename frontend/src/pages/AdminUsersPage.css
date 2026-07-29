@@ -5,3 +5,164 @@
 .coach-registration-tabs{display:flex;gap:8px;overflow-x:auto;padding:14px 24px 0;border-bottom:1px solid var(--border);background:var(--surface-soft,#f7faf8);scrollbar-width:thin}.coach-registration-tabs button{position:relative;flex:0 0 auto;min-width:max-content;padding:11px 15px 13px;border:1px solid transparent;border-bottom:0;border-radius:10px 10px 0 0;background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:12px;font-weight:800;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease}.coach-registration-tabs button:hover{color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent)}.coach-registration-tabs button.active{border-color:var(--border);background:var(--surface);color:var(--accent);box-shadow:0 -3px 10px rgb(18 57 49/.04)}.coach-registration-tabs button.active::after{position:absolute;right:14px;bottom:-1px;left:14px;height:3px;border-radius:999px;background:var(--accent);content:''}
 .coach-registration-card form{display:grid;gap:22px;padding:26px 28px 0}.coach-registration-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px;padding:22px;border:1px solid var(--border);border-radius:15px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-soft,#f7faf8) 72%,var(--surface)),var(--surface))}.coach-registration-fields label,.coach-registration-textarea{display:grid;gap:7px;color:var(--text);font-size:13px;font-weight:750}.coach-registration-fields input,.coach-registration-fields select,.coach-registration-textarea textarea{width:100%;min-height:46px;padding:11px 13px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;box-shadow:inset 0 1px 2px rgb(18 57 49/.025);transition:border-color .18s ease,box-shadow .18s ease}.coach-registration-fields input:hover,.coach-registration-fields select:hover,.coach-registration-textarea textarea:hover{border-color:color-mix(in srgb,var(--accent) 38%,var(--border))}.coach-registration-fields input:focus,.coach-registration-fields select:focus,.coach-registration-textarea textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent),inset 0 1px 2px rgb(18 57 49/.03);outline:none}.coach-registration-fields input[readonly]{background:var(--surface-soft);color:var(--muted);cursor:not-allowed}.coach-registration-fields .wide{grid-column:1/-1}.coach-registration-check{display:flex!important;align-items:center;gap:10px!important;min-height:50px;padding:12px 14px;border:1px solid var(--border);border-radius:11px;background:color-mix(in srgb,var(--accent) 5%,var(--surface));cursor:pointer}.coach-registration-check input{width:19px;height:19px;min-height:auto;margin:0;accent-color:var(--accent)}.coach-registration-inline{display:grid;grid-template-columns:minmax(140px,1fr) auto;gap:9px}.coach-registration-inline .btn-ghost{min-height:46px;white-space:nowrap}.coach-registration-help{padding:13px 15px;border-left:4px solid var(--accent);border-radius:8px;background:color-mix(in srgb,var(--accent) 7%,var(--surface));color:var(--muted);font-size:12px;font-weight:500;line-height:1.5;margin:0}.coach-registration-textarea{padding:22px;border:1px solid var(--border);border-radius:15px;background:var(--surface-soft,#f7faf8)}.coach-registration-textarea span{color:var(--muted);font-size:12px;font-weight:500;line-height:1.45}.coach-registration-textarea textarea{min-height:250px;resize:vertical}.coach-registration-actions{position:sticky;bottom:0;z-index:4;display:flex;justify-content:flex-end;gap:10px;margin:0 -28px;padding:16px 28px;border-top:1px solid var(--border);background:color-mix(in srgb,var(--surface) 94%,transparent);box-shadow:0 -8px 24px rgb(18 57 49/.06);backdrop-filter:blur(10px)}.coach-registration-actions .btn-primary{min-width:180px;min-height:44px;box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 24%,transparent)}.coach-registration-actions .btn-ghost{min-height:44px}
 @media(max-width:1050px){.admin-users-grid{grid-template-columns:1fr}.coach-registration-fields{gap:16px}}@media(max-width:900px){.admin-users-heading{align-items:flex-start;flex-direction:column;gap:14px}.admin-users-heading-actions{width:100%}.coach-registration-fields{grid-template-columns:1fr}.coach-registration-fields .wide{grid-column:auto}}@media(max-width:680px){.coach-registration-card{border-radius:14px}.coach-registration-heading{align-items:flex-start;flex-direction:column;padding:21px 18px 17px}.coach-registration-heading>button{width:100%}.coach-registration-tabs{padding-right:14px;padding-left:14px}.coach-registration-card form{padding:18px 16px 0}.coach-registration-fields,.coach-registration-textarea{padding:16px}.coach-registration-inline{grid-template-columns:1fr}.coach-registration-actions{flex-direction:column-reverse;margin:0 -16px;padding:14px 16px}.coach-registration-actions button{width:100%}.coach-registration-actions .btn-primary{min-width:0}}
+
+/* RUNCORE ADMIN USERS CONTRAST FIX */
+.admin-users-page {
+  color: #17211e;
+}
+
+.admin-users-heading > div:first-child > p:last-child,
+.admin-user-form header p,
+.admin-user-list header p,
+.coach-registration-heading > div > p:last-child {
+  color: #68756f;
+}
+
+.admin-user-form,
+.admin-user-list,
+.coach-registration-card {
+  border-color: #d7dfdb;
+  background: #ffffff;
+}
+
+.admin-user-form,
+.admin-user-list {
+  box-shadow:
+    0 10px 28px rgb(20 48 40 / .08),
+    0 1px 3px rgb(20 48 40 / .05);
+}
+
+.admin-user-form input,
+.admin-user-form select,
+.admin-user-table-wrap select {
+  border-color: #c9d4cf;
+  background: #f6f9f7;
+  color: #17211e;
+}
+
+.admin-user-form input:hover,
+.admin-user-form select:hover,
+.admin-user-table-wrap select:hover {
+  border-color: #8ca89d;
+}
+
+.admin-user-table-wrap th {
+  color: #5c6964;
+}
+
+.admin-user-table-wrap td {
+  color: #27332f;
+}
+
+.coach-registration-heading {
+  border-bottom-color: #dce4e0;
+  background:
+    radial-gradient(
+      circle at 92% 12%,
+      rgb(19 126 96 / .13),
+      transparent 31%
+    ),
+    #ffffff;
+}
+
+.coach-registration-tabs {
+  border-bottom-color: #d7dfdb;
+  background: #edf3f0;
+}
+
+.coach-registration-tabs button {
+  color: #5f6d67;
+}
+
+.coach-registration-tabs button:hover {
+  background: #e2ece7;
+  color: #0d7659;
+}
+
+.coach-registration-tabs button.active {
+  border-color: #b8c8c1;
+  background: #ffffff;
+  color: #0b7357;
+  box-shadow: 0 -3px 12px rgb(20 48 40 / .07);
+}
+
+.coach-registration-fields,
+.coach-registration-textarea {
+  border-color: #d3ddd8;
+  background: #f2f6f4;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .9);
+}
+
+.coach-registration-fields label,
+.coach-registration-textarea {
+  color: #24302c;
+}
+
+.coach-registration-fields input,
+.coach-registration-fields select,
+.coach-registration-textarea textarea {
+  border-color: #c5d1cb;
+  background: #ffffff;
+  color: #17211e;
+  box-shadow:
+    inset 0 1px 2px rgb(20 48 40 / .04),
+    0 1px 1px rgb(20 48 40 / .025);
+}
+
+.coach-registration-fields input:hover,
+.coach-registration-fields select:hover,
+.coach-registration-textarea textarea:hover {
+  border-color: #78a18f;
+}
+
+.coach-registration-fields input:focus,
+.coach-registration-fields select:focus,
+.coach-registration-textarea textarea:focus {
+  border-color: #0b7a5c;
+  box-shadow:
+    0 0 0 3px rgb(11 122 92 / .14),
+    inset 0 1px 2px rgb(20 48 40 / .04);
+}
+
+.coach-registration-fields input[readonly] {
+  border-color: #d1d9d5;
+  background: #e9efec;
+  color: #64716b;
+}
+
+.coach-registration-fields input::placeholder,
+.coach-registration-textarea textarea::placeholder {
+  color: #8b9691;
+  opacity: 1;
+}
+
+.coach-registration-check {
+  border-color: #c7d7d0;
+  background: #e9f3ef;
+  color: #21302a;
+}
+
+.coach-registration-help {
+  border-left-color: #0b7a5c;
+  background: #eaf4f0;
+  color: #52615b;
+}
+
+.coach-registration-actions {
+  border-top-color: #d4ddd9;
+  background: rgb(255 255 255 / .97);
+  box-shadow: 0 -10px 28px rgb(20 48 40 / .09);
+}
+
+.admin-users-heading-actions > span {
+  border-color: #d3ddd8;
+  background: #ffffff;
+  color: #46534e;
+  box-shadow: 0 4px 14px rgb(20 48 40 / .06);
+}
+
+@media (prefers-color-scheme: dark) {
+  .admin-users-page {
+    color: var(--text);
+  }
+}

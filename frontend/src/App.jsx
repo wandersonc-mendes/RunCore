@@ -852,14 +852,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (window.location.hostname === "runcoreapp.com.br") {
-      window.location.replace(
-        `https://www.runcoreapp.com.br${window.location.pathname}${window.location.search}${window.location.hash}`,
-      );
-    }
-  }, []);
-
-  useEffect(() => {
     if (["coach", "master"].includes(currentUser?.role)) { loadAthletes(""); loadInvitations(); }
   }, [currentUser]);
 

@@ -1,4 +1,4 @@
-import { coachPaths, studentPaths } from "../router/paths";
+import { adminPaths, coachPaths, studentPaths } from "../router/paths";
 
 export const coachMenu = [
   { label: "Dashboard", path: coachPaths.dashboard, icon: "⌂" },
@@ -21,4 +21,9 @@ export const studentMenu = [
   { label: "Agenda", path: studentPaths.calendar, icon: "□" },
   { label: "Meu perfil", path: studentPaths.profile, icon: "○" },
   { label: "Configurações", path: studentPaths.settings, icon: "⚙" },
+];
+
+export const adminMenu = [
+  { label: "Usuários e acessos", path: adminPaths.users, icon: "♙" },
+  { label: "Configurações", path: adminPaths.settings, icon: "⚙" },
 ];

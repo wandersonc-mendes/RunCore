@@ -29,3 +29,19 @@ def require_coach(
         )
 
     return user
+
+
+def require_admin(
+    user: User = Depends(
+        current_user,
+    ),
+) -> User:
+
+    if user.role != "admin":
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso restrito ao perfil administrativo.",
+        )
+
+    return user

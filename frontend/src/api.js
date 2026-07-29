@@ -166,6 +166,24 @@ export function getCurrentUser() {
   return request("/api/auth/me");
 }
 
+export function listManagedUsers() {
+  return request("/api/admin/users");
+}
+
+export function createManagedUser(data) {
+  return request("/api/admin/users", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateManagedUser(userId, data) {
+  return request(`/api/admin/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
 export function saveSession(session) {
   localStorage.setItem(
     "runcore_token",

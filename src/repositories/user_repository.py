@@ -7,6 +7,33 @@ from models.user import User
 
 class UserRepository:
 
+    def list_all(self) -> list[User]:
+
+        with SessionLocal() as session:
+
+            users = session.scalars(
+                select(User).order_by(User.name, User.id),
+            ).all()
+
+            for user in users:
+                session.expunge(user)
+
+            return list(users)
+
+    def count_active_by_role(
+        self,
+        role: str,
+    ) -> int:
+
+        with SessionLocal() as session:
+
+            statement = select(func.count(User.id)).where(
+                User.role == role,
+                User.is_active.is_(True),
+            )
+
+            return int(session.scalar(statement) or 0)
+
     def get_by_id(
         self,
         user_id: int,
@@ -84,6 +111,32 @@ class UserRepository:
                 return None
 
             user.is_active = True
+
+            session.commit()
+            session.refresh(user)
+            session.expunge(user)
+
+        return user
+
+    def update_access(
+        self,
+        user_id: int,
+        *,
+        name: str,
+        role: str,
+        is_active: bool,
+    ) -> User | None:
+
+        with SessionLocal() as session:
+
+            user = session.get(User, user_id)
+
+            if user is None:
+                return None
+
+            user.name = name.strip()
+            user.role = role
+            user.is_active = is_active
 
             session.commit()
             session.refresh(user)

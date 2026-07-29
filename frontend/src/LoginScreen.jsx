@@ -128,16 +128,6 @@ export default function LoginScreen({
   }
 
 
-  function showCoachRegistration() {
-    setMode(
-      "coach-register",
-    );
-
-    clearMessages();
-    clearForm();
-  }
-
-
   function showForgotPassword() {
     setMode(
       "forgot-password",
@@ -374,7 +364,9 @@ export default function LoginScreen({
       `Entrar como ${
         loginRole === "coach"
           ? "treinador"
-          : "atleta"
+          : loginRole === "admin"
+            ? "administrativo"
+            : "atleta"
       }`
     );
   }
@@ -496,6 +488,24 @@ export default function LoginScreen({
                 }}
               >
                 Sou atleta
+              </button>
+
+              <button
+                type="button"
+                className={
+                  loginRole === "admin"
+                    ? "active"
+                    : ""
+                }
+                onClick={() => {
+                  setLoginRole(
+                    "admin",
+                  );
+
+                  clearMessages();
+                }}
+              >
+                Administrativo
               </button>
             </div>
           )
@@ -706,15 +716,7 @@ export default function LoginScreen({
             <div className="auth-actions">
               {
                 mode === "login"
-                  ? (
-                    <button
-                      type="button"
-                      className="auth-switch"
-                      onClick={showCoachRegistration}
-                    >
-                      Cadastrar novo treinador
-                    </button>
-                  )
+                  ? null
                   : (
                     <button
                       type="button"
@@ -734,8 +736,9 @@ export default function LoginScreen({
                       + "Solicite o link de convite ao seu treinador."
                     )
                     : (
-                      "Alunos entram pelo link de convite "
-                      + "enviado pelo treinador."
+                      loginRole === "admin"
+                        ? "Contas administrativas são criadas por outro administrador."
+                        : "Novos treinadores são cadastrados pelo perfil administrativo."
                     )
                 }
               </small>

@@ -79,7 +79,7 @@ body {
 .student-header { align-items: center; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; padding: 18px 8%; }
 .auth-actions { display: grid; gap: 10px; margin-top: 18px; }
 .auth-actions small { color: var(--muted); font-size: 12px; text-align: center; }
-.login-role-choice { background: var(--canvas); border: 1px solid var(--line); border-radius: 9px; display: grid; grid-template-columns: 1fr 1fr; margin: 18px 0; padding: 3px; }
+.login-role-choice { background: var(--canvas); border: 1px solid var(--line); border-radius: 9px; display: grid; grid-template-columns: repeat(3, 1fr); margin: 18px 0; padding: 3px; }
 .login-role-choice button { background: transparent; border: 0; border-radius: 7px; color: var(--muted); cursor: pointer; font: inherit; font-size: 13px; padding: 9px 6px; }
 .login-role-choice button.active { background: var(--surface); box-shadow: 0 1px 4px rgba(13, 37, 31, .12); color: var(--accent-dark); font-weight: 700; }
 .brand-logo { align-items: center; background: #fff; border-radius: 10px; display: flex; height: 42px; justify-content: center; overflow: hidden; width: 88px; }
@@ -1270,7 +1270,7 @@ button {
 
 .login-role-choice {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 5px;
   margin: 0 0 22px;
   padding: 5px;

@@ -34,7 +34,8 @@ import CoachDashboardPage from "./pages/CoachDashboardPage";
 import CoachProfilePage from "./pages/CoachProfilePage";
 import StudentEvolutionPage from "./pages/StudentEvolutionPage";
 import StudentAgendaPage from "./pages/StudentAgendaPage";
-import { coachPaths, studentPaths } from "./router/paths";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import { adminPaths, coachPaths, studentPaths } from "./router/paths";
 import "./App.css";
 
 const emptyAthlete = { name: "", phone: "", email: "", goal: "", notes: "" };
@@ -1470,6 +1471,29 @@ export default function App() {
     );
   }
   if (!currentUser) return <LoginScreen onAuthenticated={setCurrentUser} />;
+  if (currentUser.role === "admin") {
+    const adminLogout = () => {
+      clearSession();
+      setCurrentUser(null);
+    };
+
+    return (
+      <Routes>
+        <Route element={<AppShell user={currentUser} onLogout={adminLogout} />}>
+          <Route
+            path={adminPaths.users}
+            element={<AdminUsersPage currentUser={currentUser} />}
+          />
+          <Route
+            path={adminPaths.settings}
+            element={<SettingsPage user={currentUser} />}
+          />
+        </Route>
+        <Route path="*" element={<Navigate to={adminPaths.users} replace />} />
+      </Routes>
+    );
+  }
+
   if (currentUser.role === "student") {
     const studentLogout = () => {
       clearSession();

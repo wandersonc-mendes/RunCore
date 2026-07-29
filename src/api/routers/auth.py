@@ -91,6 +91,7 @@ class LoginRequest(BaseModel):
     role: Literal[
         "coach",
         "student",
+        "admin",
     ] | None = None
 
 
@@ -302,25 +303,11 @@ def register(
             ),
         )
 
-    user = user_repository.create(
-        name=payload.name,
-        email=normalized_email,
-        password_hash=hash_password(
-            payload.password,
-        ),
-        role="coach",
-        is_active=True,
-    )
-
-    token = create_access_token(
-        user_id=user.id,
-        role=user.role,
-    )
-
-    return AuthResponse(
-        token=token,
-        user=UserOut.model_validate(
-            user,
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=(
+            "Contas de treinador são criadas pelo perfil "
+            "administrativo."
         ),
     )
 

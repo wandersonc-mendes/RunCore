@@ -29,6 +29,6 @@ export const adminMenu = [
 ];
 
 export const masterMenu = [
-  { label: "Usuários e acessos", path: adminPaths.users, icon: "♙" },
   ...coachMenu,
+  { label: "Usuários e acessos", path: adminPaths.users, icon: "♙" },
 ];

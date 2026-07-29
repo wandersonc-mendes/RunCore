@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   clearSession,
@@ -773,6 +773,7 @@ export default function App() {
   const [athletes, setAthletes] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const masterInitialRedirectDone = useRef(false);
   const [search, setSearch] = useState("");
   const [athleteForm, setAthleteForm] = useState(emptyAthlete);
   const [evaluationForm, setEvaluationForm] = useState(emptyEvaluation);
@@ -850,6 +851,21 @@ export default function App() {
     if (!hasSession()) { setAuthLoading(false); return; }
     getCurrentUser().then(setCurrentUser).catch(clearSession).finally(() => setAuthLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      masterInitialRedirectDone.current = false;
+      return;
+    }
+
+    if (
+      currentUser.role === "master"
+      && !masterInitialRedirectDone.current
+    ) {
+      masterInitialRedirectDone.current = true;
+      navigate(coachPaths.dashboard, { replace: true });
+    }
+  }, [currentUser, navigate]);
 
   useEffect(() => {
     if (["coach", "master"].includes(currentUser?.role)) { loadAthletes(""); loadInvitations(); }

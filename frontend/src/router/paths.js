@@ -5,7 +5,7 @@ export const publicPaths = {
 };
 
 export const coachPaths = {
-  dashboard: "/treinador/dashboard",
+  dashboard: "/",
   profile: "/treinador/meu-perfil",
   athletes: "/treinador/atletas",
   planning: "/treinador/planejamento",

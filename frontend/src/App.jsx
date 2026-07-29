@@ -852,14 +852,32 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (window.location.hostname === "runcoreapp.com.br") {
+      window.location.replace(
+        `https://www.runcoreapp.com.br${window.location.pathname}${window.location.search}${window.location.hash}`,
+      );
+    }
+  }, []);
+
+  useEffect(() => {
     if (["coach", "master"].includes(currentUser?.role)) { loadAthletes(""); loadInvitations(); }
   }, [currentUser]);
 
   useEffect(() => {
     if (
       ["coach", "master"].includes(currentUser?.role)
+      && location.pathname !== coachPaths.dashboard
       && !location.pathname.startsWith("/treinador")
       && !location.pathname.startsWith("/administrativo")
+    ) {
+      navigate(coachPaths.dashboard, { replace: true });
+    }
+  }, [currentUser, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (
+      ["coach", "master"].includes(currentUser?.role)
+      && location.pathname === "/treinador/dashboard"
     ) {
       navigate(coachPaths.dashboard, { replace: true });
     }

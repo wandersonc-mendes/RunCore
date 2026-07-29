@@ -5,6 +5,8 @@ import Topbar from "./Topbar";
 import "./AppShell.css";
 
 const pageTitles = {
+  "/administrativo/usuarios": "Usuários e acessos",
+  "/administrativo/configuracoes": "Configurações",
   "/treinador/dashboard": "Dashboard",
   "/treinador/meu-perfil": "Meu perfil",
   "/treinador/atletas": "Atletas",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
+  adminPaths,
   coachPaths,
   studentPaths,
 } from "../router/paths";
@@ -18,6 +19,16 @@ function initials(name = "") {
 
 
 function notificationsFor(role) {
+  if (role === "admin") {
+    return [
+      {
+        title: "Gestão de acessos",
+        description:
+          "Cadastre treinadores e administradores em Usuários e acessos.",
+      },
+    ];
+  }
+
   if (role === "student") {
     return [
       {
@@ -60,12 +71,17 @@ export default function Topbar({
   const navigate = useNavigate();
 
   const isStudent = user?.role === "student";
+  const isAdmin = user?.role === "admin";
   const settingsPath = isStudent
     ? studentPaths.settings
-    : coachPaths.settings;
+    : isAdmin
+      ? adminPaths.settings
+      : coachPaths.settings;
   const profilePath = isStudent
     ? studentPaths.profile
-    : coachPaths.profile;
+    : isAdmin
+      ? adminPaths.settings
+      : coachPaths.profile;
 
 
   useEffect(() => {
@@ -321,7 +337,9 @@ export default function Topbar({
                   <small>
                     {isStudent
                       ? "Atleta"
-                      : "Treinador"}
+                      : isAdmin
+                        ? "Administrativo"
+                        : "Treinador"}
                   </small>
                 </div>
               </div>

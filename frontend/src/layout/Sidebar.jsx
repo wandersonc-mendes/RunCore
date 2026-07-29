@@ -1,8 +1,12 @@
 import { NavLink } from "react-router-dom";
-import { coachMenu, studentMenu } from "./menuConfig";
+import { adminMenu, coachMenu, studentMenu } from "./menuConfig";
 
 export default function Sidebar({ role, mobileOpen, onClose }) {
-  const menu = role === "student" ? studentMenu : coachMenu;
+  const menu = role === "student"
+    ? studentMenu
+    : role === "admin"
+      ? adminMenu
+      : coachMenu;
 
   return (
     <>

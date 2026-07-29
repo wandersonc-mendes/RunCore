@@ -11,6 +11,7 @@ import models
 
 from api.dependencies import require_coach
 from api.routers import athletes
+from api.routers import admin
 from api.routers import auth
 from api.routers import evaluations
 from api.routers import goals
@@ -46,6 +47,11 @@ app.add_middleware(
 
 app.include_router(
     auth.router,
+    prefix="/api",
+)
+
+app.include_router(
+    admin.router,
     prefix="/api",
 )
 

@@ -1,0 +1,27 @@
+.admin-users-page { display: grid; gap: 22px; }
+.admin-users-heading { align-items: flex-end; display: flex; justify-content: space-between; }
+.admin-users-heading h2, .admin-users-heading p { margin: 0; }
+.admin-users-heading > div { display: grid; gap: 7px; }
+.admin-users-heading > span { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 14px; }
+.admin-users-grid { display: grid; gap: 20px; grid-template-columns: minmax(260px, .75fr) minmax(520px, 1.8fr); }
+.admin-user-form, .admin-user-list { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 22px; }
+.admin-user-form { align-content: start; display: grid; gap: 15px; }
+.admin-user-form header, .admin-user-list header { display: grid; gap: 5px; margin-bottom: 5px; }
+.admin-user-form h3, .admin-user-form p, .admin-user-list h3, .admin-user-list p { margin: 0; }
+.admin-user-form label { display: grid; font-size: 13px; font-weight: 700; gap: 7px; }
+.admin-user-form input, .admin-user-form select, .admin-user-table-wrap select { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); min-height: 42px; padding: 0 11px; }
+.admin-user-list { min-width: 0; }
+.admin-user-table-wrap { overflow-x: auto; }
+.admin-user-table-wrap table { border-collapse: collapse; width: 100%; }
+.admin-user-table-wrap th, .admin-user-table-wrap td { border-bottom: 1px solid var(--border); padding: 14px 10px; text-align: left; }
+.admin-user-table-wrap td:first-child { display: grid; gap: 3px; }
+.admin-user-table-wrap small { color: var(--muted); }
+.admin-role-readonly { color: var(--muted); font-weight: 700; }
+.admin-status { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); border: 0; border-radius: 999px; color: var(--danger); cursor: pointer; font-weight: 800; padding: 8px 12px; }
+.admin-status.active { background: color-mix(in srgb, #24a148 14%, var(--surface)); color: #16833a; }
+.admin-status:disabled { cursor: not-allowed; opacity: .55; }
+.admin-users-success { background: color-mix(in srgb, #24a148 12%, var(--surface)); border: 1px solid color-mix(in srgb, #24a148 30%, var(--border)); border-radius: 12px; color: #16833a; padding: 12px 14px; }
+@media (max-width: 900px) {
+  .admin-users-grid { grid-template-columns: 1fr; }
+  .admin-users-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+}

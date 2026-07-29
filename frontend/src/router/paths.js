@@ -35,3 +35,8 @@ export const studentPaths = {
   profile: "/atleta/meu-perfil",
   settings: "/atleta/configuracoes",
 };
+
+export const adminPaths = {
+  users: "/administrativo/usuarios",
+  settings: "/administrativo/configuracoes",
+};

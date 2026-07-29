@@ -58,14 +58,22 @@ FRONTEND_URL = os.getenv(
 PUBLIC_FRONTEND_URL = FRONTEND_URL
 
 
-ALLOWED_ORIGINS = [
-    origin.strip().rstrip("/")
-    for origin in os.getenv(
-        "ALLOWED_ORIGINS",
-        FRONTEND_URL,
-    ).split(",")
-    if origin.strip()
-]
+ALLOWED_ORIGINS = list(
+    dict.fromkeys(
+        [
+            "https://runcoreapp.com.br",
+            "https://www.runcoreapp.com.br",
+            *[
+                origin.strip().rstrip("/")
+                for origin in os.getenv(
+                    "ALLOWED_ORIGINS",
+                    FRONTEND_URL,
+                ).split(",")
+                if origin.strip()
+            ],
+        ]
+    )
+)
 
 
 # ==========================

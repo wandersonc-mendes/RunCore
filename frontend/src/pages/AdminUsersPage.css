@@ -321,3 +321,105 @@
     justify-items: center;
   }
 }
+
+
+/* RUNCORE COMPACT COACH ADDRESS */
+.coach-address-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding: 18px;
+}
+
+.coach-address-row {
+  display: grid;
+  gap: 14px;
+}
+
+.coach-address-row-main {
+  grid-template-columns:
+    minmax(270px, .95fr)
+    minmax(320px, 1.45fr)
+    minmax(110px, .42fr);
+}
+
+.coach-address-row-secondary {
+  grid-template-columns:
+    minmax(180px, .9fr)
+    minmax(180px, .9fr)
+    minmax(220px, 1.15fr)
+    minmax(80px, .35fr);
+}
+
+.coach-address-row-phones {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  max-width: 760px;
+}
+
+.coach-address-fields label {
+  gap: 5px;
+}
+
+.coach-address-fields input,
+.coach-address-fields select {
+  min-height: 40px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.coach-address-fields .coach-registration-inline {
+  grid-template-columns: minmax(135px, 1fr) auto;
+}
+
+.coach-address-fields .coach-registration-inline .btn-ghost {
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.coach-registration-card:has(.coach-address-fields) form {
+  gap: 14px;
+}
+
+.coach-registration-card:has(.coach-address-fields)
+.coach-registration-actions {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+@media (max-width: 1180px) {
+  .coach-address-row-main {
+    grid-template-columns: 1fr 1.4fr;
+  }
+
+  .coach-address-row-main > label:last-child {
+    grid-column: 1 / -1;
+    max-width: 180px;
+  }
+
+  .coach-address-row-secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .coach-address-fields {
+    padding: 14px;
+  }
+
+  .coach-address-row-main,
+  .coach-address-row-secondary,
+  .coach-address-row-phones {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+
+  .coach-address-row-main > label:last-child {
+    grid-column: auto;
+    max-width: none;
+  }
+
+  .coach-address-fields .coach-registration-inline {
+    grid-template-columns: 1fr;
+  }
+}

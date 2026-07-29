@@ -470,30 +470,91 @@ function CoachRegistration({ onClose, onCreated }) {
         )}
 
         {tab === "address" && (
-          <div className="coach-registration-fields">
-            <label>
-              CEP
-              <span className="coach-registration-inline">
-                <input
-                  value={form.zip_code}
-                  onChange={(event) => setForm({
-                    ...form,
-                    zip_code: event.target.value,
-                  })}
-                />
-                <button type="button" className="btn-ghost" onClick={completeAddress}>
-                  {searchingZip ? "Buscando..." : "Completar endereço"}
-                </button>
-              </span>
-            </label>
-            <CoachField label="Endereço" name="address" form={form} setForm={setForm} />
-            <CoachField label="Número" name="address_number" form={form} setForm={setForm} />
-            <CoachField label="Complemento" name="address_extra" form={form} setForm={setForm} />
-            <CoachField label="Bairro" name="neighborhood" form={form} setForm={setForm} />
-            <CoachField label="Cidade" name="city" form={form} setForm={setForm} />
-            <CoachField label="Estado" name="state" form={form} setForm={setForm} maxLength="2" />
-            <CoachField label="Telefone" name="phone" form={form} setForm={setForm} />
-            <CoachField label="Telefone secundário" name="phone_secondary" form={form} setForm={setForm} />
+          <div className="coach-registration-fields coach-address-fields">
+            <div className="coach-address-row coach-address-row-main">
+              <label>
+                CEP
+                <span className="coach-registration-inline">
+                  <input
+                    value={form.zip_code}
+                    onChange={(event) => setForm({
+                      ...form,
+                      zip_code: event.target.value,
+                    })}
+                  />
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={completeAddress}
+                  >
+                    {searchingZip
+                      ? "Buscando..."
+                      : "Completar endereço"}
+                  </button>
+                </span>
+              </label>
+
+              <CoachField
+                label="Endereço"
+                name="address"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="Número"
+                name="address_number"
+                form={form}
+                setForm={setForm}
+              />
+            </div>
+
+            <div className="coach-address-row coach-address-row-secondary">
+              <CoachField
+                label="Complemento"
+                name="address_extra"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="Bairro"
+                name="neighborhood"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="Cidade"
+                name="city"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="Estado"
+                name="state"
+                form={form}
+                setForm={setForm}
+                maxLength="2"
+              />
+            </div>
+
+            <div className="coach-address-row coach-address-row-phones">
+              <CoachField
+                label="Telefone"
+                name="phone"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="Telefone secundário"
+                name="phone_secondary"
+                form={form}
+                setForm={setForm}
+              />
+            </div>
           </div>
         )}
 

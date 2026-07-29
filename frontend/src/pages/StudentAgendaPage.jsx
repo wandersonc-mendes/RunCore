@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getStudentTraining } from "../api";
+import { formatWorkoutSummary } from "../utils/workoutSummary";
 import "./StudentAgendaPage.css";
 
 
@@ -148,9 +149,7 @@ export default function StudentAgendaPage() {
                       </div>
 
                       <span className="student-agenda-distance">
-                        {Number(
-                          session.planned_distance || 0,
-                        ).toFixed(1)} km
+                        {formatWorkoutSummary(session)}
                       </span>
                     </article>
                   ))}

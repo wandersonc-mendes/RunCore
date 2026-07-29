@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getTraining } from "../api";
+import { formatWorkoutSummary } from "../utils/workoutSummary";
 import "./AgendaPage.css";
 
 
@@ -15,18 +16,6 @@ function formatDate(value) {
     month: "2-digit",
     year: "numeric",
   }).format(new Date(`${value}T12:00:00`));
-}
-
-
-function formatSessionDistance(session) {
-  const repetitions = Number(session.repetitions || 0);
-  const distance = Number(session.planned_distance || 0);
-
-  if (repetitions > 0) {
-    return `${repetitions} × ${distance} m`;
-  }
-
-  return `${distance.toFixed(1)} km`;
 }
 
 
@@ -209,7 +198,7 @@ export default function AgendaPage({
 
                       <div className="agenda-session-meta">
                         <span>
-                          {formatSessionDistance(session)}
+                          {formatWorkoutSummary(session)}
                         </span>
 
                         <button

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getTraining,
 } from "../api";
+import { formatWorkoutSummary } from "../utils/workoutSummary";
 
 import "./PlanningPage.css";
 
@@ -128,18 +129,6 @@ function sessionTone(session) {
   }
 
   return "easy";
-}
-
-
-function formatDistance(session) {
-  const repetitions = Number(session?.repetitions || 0);
-  const distance = Number(session?.planned_distance || 0);
-
-  if (repetitions > 0) {
-    return `${repetitions} × ${distance} m`;
-  }
-
-  return `${distance.toFixed(1)} km`;
 }
 
 
@@ -430,7 +419,7 @@ export default function PlanningPage({
                       {session ? (
                         <>
                           <strong>{session.workout_name}</strong>
-                          <span>{formatDistance(session)}</span>
+                          <span>{formatWorkoutSummary(session)}</span>
                           <small>{session.zone || "Treino"}</small>
                         </>
                       ) : (

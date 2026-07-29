@@ -7,6 +7,8 @@ import {
 
 import "./CoachDashboardPage.css";
 
+const BRAZIL_TIME_ZONE = "America/Sao_Paulo";
+
 
 function dateKey(date) {
   const year = date.getFullYear();
@@ -44,9 +46,31 @@ function formatDashboardDate() {
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: BRAZIL_TIME_ZONE,
   }).format(new Date());
 
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+
+function getGreeting() {
+  const hour = Number(
+    new Intl.DateTimeFormat("pt-BR", {
+      hour: "2-digit",
+      hourCycle: "h23",
+      timeZone: BRAZIL_TIME_ZONE,
+    }).formatToParts(new Date()).find((part) => part.type === "hour")?.value,
+  );
+
+  if (hour >= 5 && hour < 12) {
+    return { message: "Bom dia", icon: "☀️" };
+  }
+
+  if (hour >= 12 && hour < 18) {
+    return { message: "Boa tarde", icon: "🌤️" };
+  }
+
+  return { message: "Boa noite", icon: "🌙" };
 }
 
 
@@ -243,14 +267,16 @@ export default function CoachDashboardPage({
       : 0;
 
   const firstActiveAthlete = dashboard.activeAthletes[0];
+  const greeting = getGreeting();
 
   return (
     <section className="coach-dashboard-page dashboard-v2">
       <header className="dashboard-v2-header">
         <div>
           <h2>
-            Bom dia, {user?.name?.split(" ")[0] || "Treinador"}!{" "}
-            <span aria-hidden="true">☀</span>
+            {greeting.message},{" "}
+            {user?.name?.split(" ")[0] || "Treinador"}!{" "}
+            <span aria-hidden="true">{greeting.icon}</span>
           </h2>
           <p>{formatDashboardDate()}</p>
         </div>

@@ -225,27 +225,6 @@ export default function LoginScreen({
   ),
 );
 
-    /*
-     * Durante o desenvolvimento, o backend devolve o token.
-     * Quando o envio por e-mail for implementado, esse campo
-     * deixará de ser necessário no frontend.
-     */
-    if (result?.reset_token) {
-      setResetToken(
-        result.reset_token,
-      );
-
-      setForm((current) => ({
-        ...current,
-        password: "",
-      }));
-
-      setConfirmPassword("");
-
-      setMode(
-        "reset-password",
-      );
-    }
   }
 
 

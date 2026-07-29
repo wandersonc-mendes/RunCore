@@ -8,6 +8,23 @@ from models.password_reset_token import PasswordResetToken
 
 class PasswordResetRepository:
 
+    def has_recent_request(
+        self,
+        user_id: int,
+        since: datetime,
+    ) -> bool:
+
+        with SessionLocal() as session:
+
+            statement = select(
+                PasswordResetToken.id
+            ).where(
+                PasswordResetToken.user_id == user_id,
+                PasswordResetToken.created_at >= since,
+            ).limit(1)
+
+            return session.scalar(statement) is not None
+
     def create(
         self,
         user_id: int,

@@ -2,7 +2,8 @@
 .admin-users-heading { align-items: flex-end; display: flex; justify-content: space-between; }
 .admin-users-heading h2, .admin-users-heading p { margin: 0; }
 .admin-users-heading > div { display: grid; gap: 7px; }
-.admin-users-heading > span { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 14px; }
+.admin-users-heading-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; }
+.admin-users-heading-actions > span { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 8px 14px; }
 .admin-users-grid { display: grid; gap: 20px; grid-template-columns: minmax(260px, .75fr) minmax(520px, 1.8fr); }
 .admin-user-form, .admin-user-list { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 22px; }
 .admin-user-form { align-content: start; display: grid; gap: 15px; }
@@ -21,7 +22,34 @@
 .admin-status.active { background: color-mix(in srgb, #24a148 14%, var(--surface)); color: #16833a; }
 .admin-status:disabled { cursor: not-allowed; opacity: .55; }
 .admin-users-success { background: color-mix(in srgb, #24a148 12%, var(--surface)); border: 1px solid color-mix(in srgb, #24a148 30%, var(--border)); border-radius: 12px; color: #16833a; padding: 12px 14px; }
+.coach-registration-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+.coach-registration-heading { align-items: center; display: flex; gap: 18px; justify-content: space-between; padding: 22px 24px 18px; }
+.coach-registration-heading h3, .coach-registration-heading p { margin: 0; }
+.coach-registration-heading > div { display: grid; gap: 5px; }
+.coach-registration-tabs { border-bottom: 1px solid var(--border); display: flex; gap: 4px; overflow-x: auto; padding: 0 24px; }
+.coach-registration-tabs button { background: transparent; border: 0; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; font-weight: 800; padding: 13px 14px 11px; white-space: nowrap; }
+.coach-registration-tabs button.active { border-bottom-color: var(--accent); color: var(--accent); }
+.coach-registration-card form { display: grid; gap: 20px; padding: 24px; }
+.coach-registration-fields { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.coach-registration-fields label, .coach-registration-textarea { display: grid; font-size: 13px; font-weight: 700; gap: 7px; }
+.coach-registration-fields input, .coach-registration-fields select, .coach-registration-textarea textarea { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font: inherit; min-height: 44px; padding: 10px 12px; }
+.coach-registration-fields input[readonly] { background: var(--surface-soft); color: var(--muted); }
+.coach-registration-fields .wide { grid-column: 1 / -1; }
+.coach-registration-check { align-items: center; display: flex !important; flex-direction: row; }
+.coach-registration-check input { min-height: auto; width: 18px; }
+.coach-registration-inline { display: grid; gap: 8px; grid-template-columns: minmax(120px, 1fr) auto; }
+.coach-registration-textarea span, .coach-registration-help { color: var(--muted); font-size: 12px; font-weight: 500; margin: 0; }
+.coach-registration-textarea textarea { min-height: 230px; resize: vertical; }
+.coach-registration-actions { border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; padding-top: 18px; }
 @media (max-width: 900px) {
   .admin-users-grid { grid-template-columns: 1fr; }
   .admin-users-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .coach-registration-fields { grid-template-columns: 1fr; }
+  .coach-registration-fields .wide { grid-column: auto; }
+}
+@media (max-width: 600px) {
+  .coach-registration-heading { align-items: flex-start; flex-direction: column; }
+  .coach-registration-inline { grid-template-columns: 1fr; }
+  .coach-registration-actions { flex-direction: column-reverse; }
+  .coach-registration-actions button { width: 100%; }
 }

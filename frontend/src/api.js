@@ -177,6 +177,13 @@ export function createManagedUser(data) {
   });
 }
 
+export function createCoach(data) {
+  return request("/api/admin/users/coaches", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export function updateManagedUser(userId, data) {
   return request(`/api/admin/users/${userId}`, {
     method: "PATCH",

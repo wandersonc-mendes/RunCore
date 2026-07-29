@@ -2,10 +2,47 @@ from sqlalchemy import func
 from sqlalchemy import select
 
 from database.database import SessionLocal
+from models.coach_profile import CoachProfile
 from models.user import User
 
 
 class UserRepository:
+
+    def create_coach_with_profile(
+        self,
+        *,
+        name: str,
+        email: str,
+        password_hash: str,
+        is_active: bool,
+        profile: dict,
+    ) -> User:
+
+        with SessionLocal() as session:
+
+            user = User(
+                name=name.strip(),
+                email=email.strip().lower(),
+                password_hash=password_hash,
+                role="coach",
+                is_active=is_active,
+            )
+
+            session.add(user)
+            session.flush()
+
+            session.add(
+                CoachProfile(
+                    user_id=user.id,
+                    **profile,
+                )
+            )
+
+            session.commit()
+            session.refresh(user)
+            session.expunge(user)
+
+            return user
 
     def list_all(self) -> list[User]:
 

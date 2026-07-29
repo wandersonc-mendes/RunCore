@@ -112,3 +112,51 @@ def test_master_access_cannot_be_changed(monkeypatch):
         )
 
     assert error.value.status_code == 409
+
+
+@pytest.mark.parametrize("role", ["admin", "master"])
+def test_admin_and_master_can_create_coach(monkeypatch, role):
+    current = user(role=role)
+    created = user(
+        id=8,
+        name="Novo Treinador",
+        email="novo@example.com",
+        role="coach",
+    )
+    captured = {}
+
+    monkeypatch.setattr(
+        admin_router.user_repository,
+        "email_exists",
+        lambda _: False,
+    )
+
+    def create_coach_with_profile(**values):
+        captured.update(values)
+        return created
+
+    monkeypatch.setattr(
+        admin_router.user_repository,
+        "create_coach_with_profile",
+        create_coach_with_profile,
+    )
+
+    payload = admin_router.CoachCreate(
+        name=created.name,
+        email=created.email,
+        password="senha-temporaria",
+        cref="012345-G/SP",
+        city="São Paulo",
+        curriculum="Treinador de corrida.",
+    )
+
+    result = admin_router.create_coach(
+        payload,
+        require_admin(current),
+    )
+
+    assert result is created
+    assert captured["profile"]["cref"] == "012345-G/SP"
+    assert captured["profile"]["city"] == "São Paulo"
+    assert captured["profile"]["curriculum"] == "Treinador de corrida."
+    assert captured["is_active"] is True

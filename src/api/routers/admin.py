@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter
@@ -40,6 +41,34 @@ class ManagedUserCreate(BaseModel):
     password: str = Field(min_length=8, max_length=128)
     role: Literal["coach", "admin"]
     is_active: bool = True
+
+
+class CoachCreate(BaseModel):
+
+    name: str = Field(min_length=2, max_length=120)
+    email: str = Field(min_length=5, max_length=255)
+    password: str = Field(min_length=8, max_length=128)
+    is_active: bool = True
+    birth_date: date | None = None
+    sex: str = Field(default="", max_length=30)
+    cpf: str = Field(default="", max_length=20)
+    rg: str = Field(default="", max_length=30)
+    team_role: str = Field(default="", max_length=100)
+    cref: str = Field(default="", max_length=30)
+    instagram: str = Field(default="", max_length=100)
+    show_public_profile: bool = True
+    photo_url: str = Field(default="", max_length=500)
+    zip_code: str = Field(default="", max_length=12)
+    address: str = Field(default="", max_length=255)
+    address_number: str = Field(default="", max_length=20)
+    address_extra: str = Field(default="", max_length=120)
+    neighborhood: str = Field(default="", max_length=120)
+    city: str = Field(default="", max_length=120)
+    state: str = Field(default="", max_length=2)
+    phone: str = Field(default="", max_length=30)
+    phone_secondary: str = Field(default="", max_length=30)
+    curriculum: str = Field(default="", max_length=5000)
+    notes: str = Field(default="", max_length=5000)
 
 
 class ManagedUserUpdate(BaseModel):
@@ -101,6 +130,46 @@ def create_user(
         password_hash=hash_password(payload.password),
         role=payload.role,
         is_active=payload.is_active,
+    )
+
+
+@router.post(
+    "/coaches",
+    response_model=ManagedUserOut,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_coach(
+    payload: CoachCreate,
+    _: User = Depends(require_admin),
+):
+
+    email = normalized_email(payload.email)
+
+    if user_repository.email_exists(email):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este e-mail já está cadastrado.",
+        )
+
+    profile = payload.model_dump(
+        exclude={
+            "name",
+            "email",
+            "password",
+            "is_active",
+        }
+    )
+
+    for field, value in profile.items():
+        if isinstance(value, str):
+            profile[field] = value.strip()
+
+    return user_repository.create_coach_with_profile(
+        name=payload.name,
+        email=email,
+        password_hash=hash_password(payload.password),
+        is_active=payload.is_active,
+        profile=profile,
     )
 
 

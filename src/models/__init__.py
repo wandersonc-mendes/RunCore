@@ -3,6 +3,7 @@ from models.athlete import Athlete
 from models.athlete_details import AthleteDetails
 from models.athlete_profile import AthleteProfile
 from models.coach_athlete import CoachAthlete
+from models.coach_profile import CoachProfile
 from models.evaluation import Evaluation
 from models.external_integration import ExternalIntegration
 from models.goal import Goal

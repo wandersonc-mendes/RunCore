@@ -26,6 +26,15 @@ def test_require_admin_rejects_coach():
     assert error.value.status_code == 403
 
 
+def test_master_has_administrative_and_coach_access():
+    from api.dependencies import require_coach
+
+    master = user(role="master")
+
+    assert require_admin(master) is master
+    assert require_coach(master) is master
+
+
 def test_admin_cannot_remove_own_access(monkeypatch):
     current = user()
     monkeypatch.setattr(
@@ -74,6 +83,30 @@ def test_last_active_admin_cannot_be_deactivated(monkeypatch):
     with pytest.raises(HTTPException) as error:
         admin_router.update_user(
             target.id,
+            payload,
+            current,
+        )
+
+    assert error.value.status_code == 409
+
+
+def test_master_access_cannot_be_changed(monkeypatch):
+    current = user(role="master")
+    monkeypatch.setattr(
+        admin_router.user_repository,
+        "get_by_id",
+        lambda _: current,
+    )
+
+    payload = admin_router.ManagedUserUpdate(
+        name=current.name,
+        role="admin",
+        is_active=True,
+    )
+
+    with pytest.raises(HTTPException) as error:
+        admin_router.update_user(
+            current.id,
             payload,
             current,
         )

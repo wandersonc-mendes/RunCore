@@ -122,6 +122,12 @@ def update_user(
             detail="Usuário não encontrado.",
         )
 
+    if target.role == "master":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="O acesso Master não pode ser alterado por esta tela.",
+        )
+
     changes_student_profile = (
         target.role == "student"
         and payload.role != "student"

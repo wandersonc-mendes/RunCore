@@ -341,10 +341,16 @@ def login(
             detail="E-mail ou senha inválidos",
         )
 
-    if (
-        payload.role is not None
-        and user.role != payload.role
-    ):
+    selected_role_matches = (
+        payload.role is None
+        or user.role == payload.role
+        or (
+            payload.role == "admin"
+            and user.role == "master"
+        )
+    )
+
+    if not selected_role_matches:
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

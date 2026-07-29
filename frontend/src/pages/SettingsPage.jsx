@@ -43,6 +43,8 @@ export default function SettingsPage({ user }) {
         <span className="settings-role">
           {user?.role === "student"
             ? "Área do atleta"
+            : user?.role === "master"
+              ? "Painel Master"
             : user?.role === "admin"
               ? "Painel administrativo"
               : "Painel do treinador"}

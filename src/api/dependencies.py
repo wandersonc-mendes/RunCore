@@ -21,7 +21,7 @@ def require_coach(
     ),
 ) -> User:
 
-    if user.role != "coach":
+    if user.role not in {"coach", "master"}:
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -37,7 +37,7 @@ def require_admin(
     ),
 ) -> User:
 
-    if user.role != "admin":
+    if user.role not in {"admin", "master"}:
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

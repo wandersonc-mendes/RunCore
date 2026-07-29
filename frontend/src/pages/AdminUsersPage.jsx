@@ -19,6 +19,7 @@ const initialForm = {
 
 
 function roleLabel(role) {
+  if (role === "master") return "Master";
   if (role === "admin") return "Administrativo";
   if (role === "coach") return "Treinador";
   return "Aluno";
@@ -183,7 +184,7 @@ export default function AdminUsersPage({ currentUser }) {
                         <small>{user.email}</small>
                       </td>
                       <td>
-                        {user.role === "student" ? (
+                        {["student", "master"].includes(user.role) ? (
                           <span className="admin-role-readonly">
                             {roleLabel(user.role)}
                           </span>

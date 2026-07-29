@@ -852,20 +852,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (currentUser?.role === "coach") { loadAthletes(""); loadInvitations(); }
+    if (["coach", "master"].includes(currentUser?.role)) { loadAthletes(""); loadInvitations(); }
   }, [currentUser]);
 
   useEffect(() => {
     if (
-      currentUser?.role === "coach"
+      ["coach", "master"].includes(currentUser?.role)
       && !location.pathname.startsWith("/treinador")
+      && !location.pathname.startsWith("/administrativo")
     ) {
       navigate(coachPaths.dashboard, { replace: true });
     }
   }, [currentUser, location.pathname, navigate]);
 
   useEffect(() => {
-    if (currentUser?.role !== "coach") return undefined;
+    if (!["coach", "master"].includes(currentUser?.role)) return undefined;
     const refreshInvitations = () => loadInvitations();
     const interval = window.setInterval(refreshInvitations, 5000);
     window.addEventListener("focus", refreshInvitations);
@@ -901,7 +902,7 @@ export default function App() {
 
   useEffect(() => {
     if (
-      currentUser?.role !== "coach"
+      !["coach", "master"].includes(currentUser?.role)
       || athletes.length === 0
     ) {
       return;
@@ -1522,6 +1523,17 @@ export default function App() {
     clearSession();
     setCurrentUser(null);
   };
+
+  if (
+    currentUser.role === "master"
+    && location.pathname === adminPaths.users
+  ) {
+    return (
+      <AppShell user={currentUser} onLogout={coachLogout}>
+        <AdminUsersPage currentUser={currentUser} />
+      </AppShell>
+    );
+  }
 
 
 

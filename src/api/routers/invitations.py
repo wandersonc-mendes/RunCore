@@ -35,7 +35,7 @@ def require_coach(
     current_user: User,
 ) -> None:
 
-    if current_user.role != "coach":
+    if current_user.role not in {"coach", "master"}:
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -3,6 +3,7 @@ from typing import Literal
 import jwt
 
 from fastapi import APIRouter
+from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
@@ -395,28 +396,24 @@ def get_me(
 )
 def forgot_password(
     payload: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
 ):
     normalized_email = normalize_email(
         payload.email,
     )
 
-    reset_token = password_reset_service.request_reset(
+    background_tasks.add_task(
+        password_reset_service.request_reset,
         normalized_email,
     )
 
-    response = {
+    return {
         "message": (
             "Se o e-mail estiver cadastrado, "
             "você receberá as instruções para redefinir a senha."
         ),
     }
 
-    # Temporário para desenvolvimento.
-    # Em produção, o token será enviado por e-mail.
-    if reset_token is not None:
-        response["reset_token"] = reset_token
-
-    return response
 
 
 @router.post(

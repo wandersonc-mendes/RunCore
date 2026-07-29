@@ -27,3 +27,8 @@ export const adminMenu = [
   { label: "Usuários e acessos", path: adminPaths.users, icon: "♙" },
   { label: "Configurações", path: adminPaths.settings, icon: "⚙" },
 ];
+
+export const masterMenu = [
+  { label: "Usuários e acessos", path: adminPaths.users, icon: "♙" },
+  ...coachMenu,
+];

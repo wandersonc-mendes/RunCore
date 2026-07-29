@@ -19,7 +19,7 @@ function initials(name = "") {
 
 
 function notificationsFor(role) {
-  if (role === "admin") {
+  if (role === "admin" || role === "master") {
     return [
       {
         title: "Gestão de acessos",
@@ -72,6 +72,7 @@ export default function Topbar({
 
   const isStudent = user?.role === "student";
   const isAdmin = user?.role === "admin";
+  const isMaster = user?.role === "master";
   const settingsPath = isStudent
     ? studentPaths.settings
     : isAdmin
@@ -337,6 +338,8 @@ export default function Topbar({
                   <small>
                     {isStudent
                       ? "Atleta"
+                      : isMaster
+                        ? "Master"
                       : isAdmin
                         ? "Administrativo"
                         : "Treinador"}

@@ -32,6 +32,8 @@ const emptyCoach = {
   instagram: "",
   show_public_profile: true,
   photo_url: "",
+  can_view_athletes: true,
+  can_administer: false,
   zip_code: "",
   address: "",
   address_number: "",
@@ -59,6 +61,54 @@ function roleLabel(role) {
   if (role === "admin") return "Administrativo";
   if (role === "coach") return "Treinador";
   return "Aluno";
+}
+
+
+function resizeCoachPhoto(file) {
+  return new Promise((resolve, reject) => {
+    if (!file?.type?.startsWith("image/")) {
+      reject(new Error("Selecione um arquivo de imagem."));
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onerror = () => {
+      reject(new Error("Não foi possível ler a imagem."));
+    };
+
+    reader.onload = () => {
+      const image = new Image();
+
+      image.onerror = () => {
+        reject(new Error("O arquivo de imagem é inválido."));
+      };
+
+      image.onload = () => {
+        const maxSize = 640;
+        const scale = Math.min(
+          1,
+          maxSize / Math.max(image.width, image.height),
+        );
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const context = canvas.getContext("2d");
+
+        context.drawImage(image, 0, 0, width, height);
+
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+
+      image.src = reader.result;
+    };
+
+    reader.readAsDataURL(file);
+  });
 }
 
 
@@ -94,6 +144,7 @@ function CoachRegistration({ onClose, onCreated }) {
   const [form, setForm] = useState(emptyCoach);
   const [saving, setSaving] = useState(false);
   const [searchingZip, setSearchingZip] = useState(false);
+  const [processingPhoto, setProcessingPhoto] = useState(false);
   const [error, setError] = useState("");
 
   async function completeAddress() {
@@ -128,6 +179,32 @@ function CoachRegistration({ onClose, onCreated }) {
       setSearchingZip(false);
     }
   }
+
+  async function handlePhotoChange(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setProcessingPhoto(true);
+    setError("");
+
+    try {
+      const photo = await resizeCoachPhoto(file);
+
+      setForm((current) => ({
+        ...current,
+        photo_url: photo,
+      }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setProcessingPhoto(false);
+      event.target.value = "";
+    }
+  }
+
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -188,27 +265,124 @@ function CoachRegistration({ onClose, onCreated }) {
 
       <form onSubmit={handleSubmit}>
         {tab === "personal" && (
-          <div className="coach-registration-fields">
-            <CoachField label="Nome completo" name="name" form={form} setForm={setForm} required />
-            <CoachField label="Data de nascimento" name="birth_date" form={form} setForm={setForm} type="date" />
-            <label>
-              Sexo
-              <select
-                value={form.sex}
-                onChange={(event) => setForm({ ...form, sex: event.target.value })}
-              >
-                <option value="">Selecione</option>
-                <option value="Feminino">Feminino</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Não informar">Não informar</option>
-              </select>
-            </label>
-            <CoachField label="CPF" name="cpf" form={form} setForm={setForm} />
-            <CoachField label="RG" name="rg" form={form} setForm={setForm} />
-            <CoachField label="Função na equipe" name="team_role" form={form} setForm={setForm} />
-            <CoachField label="CREF" name="cref" form={form} setForm={setForm} />
-            <CoachField label="Instagram" name="instagram" form={form} setForm={setForm} placeholder="@usuario" />
-            <CoachField label="URL da foto" name="photo_url" form={form} setForm={setForm} type="url" placeholder="https://..." />
+          <div className="coach-registration-fields coach-personal-fields">
+            <div className="coach-form-row coach-form-row-primary">
+              <CoachField
+                label="Nome completo"
+                name="name"
+                form={form}
+                setForm={setForm}
+                required
+              />
+
+              <CoachField
+                label="Data de nascimento"
+                name="birth_date"
+                form={form}
+                setForm={setForm}
+                type="date"
+              />
+
+              <label>
+                Sexo
+                <select
+                  value={form.sex}
+                  onChange={(event) => setForm({
+                    ...form,
+                    sex: event.target.value,
+                  })}
+                >
+                  <option value="">Selecione</option>
+                  <option value="Feminino">Feminino</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Não informar">Não informar</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="coach-form-row coach-form-row-documents">
+              <CoachField
+                label="CPF"
+                name="cpf"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="RG"
+                name="rg"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="CREF"
+                name="cref"
+                form={form}
+                setForm={setForm}
+              />
+            </div>
+
+            <div className="coach-form-row coach-form-row-professional">
+              <CoachField
+                label="Função na equipe"
+                name="team_role"
+                form={form}
+                setForm={setForm}
+              />
+
+              <CoachField
+                label="Instagram"
+                name="instagram"
+                form={form}
+                setForm={setForm}
+                placeholder="@usuario"
+              />
+            </div>
+
+            <section className="coach-photo-field">
+              <div className="coach-photo-preview">
+                {form.photo_url ? (
+                  <img
+                    src={form.photo_url}
+                    alt="Prévia da foto do treinador"
+                  />
+                ) : (
+                  <span aria-hidden="true">👤</span>
+                )}
+              </div>
+
+              <div className="coach-photo-actions">
+                <strong>Foto do treinador</strong>
+                <small>
+                  Selecione uma imagem JPG, PNG ou WEBP.
+                </small>
+
+                <label className="btn-ghost coach-photo-button">
+                  {processingPhoto ? "Processando..." : "Procurar foto"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={processingPhoto}
+                    onChange={handlePhotoChange}
+                  />
+                </label>
+
+                {form.photo_url && (
+                  <button
+                    type="button"
+                    className="btn-link-danger"
+                    onClick={() => setForm({
+                      ...form,
+                      photo_url: "",
+                    })}
+                  >
+                    Remover foto
+                  </button>
+                )}
+              </div>
+            </section>
+
             <label className="coach-registration-check wide">
               <input
                 type="checkbox"
@@ -244,6 +418,50 @@ function CoachRegistration({ onClose, onCreated }) {
               Perfil de acesso
               <input value="Treinador" readOnly />
             </label>
+            <section className="coach-permissions wide">
+              <header>
+                <strong>Permissões do treinador</strong>
+                <span>
+                  Defina os recursos que este usuário poderá acessar.
+                </span>
+              </header>
+
+              <label className="coach-registration-check">
+                <input
+                  type="checkbox"
+                  checked={form.can_view_athletes}
+                  onChange={(event) => setForm({
+                    ...form,
+                    can_view_athletes: event.target.checked,
+                  })}
+                />
+                <span>
+                  <strong>Visualizar alunos</strong>
+                  <small>
+                    Permite acessar atletas, avaliações e planejamentos.
+                  </small>
+                </span>
+              </label>
+
+              <label className="coach-registration-check">
+                <input
+                  type="checkbox"
+                  checked={form.can_administer}
+                  onChange={(event) => setForm({
+                    ...form,
+                    can_administer: event.target.checked,
+                  })}
+                />
+                <span>
+                  <strong>Permissão administrativa</strong>
+                  <small>
+                    Permite acessar usuários, acessos e configurações
+                    administrativas.
+                  </small>
+                </span>
+              </label>
+            </section>
+
             <p className="coach-registration-help wide">
               O treinador poderá substituir a senha temporária pelo fluxo
               seguro de recuperação enviado ao próprio e-mail.

@@ -35,7 +35,17 @@ class CoachProfile(Base):
         nullable=False,
         default=True,
     )
-    photo_url: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    photo_url: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    can_view_athletes: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+    )
+    can_administer: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+    )
     zip_code: Mapped[str] = mapped_column(String(12), nullable=False, default="")
     address: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     address_number: Mapped[str] = mapped_column(String(20), nullable=False, default="")

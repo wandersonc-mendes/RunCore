@@ -57,7 +57,9 @@ class CoachCreate(BaseModel):
     cref: str = Field(default="", max_length=30)
     instagram: str = Field(default="", max_length=100)
     show_public_profile: bool = True
-    photo_url: str = Field(default="", max_length=500)
+    photo_url: str = Field(default="", max_length=2_000_000)
+    can_view_athletes: bool = True
+    can_administer: bool = False
     zip_code: str = Field(default="", max_length=12)
     address: str = Field(default="", max_length=255)
     address_number: str = Field(default="", max_length=20)

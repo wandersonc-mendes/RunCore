@@ -191,6 +191,13 @@ export function updateManagedUser(userId, data) {
   });
 }
 
+
+export function deleteManagedStudent(userId) {
+  return request(`/api/admin/users/${userId}/student`, {
+    method: "DELETE",
+  });
+}
+
 export function saveSession(session) {
   localStorage.setItem(
     "runcore_token",

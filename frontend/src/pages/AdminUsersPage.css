@@ -423,3 +423,32 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* RUNCORE MASTER STUDENT REMOVAL SAFE */
+.admin-actions-column {
+  width: 92px;
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.admin-remove-student {
+  padding: 7px 11px;
+  border: 1px solid color-mix(in srgb, var(--danger) 34%, var(--border));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--danger) 7%, var(--surface));
+  color: var(--danger);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-remove-student:hover {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 13%, var(--surface));
+}
+
+.admin-action-unavailable {
+  color: var(--muted);
+}

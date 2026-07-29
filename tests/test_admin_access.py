@@ -160,3 +160,23 @@ def test_admin_and_master_can_create_coach(monkeypatch, role):
     assert captured["profile"]["city"] == "São Paulo"
     assert captured["profile"]["curriculum"] == "Treinador de corrida."
     assert captured["is_active"] is True
+
+
+
+def test_only_master_can_delete_student(client):
+    class FakeUser:
+        id = 900
+        role = "admin"
+
+    from api.routers import admin as admin_router
+
+    client.app.dependency_overrides[admin_router.require_admin] = lambda: FakeUser()
+
+    response = client.delete("/api/admin/users/12/student")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == (
+        "Apenas o usuário Master pode remover alunos."
+    )
+
+    client.app.dependency_overrides.clear()

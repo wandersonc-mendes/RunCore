@@ -8,10 +8,12 @@ from fastapi import status
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
+from sqlalchemy.exc import IntegrityError
 
 from api.dependencies import require_admin
 from api.security import hash_password
 from models.user import User
+from repositories.athlete_repository import AthleteRepository
 from repositories.user_repository import UserRepository
 
 
@@ -21,6 +23,7 @@ router = APIRouter(
 )
 
 user_repository = UserRepository()
+athlete_repository = AthleteRepository()
 
 
 class ManagedUserOut(BaseModel):
@@ -173,6 +176,60 @@ def create_coach(
         is_active=payload.is_active,
         profile=profile,
     )
+
+
+@router.delete(
+    "/{user_id}/student",
+    status_code=status.HTTP_200_OK,
+)
+def delete_student(
+    user_id: int,
+    master: User = Depends(require_admin),
+):
+    if master.role != "master":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apenas o usuário Master pode remover alunos.",
+        )
+
+    target = user_repository.get_by_id(user_id)
+
+    if target is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado.",
+        )
+
+    if target.role != "student":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta ação permite remover apenas usuários do tipo Aluno.",
+        )
+
+    try:
+        athlete = athlete_repository.get_by_user_id(user_id)
+
+        if athlete is not None:
+            athlete_repository.delete(athlete.id)
+
+        if not user_repository.delete(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuário não encontrado.",
+            )
+    except IntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "O aluno possui vínculos que impedem a exclusão definitiva. "
+                "Desative o acesso e revise os dados vinculados."
+            ),
+        ) from error
+
+    return {
+        "message": f"Aluno {target.name} removido com sucesso.",
+        "user_id": user_id,
+    }
 
 
 @router.patch(

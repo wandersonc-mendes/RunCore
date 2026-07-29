@@ -181,26 +181,6 @@ class UserRepository:
 
             return user
 
-    def delete(
-        self,
-        user_id: int,
-    ) -> bool:
-
-        with SessionLocal() as session:
-
-            user = session.get(
-                User,
-                user_id,
-            )
-
-            if user is None:
-                return False
-
-            session.delete(user)
-            session.commit()
-
-            return True
-
     def update_password(
         self,
         user_id: int,

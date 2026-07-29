@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import {
   createCoach,
   createManagedUser,
-  deleteManagedStudent,
   listManagedUsers,
   updateManagedUser,
 } from "../api";
@@ -675,29 +674,6 @@ export default function AdminUsersPage({ currentUser }) {
     }
   }
 
-
-  async function handleRemoveStudent(user) {
-    const confirmed = window.confirm(
-      `Remover definitivamente o aluno ${user.name} (${user.email})?\n\n`
-      + "O acesso, o cadastro de atleta e seus dados vinculados serão excluídos.",
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setError("");
-    setMessage("");
-
-    try {
-      await deleteManagedStudent(user.id);
-      setMessage(`Aluno ${user.name} removido com sucesso.`);
-      await loadUsers();
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
   return (
     <section className="admin-users-page">
       <header className="admin-users-heading">
@@ -760,9 +736,6 @@ export default function AdminUsersPage({ currentUser }) {
                     <th>Usuário</th>
                     <th>Perfil</th>
                     <th>Status</th>
-                    {currentUser.role === "master" && (
-                      <th className="admin-actions-column">Ações</th>
-                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -801,24 +774,6 @@ export default function AdminUsersPage({ currentUser }) {
                           {user.is_active ? "Ativo" : "Inativo"}
                         </button>
                       </td>
-
-                      {currentUser.role === "master" && (
-                        <td className="admin-actions-column">
-                          {user.role === "student" ? (
-                            <button
-                              type="button"
-                              className="admin-remove-student"
-                              onClick={() => handleRemoveStudent(user)}
-                              aria-label={`Remover aluno ${user.name}`}
-                              title="Remover aluno definitivamente"
-                            >
-                              Remover
-                            </button>
-                          ) : (
-                            <span className="admin-action-unavailable">—</span>
-                          )}
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>

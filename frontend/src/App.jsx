@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import {
   clearSession,
@@ -773,7 +773,6 @@ export default function App() {
   const [athletes, setAthletes] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const masterInitialRedirectDone = useRef(false);
   const [search, setSearch] = useState("");
   const [athleteForm, setAthleteForm] = useState(emptyAthlete);
   const [evaluationForm, setEvaluationForm] = useState(emptyEvaluation);
@@ -853,19 +852,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!currentUser) {
-      masterInitialRedirectDone.current = false;
-      return;
+    if (window.location.hostname === "runcoreapp.com.br") {
+      window.location.replace(
+        `https://www.runcoreapp.com.br${window.location.pathname}${window.location.search}${window.location.hash}`,
+      );
     }
-
-    if (
-      currentUser.role === "master"
-      && !masterInitialRedirectDone.current
-    ) {
-      masterInitialRedirectDone.current = true;
-      navigate(coachPaths.dashboard, { replace: true });
-    }
-  }, [currentUser, navigate]);
+  }, []);
 
   useEffect(() => {
     if (["coach", "master"].includes(currentUser?.role)) { loadAthletes(""); loadInvitations(); }
@@ -874,8 +866,18 @@ export default function App() {
   useEffect(() => {
     if (
       ["coach", "master"].includes(currentUser?.role)
+      && location.pathname !== coachPaths.dashboard
       && !location.pathname.startsWith("/treinador")
       && !location.pathname.startsWith("/administrativo")
+    ) {
+      navigate(coachPaths.dashboard, { replace: true });
+    }
+  }, [currentUser, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (
+      ["coach", "master"].includes(currentUser?.role)
+      && location.pathname === "/treinador/dashboard"
     ) {
       navigate(coachPaths.dashboard, { replace: true });
     }

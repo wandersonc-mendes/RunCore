@@ -323,3 +323,140 @@
     min-width: 720px;
   }
 }
+
+
+/* RUNCORE TRAINING LOAD INTERACTION */
+.student-form-interpretation {
+  align-items: center;
+  background: var(--shell-surface-soft);
+  border: 1px solid var(--shell-border);
+  border-left: 4px solid var(--shell-accent);
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(180px, .45fr) minmax(0, 1.55fr);
+  padding: 15px 17px;
+}
+
+.student-form-interpretation > div {
+  display: grid;
+  gap: 4px;
+}
+
+.student-form-interpretation span {
+  color: var(--shell-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.student-form-interpretation strong {
+  font-size: 16px;
+}
+
+.student-form-interpretation p {
+  color: var(--shell-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.student-form-interpretation.high-fatigue {
+  border-left-color: #d85858;
+}
+
+.student-form-interpretation.productive {
+  border-left-color: #e07a3f;
+}
+
+.student-form-interpretation.balanced {
+  border-left-color: var(--shell-accent);
+}
+
+.student-form-interpretation.fresh {
+  border-left-color: #6986d8;
+}
+
+.student-form-interpretation.detraining {
+  border-left-color: #9a71c7;
+}
+
+.student-load-chart {
+  position: relative;
+}
+
+.student-load-grid {
+  stroke: var(--shell-border);
+  stroke-dasharray: 2 6;
+  stroke-width: 1;
+}
+
+.student-load-axis-label {
+  fill: var(--shell-muted);
+  font-size: 11px;
+}
+
+.student-load-hit-area {
+  cursor: crosshair;
+  fill: transparent;
+  outline: none;
+}
+
+.student-load-active-line {
+  stroke: var(--shell-muted);
+  stroke-dasharray: 3 4;
+  stroke-width: 1;
+}
+
+.student-load-point {
+  stroke: var(--shell-surface);
+  stroke-width: 2;
+}
+
+.student-load-point.ctl {
+  fill: var(--shell-accent);
+}
+
+.student-load-point.atl {
+  fill: #e07a3f;
+}
+
+.student-load-point.tsb {
+  fill: #6986d8;
+}
+
+.student-load-tooltip {
+  align-items: center;
+  background: var(--shell-surface);
+  border: 1px solid var(--shell-border);
+  border-radius: 11px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  margin-top: 10px;
+  padding: 11px 13px;
+}
+
+.student-load-tooltip strong {
+  color: var(--shell-text);
+  margin-right: auto;
+}
+
+.student-load-tooltip span {
+  color: var(--shell-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 680px) {
+  .student-form-interpretation {
+    grid-template-columns: 1fr;
+  }
+
+  .student-load-tooltip {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .student-load-tooltip strong {
+    margin-right: 0;
+  }
+}

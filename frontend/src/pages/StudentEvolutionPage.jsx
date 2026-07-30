@@ -177,10 +177,67 @@ function linePath(values, width, height, minValue, maxValue) {
 }
 
 
+function formInterpretation(value) {
+  if (value <= -25) {
+    return {
+      tone: "high-fatigue",
+      title: "Fadiga elevada",
+      description:
+        "A carga aguda está muito acima da carga crônica. "
+        + "Considere recuperação e percepção do atleta antes "
+        + "de aumentar a intensidade.",
+    };
+  }
+
+  if (value < -10) {
+    return {
+      tone: "productive",
+      title: "Carga produtiva",
+      description:
+        "Há fadiga acumulada compatível com um bloco de carga. "
+        + "A resposta individual e a recuperação devem orientar "
+        + "a continuidade.",
+    };
+  }
+
+  if (value <= 10) {
+    return {
+      tone: "balanced",
+      title: "Estado equilibrado",
+      description:
+        "Fitness e fadiga estão próximos. O atleta tende a estar "
+        + "em uma faixa neutra de treinamento.",
+    };
+  }
+
+  if (value <= 25) {
+    return {
+      tone: "fresh",
+      title: "Boa recuperação",
+      description:
+        "A fadiga aguda está abaixo do fitness. Pode representar "
+        + "recuperação ou redução planejada de carga.",
+    };
+  }
+
+  return {
+    tone: "detraining",
+    title: "Carga recente baixa",
+    description:
+      "A forma está muito positiva porque a fadiga caiu bastante. "
+      + "Verifique se isso corresponde a polimento, pausa ou perda "
+      + "de continuidade.",
+  };
+}
+
+
 function TrainingLoadChart({ series }) {
+  const [activeIndex, setActiveIndex] = useState(
+    Math.max(0, series.length - 1),
+  );
   const width = 920;
-  const height = 280;
-  const padding = 24;
+  const height = 320;
+  const padding = 36;
   const chartWidth = width - padding * 2;
   const chartHeight = height - padding * 2;
 
@@ -216,12 +273,34 @@ function TrainingLoadChart({ series }) {
     - ((0 - minValue) / Math.max(1, maxValue - minValue))
     * chartHeight;
 
+  const active = series[activeIndex] || series[series.length - 1];
+  const activeX = series.length === 1
+    ? padding + chartWidth / 2
+    : padding + (activeIndex / (series.length - 1)) * chartWidth;
+
+  const pointY = (value) => (
+    padding + chartHeight
+    - ((value - minValue) / Math.max(1, maxValue - minValue))
+    * chartHeight
+  );
+
+  const dateTicks = [0, 30, 60, series.length - 1]
+    .filter(
+      (index, position, values) =>
+        index >= 0
+        && index < series.length
+        && values.indexOf(index) === position,
+    );
+
   return (
     <div className="student-load-chart">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Gráfico de fitness, fadiga e forma"
+        aria-label="Gráfico interativo de fitness, fadiga e forma"
+        onMouseLeave={() =>
+          setActiveIndex(Math.max(0, series.length - 1))
+        }
       >
         <line
           className="student-load-zero"
@@ -230,6 +309,41 @@ function TrainingLoadChart({ series }) {
           y1={zeroY}
           y2={zeroY}
         />
+
+        {dateTicks.map((index) => {
+          const x = series.length === 1
+            ? padding + chartWidth / 2
+            : padding + (index / (series.length - 1)) * chartWidth;
+
+          return (
+            <g key={series[index].date.toISOString()}>
+              <line
+                className="student-load-grid"
+                x1={x}
+                x2={x}
+                y1={padding}
+                y2={height - padding}
+              />
+              <text
+                className="student-load-axis-label"
+                x={x}
+                y={height - 8}
+                textAnchor={
+                  index === 0
+                    ? "start"
+                    : index === series.length - 1
+                      ? "end"
+                      : "middle"
+                }
+              >
+                {new Intl.DateTimeFormat("pt-BR", {
+                  day: "2-digit",
+                  month: "short",
+                }).format(series[index].date)}
+              </text>
+            </g>
+          );
+        })}
 
         <g transform={`translate(${padding} ${padding})`}>
           <path
@@ -245,7 +359,90 @@ function TrainingLoadChart({ series }) {
             d={tsbPath}
           />
         </g>
+
+        {series.map((item, index) => {
+          const x = series.length === 1
+            ? padding + chartWidth / 2
+            : padding + (index / (series.length - 1)) * chartWidth;
+
+          return (
+            <rect
+              className="student-load-hit-area"
+              key={item.date.toISOString()}
+              x={x - Math.max(3, chartWidth / series.length / 2)}
+              y={padding}
+              width={Math.max(6, chartWidth / series.length)}
+              height={chartHeight}
+              onMouseEnter={() => setActiveIndex(index)}
+              onFocus={() => setActiveIndex(index)}
+              tabIndex={index % 7 === 0 || index === series.length - 1
+                ? 0
+                : -1}
+            >
+              <title>
+                {new Intl.DateTimeFormat("pt-BR").format(item.date)}
+              </title>
+            </rect>
+          );
+        })}
+
+        {active && (
+          <>
+            <line
+              className="student-load-active-line"
+              x1={activeX}
+              x2={activeX}
+              y1={padding}
+              y2={height - padding}
+            />
+
+            <circle
+              className="student-load-point ctl"
+              cx={activeX}
+              cy={pointY(active.ctl)}
+              r="5"
+            />
+            <circle
+              className="student-load-point atl"
+              cx={activeX}
+              cy={pointY(active.atl)}
+              r="5"
+            />
+            <circle
+              className="student-load-point tsb"
+              cx={activeX}
+              cy={pointY(active.tsb)}
+              r="5"
+            />
+          </>
+        )}
       </svg>
+
+      {active && (
+        <div className="student-load-tooltip" aria-live="polite">
+          <strong>
+            {new Intl.DateTimeFormat("pt-BR", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            }).format(active.date)}
+          </strong>
+
+          <span>
+            Carga diária: {active.load.toFixed(1)}
+          </span>
+          <span>
+            Fitness: {active.ctl.toFixed(1)}
+          </span>
+          <span>
+            Fadiga: {active.atl.toFixed(1)}
+          </span>
+          <span>
+            Forma: {active.tsb > 0 ? "+" : ""}
+            {active.tsb.toFixed(1)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -309,6 +506,7 @@ export default function StudentEvolutionPage() {
       fitness: latest.ctl,
       fatigue: latest.atl,
       form: latest.tsb,
+      interpretation: formInterpretation(latest.tsb),
     };
   }, [loadSeries]);
 
@@ -522,6 +720,22 @@ export default function StudentEvolutionPage() {
                 <small>fitness menos fadiga</small>
               </article>
             </section>
+
+            <article
+              className={`student-form-interpretation ${
+                loadSummary.interpretation.tone
+              }`}
+            >
+              <div>
+                <span>Leitura da forma atual</span>
+                <strong>
+                  {loadSummary.interpretation.title}
+                </strong>
+              </div>
+              <p>
+                {loadSummary.interpretation.description}
+              </p>
+            </article>
 
             <div className="student-load-legend">
               <span className="ctl">Fitness · CTL</span>

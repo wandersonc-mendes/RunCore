@@ -1179,6 +1179,132 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           </section>
         )}
 
+        {view === "profile" && (
+          <section className="student-profile-page">
+            <header className="student-profile-page-heading">
+              <div>
+                <p className="eyebrow">MEU PERFIL</p>
+                <h2>Identidade e dados do atleta</h2>
+                <p className="muted">
+                  Consulte as informações vinculadas à sua conta
+                  e usadas no acompanhamento esportivo.
+                </p>
+              </div>
+            </header>
+
+            <section className="student-profile-overview">
+              <article className="student-profile-identity-card">
+                <div className="student-profile-avatar">
+                  {user?.photo_url ? (
+                    <img src={user.photo_url} alt="" />
+                  ) : (
+                    <span>
+                      {String(user?.name || user?.email || "A")
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase()}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <span>Atleta</span>
+                  <h3>{user?.name || "Nome não informado"}</h3>
+                  <p>{user?.email || "E-mail não informado"}</p>
+                </div>
+              </article>
+
+              <article className="student-profile-status-card">
+                <span>Status da conta</span>
+                <strong>
+                  {user?.active === false ? "Inativa" : "Ativa"}
+                </strong>
+                <small>Perfil vinculado ao painel do atleta</small>
+              </article>
+            </section>
+
+            <section className="student-profile-information-grid">
+              <article>
+                <header>
+                  <div>
+                    <span>Dados pessoais</span>
+                    <h3>Informações da conta</h3>
+                  </div>
+                </header>
+
+                <dl>
+                  <div>
+                    <dt>Nome completo</dt>
+                    <dd>{user?.name || "Não informado"}</dd>
+                  </div>
+                  <div>
+                    <dt>E-mail</dt>
+                    <dd>{user?.email || "Não informado"}</dd>
+                  </div>
+                  <div>
+                    <dt>Telefone</dt>
+                    <dd>{user?.phone || "Não informado"}</dd>
+                  </div>
+                  <div>
+                    <dt>Data de nascimento</dt>
+                    <dd>
+                      {user?.birth_date
+                        ? new Intl.DateTimeFormat("pt-BR").format(
+                          new Date(`${user.birth_date}T12:00:00`),
+                        )
+                        : "Não informada"}
+                    </dd>
+                  </div>
+                </dl>
+              </article>
+
+              <article>
+                <header>
+                  <div>
+                    <span>Perfil esportivo</span>
+                    <h3>Dados de acompanhamento</h3>
+                  </div>
+                </header>
+
+                <dl>
+                  <div>
+                    <dt>Objetivo principal</dt>
+                    <dd>
+                      {user?.goal
+                        || goalsPageSummary.mainGoal?.name
+                        || "Não informado"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Treinador</dt>
+                    <dd>{user?.coach_name || "Vínculo ativo"}</dd>
+                  </div>
+                  <div>
+                    <dt>Atividades importadas</dt>
+                    <dd>{activities.length}</dd>
+                  </div>
+                  <div>
+                    <dt>Provas futuras</dt>
+                    <dd>{goalsPageSummary.futureGoals.length}</dd>
+                  </div>
+                </dl>
+              </article>
+            </section>
+
+            <article className="student-profile-data-note">
+              <div>
+                <span>Atualização de dados</span>
+                <h3>Edição do perfil</h3>
+                <p>
+                  Nesta etapa, a página apresenta os dados disponíveis
+                  na conta. A edição será conectada à API em uma etapa
+                  própria para garantir validação e persistência.
+                </p>
+              </div>
+            </article>
+          </section>
+        )}
+
         {view === "activities" && (
           <>
             <section className="student-activities-page-heading">

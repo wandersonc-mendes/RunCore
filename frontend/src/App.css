@@ -4285,3 +4285,198 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* RUNCORE STUDENT PROFILE PAGE */
+.student-profile-page {
+  display: grid;
+  gap: 20px;
+}
+
+.student-profile-page-heading h2 {
+  color: var(--ink);
+  margin: 4px 0;
+}
+
+.student-profile-page-heading .muted {
+  line-height: 1.5;
+  max-width: 720px;
+}
+
+.student-profile-overview {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(220px, .7fr);
+}
+
+.student-profile-identity-card,
+.student-profile-status-card,
+.student-profile-information-grid > article,
+.student-profile-data-note {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  color: var(--ink);
+}
+
+.student-profile-identity-card {
+  align-items: center;
+  display: flex;
+  gap: 17px;
+  padding: 20px;
+}
+
+.student-profile-avatar {
+  align-items: center;
+  background: color-mix(
+    in srgb,
+    var(--surface) 75%,
+    var(--accent) 25%
+  );
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: flex;
+  flex: 0 0 76px;
+  height: 76px;
+  justify-content: center;
+  overflow: hidden;
+  width: 76px;
+}
+
+.student-profile-avatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.student-profile-avatar span {
+  color: var(--accent-dark);
+  font-size: 29px;
+  font-weight: 800;
+}
+
+.student-profile-identity-card > div:last-child {
+  display: grid;
+  gap: 5px;
+}
+
+.student-profile-identity-card span,
+.student-profile-status-card span,
+.student-profile-information-grid header span,
+.student-profile-data-note span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-profile-identity-card h3,
+.student-profile-data-note h3,
+.student-profile-information-grid h3 {
+  margin: 0;
+}
+
+.student-profile-identity-card p,
+.student-profile-data-note p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.student-profile-status-card {
+  align-content: center;
+  display: grid;
+  gap: 6px;
+  padding: 20px;
+}
+
+.student-profile-status-card strong {
+  color: var(--accent-dark);
+  font-size: 25px;
+}
+
+.student-profile-status-card small {
+  color: var(--muted);
+}
+
+.student-profile-information-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.student-profile-information-grid > article {
+  overflow: hidden;
+}
+
+.student-profile-information-grid header {
+  background: color-mix(
+    in srgb,
+    var(--surface) 90%,
+    var(--accent) 10%
+  );
+  border-bottom: 1px solid var(--line);
+  padding: 17px 19px;
+}
+
+.student-profile-information-grid header > div {
+  display: grid;
+  gap: 4px;
+}
+
+.student-profile-information-grid dl {
+  display: grid;
+  margin: 0;
+}
+
+.student-profile-information-grid dl > div {
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 5px;
+  grid-template-columns: minmax(130px, .7fr) minmax(0, 1.3fr);
+  padding: 14px 19px;
+}
+
+.student-profile-information-grid dl > div:last-child {
+  border-bottom: 0;
+}
+
+.student-profile-information-grid dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.student-profile-information-grid dd {
+  color: var(--ink);
+  font-weight: 700;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.student-profile-data-note {
+  padding: 20px;
+}
+
+.student-profile-data-note > div {
+  display: grid;
+  gap: 5px;
+  max-width: 760px;
+}
+
+@media (max-width: 840px) {
+  .student-profile-overview,
+  .student-profile-information-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .student-profile-identity-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .student-profile-information-grid dl > div {
+    grid-template-columns: 1fr;
+  }
+}

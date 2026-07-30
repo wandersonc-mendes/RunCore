@@ -49,13 +49,18 @@ class UserRepository:
         with SessionLocal() as session:
 
             users = session.scalars(
-                select(User).order_by(User.name, User.id),
+                select(User)
+                .where(
+                    User.email.not_like("__removed__%"),
+                )
+                .order_by(User.name, User.id),
             ).all()
 
             for user in users:
                 session.expunge(user)
 
             return list(users)
+
 
     def count_active_by_role(
         self,
@@ -181,20 +186,29 @@ class UserRepository:
 
             return user
 
-    def delete(
+    def archive_student(
         self,
         user_id: int,
     ) -> bool:
 
         with SessionLocal() as session:
-            user = session.get(User, user_id)
+
+            user = session.get(
+                User,
+                user_id,
+            )
 
             if user is None:
                 return False
 
-            session.delete(user)
+            user.name = f"Aluno removido #{user.id}"
+            user.email = f"__removed__{user.id}@runcore.local"
+            user.is_active = False
+
             session.commit()
+
             return True
+
 
     def update_password(
         self,

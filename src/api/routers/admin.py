@@ -212,7 +212,7 @@ def delete_student(
         if athlete is not None:
             athlete_repository.delete(athlete.id)
 
-        if not user_repository.delete(user_id):
+        if not user_repository.archive_student(user_id):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Usuário não encontrado.",
@@ -227,7 +227,10 @@ def delete_student(
         ) from error
 
     return {
-        "message": f"Aluno {target.name} removido com sucesso.",
+        "message": (
+            f"Aluno {target.name} removido com sucesso. "
+            "O acesso foi revogado e o e-mail original foi liberado."
+        ),
         "user_id": user_id,
     }
 

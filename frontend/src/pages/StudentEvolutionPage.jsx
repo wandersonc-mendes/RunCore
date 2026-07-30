@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { listStravaActivities } from "../api";
 import { studentPaths } from "../router/paths";
 import { activityStartDate } from "../utils/activityDate";
+import StudentTestEvolution from "./StudentTestEvolution";
 import "./StudentEvolutionPage.css";
 
 
@@ -572,6 +573,8 @@ export default function StudentEvolutionPage() {
           Abrir Atividades
         </button>
       </header>
+
+      <StudentTestEvolution />
 
       {error && <div className="alert">{error}</div>}
 

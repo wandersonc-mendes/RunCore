@@ -498,3 +498,51 @@
     height: calc(100vh - 70px);
   }
 }
+
+
+/* RUNCORE GLOBAL THEME TOGGLE */
+.app-theme-toggle {
+  overflow: hidden;
+}
+
+.app-theme-toggle img {
+  display: block;
+  height: 24px;
+  object-fit: contain;
+  width: 24px;
+}
+
+.app-theme-toggle:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--shell-accent) 42%,
+    var(--shell-border)
+  );
+  background: var(--shell-surface-soft);
+}
+
+.app-theme-toggle:focus-visible {
+  outline: 3px solid color-mix(
+    in srgb,
+    var(--shell-accent) 28%,
+    transparent
+  );
+  outline-offset: 2px;
+}
+
+@media (max-width: 460px) {
+  .app-topbar-actions {
+    gap: 6px;
+  }
+
+  .app-icon-button,
+  .app-menu-button {
+    height: 38px;
+    width: 38px;
+  }
+
+  .app-theme-toggle img {
+    height: 21px;
+    width: 21px;
+  }
+}

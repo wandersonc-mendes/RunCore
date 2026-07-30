@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../theme/ThemeProvider";
 
 import {
   adminPaths,
@@ -69,6 +70,7 @@ export default function Topbar({
   const [profilePhoto, setProfilePhoto] = useState("");
   const containerRef = useRef(null);
   const navigate = useNavigate();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   const isStudent = user?.role === "student";
   const isAdmin = user?.role === "admin";
@@ -186,6 +188,32 @@ export default function Topbar({
         className="app-topbar-actions"
         ref={containerRef}
       >
+        <button
+          type="button"
+          className="app-icon-button app-theme-toggle"
+          aria-label={
+            resolvedTheme === "dark"
+              ? "Ativar modo claro"
+              : "Ativar modo escuro"
+          }
+          title={
+            resolvedTheme === "dark"
+              ? "Ativar modo claro"
+              : "Ativar modo escuro"
+          }
+          onClick={toggleTheme}
+        >
+          <img
+            src={
+              resolvedTheme === "dark"
+                ? "/icons/modo-claro.png"
+                : "/icons/modo-escuro.png"
+            }
+            alt=""
+            aria-hidden="true"
+          />
+        </button>
+
         <div className="app-topbar-panel-anchor">
           <button
             type="button"
@@ -361,13 +389,6 @@ export default function Topbar({
                 onClick={() => goTo(settingsPath)}
               >
                 Minha conta
-              </button>
-
-              <button
-                type="button"
-                onClick={() => goTo(settingsPath)}
-              >
-                Aparência
               </button>
 
               <hr />

@@ -1,108 +1,45 @@
-import { useTheme } from "../theme/ThemeProvider";
 import "./SettingsPage.css";
 
-const options = [
-  {
-    value: "light",
-    title: "Claro",
-    description: "Interface clara em todos os dispositivos.",
-    preview: "☀",
-  },
-  {
-    value: "dark",
-    title: "Escuro",
-    description: "Interface escura em todos os dispositivos.",
-    preview: "◐",
-  },
-  {
-    value: "system",
-    title: "De acordo com o sistema",
-    description: "Segue automaticamente a configuração do dispositivo.",
-    preview: "◑",
-  },
-];
-
 export default function SettingsPage({ user }) {
-  const {
-    preference,
-    resolvedTheme,
-    changeTheme,
-  } = useTheme();
+  const panelLabel = user?.role === "student"
+    ? "Área do atleta"
+    : user?.role === "master"
+      ? "Painel Master"
+      : user?.role === "admin"
+        ? "Painel administrativo"
+        : "Painel do treinador";
 
   return (
     <section className="settings-page">
       <header className="settings-heading">
         <div>
           <p className="eyebrow">CONFIGURAÇÕES</p>
-          <h2>Aparência</h2>
+          <h2>Conta e preferências</h2>
           <p className="muted">
-            Escolha como o RunCore deve ser exibido.
+            Gerencie as opções da sua conta no RunCore.
           </p>
         </div>
 
         <span className="settings-role">
-          {user?.role === "student"
-            ? "Área do atleta"
-            : user?.role === "master"
-              ? "Painel Master"
-            : user?.role === "admin"
-              ? "Painel administrativo"
-              : "Painel do treinador"}
+          {panelLabel}
         </span>
       </header>
 
       <section className="settings-card">
         <div className="settings-section-title">
           <div>
-            <h3>Tema do sistema</h3>
+            <h3>Configurações da conta</h3>
             <p>
-              A preferência fica salva neste navegador.
+              Notificações, integrações, segurança e
+              privacidade serão organizadas nesta área.
             </p>
           </div>
-
-          <span>
-            Tema ativo: {
-              resolvedTheme === "dark"
-                ? "Escuro"
-                : "Claro"
-            }
-          </span>
         </div>
 
-        <div
-          className="theme-options"
-          role="radiogroup"
-          aria-label="Tema do RunCore"
-        >
-          {options.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              role="radio"
-              aria-checked={preference === option.value}
-              className={
-                preference === option.value
-                  ? "theme-option active"
-                  : "theme-option"
-              }
-              onClick={() => changeTheme(option.value)}
-            >
-              <span className="theme-preview">
-                {option.preview}
-              </span>
-
-              <span className="theme-option-copy">
-                <strong>{option.title}</strong>
-                <small>{option.description}</small>
-              </span>
-
-              <span
-                className="theme-radio"
-                aria-hidden="true"
-              />
-            </button>
-          ))}
-        </div>
+        <p className="muted">
+          A aparência agora pode ser alternada diretamente
+          pela barra superior, sem sair da página atual.
+        </p>
       </section>
     </section>
   );

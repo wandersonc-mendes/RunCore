@@ -10,61 +10,56 @@ const STORAGE_KEY = "runcore-theme";
 const ThemeContext = createContext(null);
 
 function systemTheme() {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
+  return window.matchMedia(
+    "(prefers-color-scheme: dark)",
+  ).matches
     ? "dark"
     : "light";
 }
 
+function initialTheme() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+
+  return stored === "dark" || stored === "light"
+    ? stored
+    : systemTheme();
+}
+
 export function ThemeProvider({ children }) {
-  const [preference, setPreference] = useState(
-    () => localStorage.getItem(STORAGE_KEY) || "system",
-  );
   const [resolvedTheme, setResolvedTheme] = useState(
-    () => preference === "system" ? systemTheme() : preference,
+    initialTheme,
   );
 
   useEffect(() => {
-    const media = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    );
+    document.documentElement.dataset.theme = resolvedTheme;
+    document.documentElement.style.colorScheme = resolvedTheme;
+  }, [resolvedTheme]);
 
-    function applyTheme() {
-      const nextTheme = preference === "system"
-        ? systemTheme()
-        : preference;
-
-      setResolvedTheme(nextTheme);
-      document.documentElement.dataset.theme = nextTheme;
-      document.documentElement.style.colorScheme = nextTheme;
-    }
-
-    applyTheme();
-
-    if (preference === "system") {
-      media.addEventListener("change", applyTheme);
-    }
-
-    return () => {
-      media.removeEventListener("change", applyTheme);
-    };
-  }, [preference]);
-
-  function changeTheme(nextPreference) {
-    if (!["light", "dark", "system"].includes(nextPreference)) {
+  function changeTheme(nextTheme) {
+    if (!["light", "dark"].includes(nextTheme)) {
       return;
     }
 
-    localStorage.setItem(STORAGE_KEY, nextPreference);
-    setPreference(nextPreference);
+    localStorage.setItem(STORAGE_KEY, nextTheme);
+    setResolvedTheme(nextTheme);
+  }
+
+  function toggleTheme() {
+    changeTheme(
+      resolvedTheme === "dark"
+        ? "light"
+        : "dark",
+    );
   }
 
   const value = useMemo(
     () => ({
-      preference,
+      preference: resolvedTheme,
       resolvedTheme,
       changeTheme,
+      toggleTheme,
     }),
-    [preference, resolvedTheme],
+    [resolvedTheme],
   );
 
   return (

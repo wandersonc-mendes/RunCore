@@ -612,7 +612,16 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   if (showProfile || view === "profile") {
     return (
       <ProfilePanel
-        onClose={() => setShowProfile(false)}
+        onClose={() => {
+          setShowProfile(false);
+
+          if (view === "profile") {
+            navigate(
+              studentPaths.dashboard,
+              { replace: true },
+            );
+          }
+        }}
       />
     );
   }

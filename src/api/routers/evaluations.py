@@ -1,7 +1,10 @@
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import HTTPException
 
+from api.dependencies import current_user
 from core.physiology.vdot_service import VdotService
+from repositories.access_repository import AccessRepository
 from repositories.evaluation_repository import EvaluationRepository
 
 from api.schemas import EvaluationCreate
@@ -10,6 +13,7 @@ from api.schemas import EvaluationOut
 
 router = APIRouter(tags=["evaluations"])
 repository = EvaluationRepository()
+access = AccessRepository()
 
 
 TEST_DISTANCES_METERS = {
@@ -67,6 +71,30 @@ def distance_from_test_type(test_type: str) -> float:
         )
 
     return distance
+
+
+@router.get(
+    "/student/evaluations",
+    response_model=list[EvaluationOut],
+)
+def list_student_evaluations(
+    user=Depends(current_user),
+):
+    if user.role != "student":
+        raise HTTPException(
+            status_code=403,
+            detail="Avaliações disponíveis apenas para aluno.",
+        )
+
+    athlete_id = access.athlete_for_student(user.id)
+
+    if athlete_id is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Perfil de atleta não encontrado.",
+        )
+
+    return repository.list_by_athlete(athlete_id)
 
 
 @router.get(

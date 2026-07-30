@@ -345,6 +345,13 @@ export function getAthleteProfile(athleteId) {
   );
 }
 
+export function listStudentEvaluations() {
+  return request(
+    "/api/student/evaluations",
+  );
+}
+
+
 export function listEvaluations(athleteId) {
   return request(
     `/api/athletes/${athleteId}/evaluations`,

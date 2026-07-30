@@ -4,6 +4,11 @@ import { listStravaActivities } from "../api";
 import "./StudentEvolutionPage.css";
 
 
+import {
+  activityLocalDateKey,
+  activityStartDate,
+  activityStartValue,
+} from "../utils/activityDate";
 function km(value) {
   const number = Number(value || 0);
 
@@ -198,8 +203,7 @@ export default function StudentEvolutionPage() {
                       </strong>
                       <span>
                         {formatDate(
-                          activity.start_date_local
-                          || activity.start_date,
+                          activityStartValue(activity),
                         )}
                       </span>
                     </div>

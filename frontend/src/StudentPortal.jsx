@@ -5,6 +5,11 @@ import ProfilePanel from "./ProfilePanel";
 import { studentPaths } from "./router/paths";
 import { formatWorkoutSummary } from "./utils/workoutSummary";
 
+import {
+  activityLocalDateKey,
+  activityStartDate,
+  activityStartValue,
+} from "./utils/activityDate";
 function formatDuration(seconds = 0) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -56,7 +61,7 @@ function statusLabel(status, metric = "pace") {
 
 function sessionForActivity(training, activity) {
   if (!training?.sessions || !activity?.start_at) return null;
-  const date = new Date(activity.start_at).toISOString().slice(0, 10);
+  const date = activityStartDate(activity).toISOString().slice(0, 10);
   return training.sessions.find((session) => session.session_date === date) || null;
 }
 
@@ -397,15 +402,17 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
     const currentYear = now.getFullYear();
 
     const monthRuns = runs.filter((activity) => {
-      const date = new Date(activity.start_at);
+      const date = activityStartDate(activity);
+      if (!date) return false;
       return !Number.isNaN(date.getTime())
         && date.getMonth() === currentMonth
         && date.getFullYear() === currentYear;
     });
 
     const recentDistance = runs.reduce((total, activity) => {
-      const date = new Date(activity.start_at);
-      return !Number.isNaN(date.getTime()) && date >= thirtyDaysAgo && date <= now
+      const date = activityStartDate(activity);
+      if (!date) return total;
+      return date >= thirtyDaysAgo && date <= now
         ? total + Number(activity.distance || 0)
         : total;
     }, 0);
@@ -415,11 +422,11 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
       return date && date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     });
 
-    const activityDates = new Set(monthRuns.map((activity) => localDateKey(activity.start_at)));
+    const activityDates = new Set(monthRuns.map((activity) => activityLocalDateKey(activity)));
     const plannedDates = new Set(monthSessions.map((session) => session.session_date).filter(Boolean));
     const completed = monthSessions.filter((session) => activityDates.has(session.session_date)).length;
     const proposed = monthSessions.filter((session) => !activityDates.has(session.session_date)).length;
-    const extra = monthRuns.filter((activity) => !plannedDates.has(localDateKey(activity.start_at))).length;
+    const extra = monthRuns.filter((activity) => !plannedDates.has(activityLocalDateKey(activity))).length;
 
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const upcomingGoals = [...goals]
@@ -465,8 +472,8 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
       weekTotal: currentWeekSessions.length,
       latestActivity: [...activities]
         .sort((a, b) => {
-          const dateA = new Date(a.start_at || 0).getTime();
-          const dateB = new Date(b.start_at || 0).getTime();
+          const dateA = (activityStartDate(a)?.getTime() || 0);
+          const dateB = (activityStartDate(b)?.getTime() || 0);
           return dateB - dateA;
         })[0] || null,
     };
@@ -1053,7 +1060,7 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                     <div><span>FC média</span><strong>{details?.average_heartrate ? `${Math.round(details.average_heartrate)} bpm` : "Não informada"}</strong></div>
                     <div><span>FC máxima</span><strong>{details?.max_heartrate ? `${Math.round(details.max_heartrate)} bpm` : "Não informada"}</strong></div>
                     <div><span>Cadência média</span><strong>{details?.average_cadence ? `${Math.round(details.average_cadence)} spm` : "Não informada"}</strong></div>
-                    <div><span>Data</span><strong>{activity.start_at ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date(activity.start_at)) : "Não informada"}</strong></div>
+                    <div><span>Data</span><strong>{activityStartValue(activity) ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(activityStartDate(activity)) : "Não informada"}</strong></div>
                     {analysis && <section className="adherence-card"><div className="adherence-heading"><div><span>ADERÊNCIA AO TREINO</span><strong>{analysis.session.workout_name}</strong></div><b className={`adherence-status ${analysis.distanceStatus}`}>{statusLabel(analysis.distanceStatus, "distance")}</b></div><p>Planejado: {analysis.plannedDistance.toFixed(2)} km · Executado: {activity.distance.toFixed(2)} km</p>{analysis.aligned ? <><strong className="adherence-result">{analysis.inside} de {analysis.blocks.length} blocos dentro do planejado</strong><div className="adherence-blocks">{analysis.blocks.map((block, index) => <div className="adherence-block" key={`${block.step.order}-${index}`}><span>{block.step.type} {index + 1}</span><div><b className={`adherence-dot ${block.paceStatus}`} title={statusLabel(block.paceStatus)}></b><strong>{formatPace(block.lap.average_speed)}</strong><small>{block.lap.distance.toFixed(2)} km · alvo {block.expectedDistance.toFixed(2)} km</small></div><em className={block.paceStatus}>{statusLabel(block.paceStatus)}</em></div>)}</div></> : <p className="muted">As voltas importadas não correspondem diretamente às etapas do plano; por enquanto, a comparação está disponível para a sessão como um todo.</p>}</section>}
                     {details?.laps?.length > 0 && <div className="laps"><strong>Parciais</strong>{details.laps.map((lap) => <div className="lap" key={lap.number}><div className="lap-main"><strong>Volta {lap.number} — {formatDuration(lap.moving_time)}</strong><span>{lap.distance.toFixed(2)} km · {formatPace(lap.average_speed)}</span></div><small>{lap.average_heartrate ? `${Math.round(lap.average_heartrate)} bpm` : "FC não informada"} · {lap.elevation_gain == null ? "elevação não informada" : `${Math.round(lap.elevation_gain)} m`}</small></div>)}</div>}
                     <section className="training-feedback">

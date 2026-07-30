@@ -4923,3 +4923,42 @@ button {
   justify-content: flex-end;
   margin: 4px 0 10px;
 }
+
+
+/* RUNCORE LOAD HIGHLIGHTS 62 */
+.load-highlights {
+  gap: 12px;
+}
+
+.load-highlight {
+  flex: 0 0 62px;
+  width: 62px;
+  height: 62px;
+  border-width: 3px;
+}
+
+.load-highlight span {
+  color: currentColor;
+  font-size: 9px;
+}
+
+.load-highlight strong {
+  color: currentColor;
+  font-size: 15px;
+}
+
+.load-highlight small {
+  color: currentColor;
+  font-size: 7px;
+  opacity: .78;
+}
+
+:root[data-theme="dark"] .load-highlight {
+  background: var(--shell-surface-soft, #202522);
+}
+
+:root[data-theme="dark"] .load-highlight strong,
+:root[data-theme="dark"] .load-highlight span,
+:root[data-theme="dark"] .load-highlight small {
+  color: currentColor;
+}

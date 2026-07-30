@@ -91,9 +91,6 @@ app.include_router(
 app.include_router(
     evaluations.router,
     prefix="/api",
-    dependencies=[
-        Depends(require_coach),
-    ],
 )
 
 app.include_router(

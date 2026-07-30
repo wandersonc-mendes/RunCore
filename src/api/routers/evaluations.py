@@ -3,6 +3,7 @@ from fastapi import Depends
 from fastapi import HTTPException
 
 from api.dependencies import current_user
+from api.dependencies import require_coach
 from core.physiology.vdot_service import VdotService
 from repositories.access_repository import AccessRepository
 from repositories.evaluation_repository import EvaluationRepository
@@ -101,7 +102,10 @@ def list_student_evaluations(
     "/athletes/{athlete_id}/evaluations",
     response_model=list[EvaluationOut],
 )
-def list_evaluations(athlete_id: int):
+def list_evaluations(
+    athlete_id: int,
+    coach=Depends(require_coach),
+):
     return repository.list_by_athlete(athlete_id)
 
 
@@ -113,6 +117,7 @@ def list_evaluations(athlete_id: int):
 def create_evaluation(
     athlete_id: int,
     payload: EvaluationCreate,
+    coach=Depends(require_coach),
 ):
     distance = distance_from_test_type(
         payload.test_type,
@@ -148,6 +153,7 @@ def create_evaluation(
 def update_evaluation(
     evaluation_id: int,
     payload: EvaluationCreate,
+    coach=Depends(require_coach),
 ):
     evaluation = repository.get_by_id(
         evaluation_id,
@@ -191,7 +197,10 @@ def update_evaluation(
     "/evaluations/{evaluation_id}",
     status_code=204,
 )
-def delete_evaluation(evaluation_id: int):
+def delete_evaluation(
+    evaluation_id: int,
+    coach=Depends(require_coach),
+):
     deleted = repository.delete(
         evaluation_id,
     )

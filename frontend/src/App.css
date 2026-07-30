@@ -4025,3 +4025,29 @@ button {
     flex-direction: column;
   }
 }
+
+
+/* RUNCORE STUDENT ACTIVITIES PAGE HEADING */
+.student-activities-page-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 22px;
+  justify-content: space-between;
+}
+
+.student-activities-page-heading h2 {
+  color: var(--ink);
+  margin: 4px 0;
+}
+
+.student-activities-page-heading .muted {
+  line-height: 1.5;
+  max-width: 700px;
+}
+
+@media (max-width: 680px) {
+  .student-activities-page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

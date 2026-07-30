@@ -1028,6 +1028,25 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
 
         {view === "activities" && (
           <>
+            <section className="student-activities-page-heading">
+              <div>
+                <p className="eyebrow">ATIVIDADES</p>
+                <h2>Execução e análise de cada treino</h2>
+                <p className="muted">
+                  Sincronize, revise detalhes, compare com o planejado
+                  e registre sua percepção após cada atividade.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => navigate(studentPaths.evolution)}
+              >
+                Ver Evolução
+              </button>
+            </section>
+
             <article className="connection-card">
           <div><span className="connection-logo">S</span><div><h3>Strava</h3><p>{strava?.connected ? "Conta conectada. Sincronize suas atividades quando quiser." : "Conecte sua conta para importar suas atividades."}</p></div></div>
           {strava?.connected ? <button className="btn-primary" disabled={syncing} onClick={sync}>{syncing ? "Sincronizando..." : "Sincronizar atividades"}</button> : <button className="btn-primary" disabled={!strava?.configured} onClick={() => connectStrava().catch((err) => setError(err.message))}>{strava ? "Conectar Strava" : "Verificando..."}</button>}

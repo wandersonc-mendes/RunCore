@@ -1,37 +1,95 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { listStravaActivities } from "../api";
+import { studentPaths } from "../router/paths";
+import { activityStartDate } from "../utils/activityDate";
 import "./StudentEvolutionPage.css";
 
 
-import {
-  activityLocalDateKey,
-  activityStartDate,
-  activityStartValue,
-} from "../utils/activityDate";
 function km(value) {
   const number = Number(value || 0);
-
-  if (number > 1000) {
-    return number / 1000;
-  }
-
-  return number;
+  return number > 1000 ? number / 1000 : number;
 }
 
 
-function formatDate(value) {
-  if (!value) return "Sem data";
+function activitySeconds(activity) {
+  return Number(
+    activity?.moving_time
+    || activity?.elapsed_time
+    || 0,
+  );
+}
 
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
+
+function isRunning(activity) {
+  const type = String(
+    activity?.sport_type
+    || activity?.type
+    || "",
+  ).toLowerCase();
+
+  return type.includes("run") || type.includes("corrida");
+}
+
+
+function formatPace(seconds) {
+  if (!seconds || !Number.isFinite(seconds)) return "—";
+
+  const minutes = Math.floor(seconds / 60);
+  const remaining = Math.round(seconds % 60);
+
+  return `${minutes}:${String(remaining).padStart(2, "0")}/km`;
+}
+
+
+function periodMetrics(activities) {
+  const totalDistance = activities.reduce(
+    (total, activity) =>
+      total + km(
+        activity.distance
+        || activity.distance_meters,
+      ),
+    0,
+  );
+
+  const totalSeconds = activities.reduce(
+    (total, activity) =>
+      total + activitySeconds(activity),
+    0,
+  );
+
+  return {
+    activities: activities.length,
+    totalDistance,
+    averagePace:
+      totalDistance > 0
+        ? totalSeconds / totalDistance
+        : 0,
+  };
+}
+
+
+function percentChange(current, previous) {
+  if (!previous) return current ? 100 : 0;
+  return ((current - previous) / previous) * 100;
+}
+
+
+function comparisonLabel(value, inverse = false) {
+  if (!Number.isFinite(value) || Math.abs(value) < 0.5) {
+    return "estável";
+  }
+
+  const improved = inverse ? value < 0 : value > 0;
+  const magnitude = Math.abs(value).toFixed(0);
+
+  return `${improved ? "melhora" : "queda"} de ${magnitude}%`;
 }
 
 
 export default function StudentEvolutionPage() {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -72,75 +130,67 @@ export default function StudentEvolutionPage() {
     };
   }, []);
 
-  const summary = useMemo(() => {
-    const runningActivities = activities.filter(
-      (activity) => {
-        const type = String(
-          activity.sport_type
-          || activity.type
-          || "",
-        ).toLowerCase();
+  const evolution = useMemo(() => {
+    const now = new Date();
+    const currentStart = new Date(now);
+    const previousStart = new Date(now);
 
-        return type.includes("run")
-          || type.includes("corrida");
-      },
-    );
+    currentStart.setDate(currentStart.getDate() - 30);
+    previousStart.setDate(previousStart.getDate() - 60);
 
-    const source = runningActivities.length
-      ? runningActivities
-      : activities;
+    const source = activities.filter(isRunning);
+    const runningActivities = source.length ? source : activities;
 
-    const totalDistance = source.reduce(
-      (total, activity) =>
-        total + km(
-          activity.distance
-          || activity.distance_meters,
-        ),
-      0,
-    );
+    const currentActivities = runningActivities.filter((activity) => {
+      const date = activityStartDate(activity);
+      return date && date >= currentStart && date <= now;
+    });
 
-    const totalSeconds = source.reduce(
-      (total, activity) =>
-        total + Number(
-          activity.moving_time
-          || activity.elapsed_time
-          || 0,
-        ),
-      0,
-    );
+    const previousActivities = runningActivities.filter((activity) => {
+      const date = activityStartDate(activity);
+      return date && date >= previousStart && date < currentStart;
+    });
 
-    const averagePace = totalDistance > 0
-      ? totalSeconds / totalDistance
-      : 0;
+    const current = periodMetrics(currentActivities);
+    const previous = periodMetrics(previousActivities);
 
     return {
-      source,
-      totalDistance,
-      totalSeconds,
-      averagePace,
+      current,
+      previous,
+      distanceChange: percentChange(
+        current.totalDistance,
+        previous.totalDistance,
+      ),
+      frequencyChange: percentChange(
+        current.activities,
+        previous.activities,
+      ),
+      paceChange: percentChange(
+        current.averagePace,
+        previous.averagePace,
+      ),
     };
   }, [activities]);
-
-  function formatPace(seconds) {
-    if (!seconds) return "—";
-
-    const minutes = Math.floor(seconds / 60);
-    const remaining = Math.round(seconds % 60);
-
-    return `${minutes}:${String(remaining).padStart(2, "0")}/km`;
-  }
 
   return (
     <section className="student-evolution-page">
       <header className="student-evolution-heading">
         <div>
           <p className="eyebrow">EVOLUÇÃO</p>
-          <h2>Sua evolução</h2>
+          <h2>Tendências do seu treinamento</h2>
           <p className="muted">
-            Resumo das atividades sincronizadas
-            com o Strava.
+            Compare os últimos 30 dias com o período anterior.
+            Detalhes individuais permanecem em Atividades.
           </p>
         </div>
+
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={() => navigate(studentPaths.activities)}
+        >
+          Abrir Atividades
+        </button>
       </header>
 
       {error && <div className="alert">{error}</div>}
@@ -149,94 +199,120 @@ export default function StudentEvolutionPage() {
         <p className="muted">
           Carregando sua evolução...
         </p>
-      ) : summary.source.length === 0 ? (
+      ) : evolution.current.activities === 0
+        && evolution.previous.activities === 0 ? (
         <section className="student-evolution-empty">
-          <h3>Nenhuma atividade sincronizada</h3>
+          <h3>Dados insuficientes para análise</h3>
           <p>
-            Conecte o Strava e sincronize suas atividades
-            para acompanhar a evolução.
+            Sincronize atividades para que o RunCore possa comparar
+            volume, frequência e ritmo entre períodos.
           </p>
         </section>
       ) : (
         <>
-          <section className="student-evolution-metrics">
+          <section className="student-evolution-periods">
             <article>
-              <span>Atividades</span>
-              <strong>{summary.source.length}</strong>
+              <span>Período analisado</span>
+              <strong>Últimos 30 dias</strong>
+              <small>
+                comparação com os 30 dias anteriores
+              </small>
             </article>
 
             <article>
-              <span>Distância total</span>
+              <span>Volume atual</span>
               <strong>
-                {summary.totalDistance.toFixed(1)} km
+                {evolution.current.totalDistance.toFixed(1)} km
               </strong>
+              <small>
+                {comparisonLabel(evolution.distanceChange)}
+              </small>
             </article>
 
             <article>
-              <span>Ritmo médio</span>
+              <span>Frequência atual</span>
               <strong>
-                {formatPace(summary.averagePace)}
+                {evolution.current.activities} atividades
               </strong>
+              <small>
+                {comparisonLabel(evolution.frequencyChange)}
+              </small>
+            </article>
+
+            <article>
+              <span>Ritmo médio atual</span>
+              <strong>
+                {formatPace(evolution.current.averagePace)}
+              </strong>
+              <small>
+                {comparisonLabel(evolution.paceChange, true)}
+              </small>
             </article>
           </section>
 
-          <section className="student-evolution-list">
+          <section className="student-evolution-comparison">
             <header>
               <div>
-                <h3>Atividades recentes</h3>
-                <p>
-                  Últimos registros recebidos
-                  da integração.
-                </p>
+                <span>Comparação longitudinal</span>
+                <h3>Período atual x período anterior</h3>
               </div>
             </header>
 
+            <div className="student-evolution-comparison-grid">
+              <article>
+                <span>Distância</span>
+                <div>
+                  <strong>
+                    {evolution.current.totalDistance.toFixed(1)} km
+                  </strong>
+                  <small>atual</small>
+                </div>
+                <div>
+                  <strong>
+                    {evolution.previous.totalDistance.toFixed(1)} km
+                  </strong>
+                  <small>anterior</small>
+                </div>
+              </article>
+
+              <article>
+                <span>Atividades</span>
+                <div>
+                  <strong>{evolution.current.activities}</strong>
+                  <small>atual</small>
+                </div>
+                <div>
+                  <strong>{evolution.previous.activities}</strong>
+                  <small>anterior</small>
+                </div>
+              </article>
+
+              <article>
+                <span>Ritmo médio</span>
+                <div>
+                  <strong>
+                    {formatPace(evolution.current.averagePace)}
+                  </strong>
+                  <small>atual</small>
+                </div>
+                <div>
+                  <strong>
+                    {formatPace(evolution.previous.averagePace)}
+                  </strong>
+                  <small>anterior</small>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section className="student-evolution-next-step">
             <div>
-              {summary.source
-                .slice(0, 10)
-                .map((activity) => (
-                  <article key={activity.id}>
-                    <div>
-                      <strong>
-                        {activity.name
-                          || "Atividade de corrida"}
-                      </strong>
-                      <span>
-                        {formatDate(
-                          activityStartValue(activity),
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="student-evolution-activity-data">
-                      <span>
-                        {km(
-                          activity.distance
-                          || activity.distance_meters,
-                        ).toFixed(2)} km
-                      </span>
-
-                      <span>
-                        {formatPace(
-                          km(
-                            activity.distance
-                            || activity.distance_meters,
-                          ) > 0
-                            ? Number(
-                                activity.moving_time
-                                || activity.elapsed_time
-                                || 0,
-                              )
-                              / km(
-                                activity.distance
-                                || activity.distance_meters,
-                              )
-                            : 0,
-                        )}
-                      </span>
-                    </div>
-                  </article>
-                ))}
+              <span>Próxima etapa</span>
+              <h3>Carga, fadiga e forma</h3>
+              <p>
+                Os indicadores CTL, ATL e TSB serão incorporados
+                nesta página usando atividades e percepção de esforço.
+              </p>
             </div>
           </section>
         </>

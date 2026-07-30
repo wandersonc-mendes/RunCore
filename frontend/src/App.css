@@ -4915,3 +4915,11 @@ button {
 :root[data-theme="dark"] .student-session-modal svg line {
   stroke: var(--shell-border, #303732);
 }
+
+
+/* RUNCORE ACTIVITY TOOLBAR POSITION 61 */
+.activity-list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 4px 0 10px;
+}

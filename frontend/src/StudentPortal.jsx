@@ -1553,7 +1553,11 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           <article><span>Tempo correndo</span><strong>{formatDuration(runTime)}</strong><small>em movimento</small></article>
         </section>}
         {strava?.connected && <article id="activities" className={`activity-card ${showActivities ? "is-open" : "is-collapsed"}`}>
-          <div className="activity-card-heading"><h3>Atividades recentes</h3><button
+          <div className="activity-card-heading">
+            <h3>Atividades recentes</h3>
+          </div>
+          <div className="activity-list-toolbar">
+            <button
               className="btn-ghost activity-collapse"
               onClick={() => {
                 setShowActivities((current) => {
@@ -1568,7 +1572,9 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
               }}
             >
               {showActivities ? "Recolher" : "Ver atividades"}
-            </button></div>
+            </button>
+          </div>
+
           {activities.length === 0 ? (
             <p className="muted">
               Nenhuma atividade importada ainda. Clique em

@@ -467,7 +467,9 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           </section>
         )}
 
-        <article className="connection-card">
+        {view === "activities" && (
+          <>
+            <article className="connection-card">
           <div><span className="connection-logo">S</span><div><h3>Strava</h3><p>{strava?.connected ? "Conta conectada. Sincronize suas atividades quando quiser." : "Conecte sua conta para importar suas atividades."}</p></div></div>
           {strava?.connected ? <button className="btn-primary" disabled={syncing} onClick={sync}>{syncing ? "Sincronizando..." : "Sincronizar atividades"}</button> : <button className="btn-primary" disabled={!strava?.configured} onClick={() => connectStrava().catch((err) => setError(err.message))}>{strava ? "Conectar Strava" : "Verificando..."}</button>}
         </article>
@@ -521,6 +523,9 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
             })}
           </div>}
         </article>}
+          </>
+        )}
+
         {training ? <article id="planilha" className="student-plan">
           <div className="student-plan-heading">
             <div className="student-plan-title-block">

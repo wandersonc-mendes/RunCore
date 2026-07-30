@@ -239,6 +239,30 @@ class AthleteRepository:
 
             return True
 
+    def update_phone(
+        self,
+        athlete_id: int,
+        phone: str,
+    ) -> bool:
+
+        with SessionLocal() as session:
+
+            athlete = session.get(
+                Athlete,
+                athlete_id,
+            )
+
+            if athlete is None:
+                return False
+
+            athlete.phone = str(
+                phone or "",
+            ).strip()
+
+            session.commit()
+
+            return True
+
     def link_user_and_coach(
         self,
         athlete_id: int,

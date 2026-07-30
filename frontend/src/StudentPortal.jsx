@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { clearSession, connectStrava, createGoal, deleteGoal, getActivityFeedback, getStravaActivityDetails, getStravaStatus, getStudentTraining, listGoals, listStravaActivities, saveActivityFeedback, syncStravaActivities } from "./api";
 import ProfilePanel from "./ProfilePanel";
+import { studentPaths } from "./router/paths";
 import { formatWorkoutSummary } from "./utils/workoutSummary";
 
 function formatDuration(seconds = 0) {
@@ -178,6 +180,7 @@ function StudentTrainingDonut({ completed, proposed, extra }) {
 
 
 export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
+  const navigate = useNavigate();
   const [strava, setStrava] = useState(null);
   const [error, setError] = useState("");
   const [activities, setActivities] = useState([]);
@@ -381,20 +384,6 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
 
   return (
     <main className="student-page routed-student-page" data-view={view}>
-      <header className="student-header">
-        <div className="brand"><span className="brand-logo"><img src="/logo-horizontal.png?v=2" alt="RunCore" />
-        </span><div><h1>RunCore</h1><p>Área do aluno</p></div></div>
-        <button className="btn-ghost" onClick={() => { clearSession(); onLogout(); }}>Sair</button>
-      </header>
-      <section className="student-hero"><p className="eyebrow">SEU TREINAMENTO</p><h2>Olá, {user.name}.</h2><p>Conecte suas atividades e acompanhe o plano criado pelo seu treinador.</p></section>
-      <nav className="portal-menu student-nav" aria-label="Student navigation">
-        <button onClick={() => document.getElementById("planilha")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Planilha</button>
-        <button onClick={() => document.getElementById("metas")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Metas e provas</button>
-        <button onClick={() => document.getElementById("resumo")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Resumo</button>
-        <button onClick={() => { setShowActivities(true); window.setTimeout(() => document.getElementById("activities")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}>Atividades</button>
-        <div className="calculator-menu"><button onClick={() => setCalculator((current) => current ? null : "pace")}>Calculadoras</button></div>
-        <button onClick={() => setShowProfile(true)}>Meu perfil</button>
-      </nav>
       <section className="student-content">
                 {view === "dashboard" && (
           <>
@@ -424,7 +413,13 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                 <article className="student-race-calendar-card">
                   <header>
                     <div><span>Calendário pessoal</span><h3>Próximas provas</h3></div>
-                    <button type="button" className="btn-ghost" onClick={() => document.getElementById("metas")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Gerenciar</button>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => navigate(studentPaths.goals)}
+                    >
+                      Gerenciar
+                    </button>
                   </header>
                   {dashboardSummary.upcomingGoals.length ? (
                     <div className="student-race-calendar-list">
@@ -449,15 +444,6 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
             </section>
           </>
         )}
-
-        <nav className="student-nav" aria-label="Navegação da área do aluno">
-          <button onClick={() => document.getElementById("planilha")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Planilha</button>
-          <button onClick={() => setShowProfile(true)}>Perfil</button>
-          <button onClick={() => document.getElementById("metas")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Metas</button>
-          <button onClick={() => document.getElementById("resumo")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Resumo</button>
-          <button onClick={() => { setShowActivities(true); window.setTimeout(() => document.getElementById("activities")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}>Atividades</button>
-          <div className="calculator-menu"><button onClick={() => setCalculator((current) => current ? null : "pace")}>Calculadora</button></div>
-        </nav>
         <section id="metas" className="goals-card">
           <div className="goals-heading"><div><p className="eyebrow">SEUS OBJETIVOS</p><h3>Metas e provas</h3></div><span>{goals.length} {goals.length === 1 ? "meta" : "metas"}</span></div>
           <form className="goal-form" onSubmit={saveGoal}><input required value={goalForm.name} onChange={(event) => setGoalForm((current) => ({ ...current, name: event.target.value }))} placeholder="Ex.: Maratona de Vitória" /><input required type="number" min="0.1" step="0.1" value={goalForm.distance} onChange={(event) => setGoalForm((current) => ({ ...current, distance: event.target.value }))} placeholder="Distância (km)" /><input required type="date" value={goalForm.target_date} onChange={(event) => setGoalForm((current) => ({ ...current, target_date: event.target.value }))} /><select value={goalForm.priority} onChange={(event) => setGoalForm((current) => ({ ...current, priority: event.target.value }))}><option>Principal</option><option>Secundária</option></select><button className="btn-primary" disabled={savingGoal}>{savingGoal ? "Salvando..." : "Adicionar"}</button></form>

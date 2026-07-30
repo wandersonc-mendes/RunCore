@@ -62,12 +62,6 @@
   background: transparent;
 }
 
-.routed-student-page > .student-header,
-.routed-student-page > .student-hero,
-.routed-student-page > .portal-menu,
-.routed-student-page .student-content > .student-nav {
-  display: none;
-}
 
 .routed-student-page .student-content {
   display: block;

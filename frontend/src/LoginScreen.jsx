@@ -9,6 +9,37 @@ import {
 } from "./api";
 
 
+function LoginInstitutionalFooter() {
+  return (
+    <footer className="login-institutional-footer">
+      <div className="login-footer-platforms">
+        <span>Tecnologia e infraestrutura</span>
+
+        <div aria-label="Serviços utilizados pelo RunCore">
+          <strong className="login-provider cloudflare">
+            Cloudflare
+          </strong>
+
+          <strong className="login-provider railway">
+            Railway
+          </strong>
+
+          <strong className="login-provider supabase">
+            Supabase
+          </strong>
+        </div>
+      </div>
+
+      <p>
+        © 2026 RunCore. Todos os direitos reservados.
+        <span aria-hidden="true"> · </span>
+        Desenvolvido por Wanderson Mendes.
+      </p>
+    </footer>
+  );
+}
+
+
 export default function LoginScreen({
   onAuthenticated,
 }) {
@@ -409,6 +440,8 @@ export default function LoginScreen({
             Voltar para o login
           </button>
         </section>
+
+        <LoginInstitutionalFooter />
       </main>
     );
   }
@@ -725,6 +758,8 @@ export default function LoginScreen({
           )
         }
       </section>
+
+      <LoginInstitutionalFooter />
     </main>
   );
 }

@@ -401,12 +401,7 @@ export default function LoginScreen({
           <span className="brand-mark">
             RC
           </span>
-
-          <h1>
-            RunCore
-          </h1>
-
-          <p>
+<p>
             Cadastro enviado
           </p>
 

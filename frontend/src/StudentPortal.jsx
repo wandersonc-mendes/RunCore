@@ -585,6 +585,30 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
     }
   }, [view]);
 
+  useEffect(() => {
+    if (!selectedSession) {
+      return undefined;
+    }
+
+    function handleSessionModalKeyDown(event) {
+      if (event.key === "Escape") {
+        setSelectedSession(null);
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handleSessionModalKeyDown,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleSessionModalKeyDown,
+      );
+    };
+  }, [selectedSession]); // RUNCORE SESSION MODAL ESC 58B
+
   if (showProfile || view === "profile") {
     return (
       <ProfilePanel

@@ -71,8 +71,6 @@
   padding: 0;
 }
 
-.routed-student-page .goals-card,
-.routed-student-page .calculator-card,
 .routed-student-page .connection-card,
 .routed-student-page .student-stats,
 .routed-student-page .activity-card,
@@ -93,16 +91,18 @@
 
 .routed-student-page[data-view="training"] .student-plan,
 .routed-student-page[data-view="training"] .student-empty,
-.routed-student-page[data-view="goals"] .goals-card,
-.routed-student-page[data-view="calculators"] .calculator-card,
 .routed-student-page[data-view="activities"] .connection-card,
 .routed-student-page[data-view="activities"] .activity-card {
   display: flex;
 }
 
-.routed-student-page[data-view="goals"] .goals-card,
-.routed-student-page[data-view="calculators"] .calculator-card,
 .routed-student-page[data-view="activities"] .activity-card {
+  width: 100%;
+}
+
+.routed-student-page[data-view="goals"] .goals-card,
+.routed-student-page[data-view="calculators"] .calculator-card {
+  display: flex;
   width: 100%;
 }
 

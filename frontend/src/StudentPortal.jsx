@@ -444,18 +444,29 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
             </section>
           </>
         )}
-        <section id="metas" className="goals-card">
+        {view === "goals" && (
+          <section id="metas" className="goals-card">
           <div className="goals-heading"><div><p className="eyebrow">SEUS OBJETIVOS</p><h3>Metas e provas</h3></div><span>{goals.length} {goals.length === 1 ? "meta" : "metas"}</span></div>
           <form className="goal-form" onSubmit={saveGoal}><input required value={goalForm.name} onChange={(event) => setGoalForm((current) => ({ ...current, name: event.target.value }))} placeholder="Ex.: Maratona de Vitória" /><input required type="number" min="0.1" step="0.1" value={goalForm.distance} onChange={(event) => setGoalForm((current) => ({ ...current, distance: event.target.value }))} placeholder="Distância (km)" /><input required type="date" value={goalForm.target_date} onChange={(event) => setGoalForm((current) => ({ ...current, target_date: event.target.value }))} /><select value={goalForm.priority} onChange={(event) => setGoalForm((current) => ({ ...current, priority: event.target.value }))}><option>Principal</option><option>Secundária</option></select><button className="btn-primary" disabled={savingGoal}>{savingGoal ? "Salvando..." : "Adicionar"}</button></form>
           {goals.length > 0 ? <div className="goals-list">{goals.map((goal) => { const days = Math.ceil((new Date(`${goal.target_date}T00:00:00`) - new Date()) / 86400000); return <article key={goal.id}><div><strong>{goal.name}</strong><span>{goal.distance.toFixed(3)} km · {goal.priority}</span></div><b className={days < 0 ? "late" : ""}>{days < 0 ? `há ${Math.abs(days)} dias` : days === 0 ? "é hoje" : `faltam ${days} dias`}</b><button className="btn-ghost" onClick={() => removeGoal(goal.id)}>Remover</button></article>; })}</div> : <p className="muted">Adicione sua próxima prova ou objetivo de corrida.</p>}
-        </section>
-        {calculator && <section className="calculator-card">
+          </section>
+        )}
+
+        {view === "calculators" && calculator && (
+          <section className="calculator-card">
           <div><p className="eyebrow">CALCULADORA</p><h3>{calculator === "pace" ? "Pace e velocidade" : "Previsão de tempo final"}</h3><div className="calculator-tabs"><button className={calculator === "pace" ? "active" : ""} onClick={() => setCalculator("pace")}>Pace</button><button className={calculator === "prediction" ? "active" : ""} onClick={() => setCalculator("prediction")}>Previsão</button></div></div>
           <label>Pace (min/km)<input value={pace} onChange={(event) => setPace(event.target.value)} placeholder="05:00" /></label>
           {calculator === "prediction" && <label>Distância (km)<input type="number" min="0" step="0.1" value={distance} onChange={(event) => setDistance(event.target.value)} /></label>}
           <strong>{calculator === "pace" ? `${velocity.toFixed(2)} km/h` : formatDuration(predictedTime)}</strong>
-          <button className="btn-ghost" onClick={() => setCalculator(null)}>Fechar</button>
-        </section>}
+          <button
+            className="btn-ghost"
+            onClick={() => setCalculator("pace")}
+          >
+            Limpar
+          </button>
+          </section>
+        )}
+
         <article className="connection-card">
           <div><span className="connection-logo">S</span><div><h3>Strava</h3><p>{strava?.connected ? "Conta conectada. Sincronize suas atividades quando quiser." : "Conecte sua conta para importar suas atividades."}</p></div></div>
           {strava?.connected ? <button className="btn-primary" disabled={syncing} onClick={sync}>{syncing ? "Sincronizando..." : "Sincronizar atividades"}</button> : <button className="btn-primary" disabled={!strava?.configured} onClick={() => connectStrava().catch((err) => setError(err.message))}>{strava ? "Conectar Strava" : "Verificando..."}</button>}

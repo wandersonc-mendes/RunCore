@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { studentPaths } from "../router/paths";
 import "./SettingsPage.css";
 
 
@@ -27,6 +30,8 @@ function SettingsItem({
   description,
   status = "Disponível em breve",
   tone = "planned",
+  actionLabel = "",
+  onAction = null,
 }) {
   return (
     <article className="settings-item">
@@ -35,9 +40,19 @@ function SettingsItem({
         <p>{description}</p>
       </div>
 
-      <span className={`settings-status ${tone}`}>
-        {status}
-      </span>
+      {onAction ? (
+        <button
+          type="button"
+          className="settings-item-action"
+          onClick={onAction}
+        >
+          {actionLabel || status}
+        </button>
+      ) : (
+        <span className={`settings-status ${tone}`}>
+          {status}
+        </span>
+      )}
     </article>
   );
 }
@@ -71,6 +86,7 @@ function NotificationToggle({
 
 
 export default function SettingsPage({ user }) {
+  const navigate = useNavigate();
   const isStudent = user?.role === "student";
   const accountKey = user?.id || user?.email || "anonymous";
   const notificationStorageKey =
@@ -221,6 +237,12 @@ export default function SettingsPage({ user }) {
               }
               status={isStudent ? "Gerenciar em Atividades" : "Integração ativa"}
               tone="available"
+              actionLabel={isStudent ? "Abrir Atividades" : ""}
+              onAction={
+                isStudent
+                  ? () => navigate(studentPaths.activities)
+                  : null
+              }
             />
 
             <SettingsItem

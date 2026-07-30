@@ -1553,8 +1553,29 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           <article><span>Tempo correndo</span><strong>{formatDuration(runTime)}</strong><small>em movimento</small></article>
         </section>}
         {strava?.connected && <article id="activities" className={`activity-card ${showActivities ? "is-open" : "is-collapsed"}`}>
-          <div className="activity-card-heading"><h3>Atividades recentes</h3><button className="btn-ghost activity-collapse" onClick={() => setShowActivities((current) => !current)}>{showActivities ? "Recolher" : "Ver atividades"}</button></div>
-          {activities.length === 0 ? <p className="muted">Nenhuma atividade importada ainda. Clique em “Sincronizar atividades”.</p> : <div className="activity-list">
+          <div className="activity-card-heading"><h3>Atividades recentes</h3><button
+              className="btn-ghost activity-collapse"
+              onClick={() => {
+                setShowActivities((current) => {
+                  const next = !current;
+
+                  if (!next) {
+                    setExpandedActivity(null);
+                  }
+
+                  return next;
+                });
+              }}
+            >
+              {showActivities ? "Recolher" : "Ver atividades"}
+            </button></div>
+          {activities.length === 0 ? (
+            <p className="muted">
+              Nenhuma atividade importada ainda. Clique em
+              “Sincronizar atividades”.
+            </p>
+          ) : showActivities ? (
+            <div className="activity-list">
             {activities.map((activity) => {
               const expanded = expandedActivity === activity.id;
               const details = activityDetails[activity.id];
@@ -1592,7 +1613,8 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                 </section>}
               </article>;
             })}
-          </div>}
+          </div>
+          ) : null}
         </article>}
           </>
         )}

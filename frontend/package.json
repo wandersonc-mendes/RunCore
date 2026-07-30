@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "audit:student": "node scripts/validate-student-portal.mjs",
+    "validate:student": "npm run audit:student && npm run build"
   },
   "dependencies": {
     "react": "^19.2.7",

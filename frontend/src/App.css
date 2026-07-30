@@ -3469,3 +3469,159 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* RUNCORE STUDENT DASHBOARD SECONDARY */
+.student-dashboard-secondary {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+}
+
+.student-latest-activity-card,
+.student-quick-actions-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgb(18 57 49 / 6%);
+  color: var(--ink);
+  padding: 22px;
+}
+
+.student-latest-activity-card header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.student-latest-activity-card header > div,
+.student-quick-actions-card {
+  display: grid;
+  gap: 6px;
+}
+
+.student-latest-activity-card span,
+.student-quick-actions-card > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-latest-activity-card h3,
+.student-quick-actions-card h3 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.student-latest-activity-metrics {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 20px;
+}
+
+.student-latest-activity-metrics > div {
+  background: color-mix(
+    in srgb,
+    var(--surface) 90%,
+    var(--accent) 10%
+  );
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: grid;
+  gap: 5px;
+  padding: 15px;
+}
+
+.student-latest-activity-metrics strong {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.student-latest-activity-metrics small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.student-quick-actions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.student-quick-actions button {
+  background: color-mix(
+    in srgb,
+    var(--surface) 92%,
+    var(--accent) 8%
+  );
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  text-align: left;
+  transition:
+    border-color .18s ease,
+    transform .18s ease,
+    background .18s ease;
+}
+
+.student-quick-actions button:hover {
+  background: color-mix(
+    in srgb,
+    var(--surface) 84%,
+    var(--accent) 16%
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--line) 45%,
+    var(--accent) 55%
+  );
+  transform: translateY(-1px);
+}
+
+.student-quick-actions button:focus-visible {
+  outline: 3px solid color-mix(
+    in srgb,
+    var(--accent) 30%,
+    transparent
+  );
+  outline-offset: 2px;
+}
+
+.student-quick-actions strong {
+  font-size: 13px;
+}
+
+.student-quick-actions small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+:root[data-theme="dark"] .student-latest-activity-card,
+:root[data-theme="dark"] .student-quick-actions-card {
+  box-shadow: none;
+}
+
+@media (max-width: 940px) {
+  .student-dashboard-secondary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .student-latest-activity-card header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .student-latest-activity-metrics,
+  .student-quick-actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -394,6 +394,12 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
       weekDistance,
       weekCompleted,
       weekTotal: currentWeekSessions.length,
+      latestActivity: [...activities]
+        .sort((a, b) => {
+          const dateA = new Date(a.start_at || 0).getTime();
+          const dateB = new Date(b.start_at || 0).getTime();
+          return dateB - dateA;
+        })[0] || null,
     };
   })();
 
@@ -517,6 +523,111 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                     </strong>
                     <small>volume planejado</small>
                   </div>
+                </div>
+              </article>
+            </section>
+
+            <section className="student-dashboard-secondary">
+              <article className="student-latest-activity-card">
+                <header>
+                  <div>
+                    <span>Última atividade</span>
+                    <h3>
+                      {dashboardSummary.latestActivity
+                        ? dashboardSummary.latestActivity.name
+                        : "Nenhuma atividade importada"}
+                    </h3>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => navigate(studentPaths.activities)}
+                  >
+                    Ver atividades
+                  </button>
+                </header>
+
+                {dashboardSummary.latestActivity ? (
+                  <div className="student-latest-activity-metrics">
+                    <div>
+                      <strong>
+                        {Number(
+                          dashboardSummary.latestActivity.distance || 0,
+                        ).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 2,
+                        })} km
+                      </strong>
+                      <small>distância</small>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {formatDuration(
+                          dashboardSummary.latestActivity.moving_time,
+                        )}
+                      </strong>
+                      <small>tempo em movimento</small>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {activityMetric(
+                          dashboardSummary.latestActivity,
+                        ).replace("Pace médio: ", "")}
+                      </strong>
+                      <small>
+                        {dashboardSummary.latestActivity.sport_type === "Run"
+                          ? "pace médio"
+                          : "velocidade média"}
+                      </small>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="muted">
+                    Conecte e sincronize o Strava para visualizar
+                    aqui um resumo da atividade mais recente.
+                  </p>
+                )}
+              </article>
+
+              <article className="student-quick-actions-card">
+                <span>Acesso rápido</span>
+                <h3>Próximas ações</h3>
+
+                <div className="student-quick-actions">
+                  <button
+                    type="button"
+                    onClick={() => navigate(studentPaths.training)}
+                  >
+                    <strong>Minha planilha</strong>
+                    <small>Consultar treinos</small>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(studentPaths.goals)}
+                  >
+                    <strong>Metas e provas</strong>
+                    <small>Organizar objetivos</small>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(studentPaths.activities)}
+                  >
+                    <strong>Atividades</strong>
+                    <small>Revisar execuções</small>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(studentPaths.calculators)}
+                  >
+                    <strong>Calculadoras</strong>
+                    <small>Calcular ritmo e tempo</small>
+                  </button>
                 </div>
               </article>
             </section>

@@ -1012,17 +1012,170 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
         )}
 
         {view === "calculators" && calculator && (
-          <section className="calculator-card">
-          <div><p className="eyebrow">CALCULADORA</p><h3>{calculator === "pace" ? "Pace e velocidade" : "Previsão de tempo final"}</h3><div className="calculator-tabs"><button className={calculator === "pace" ? "active" : ""} onClick={() => setCalculator("pace")}>Pace</button><button className={calculator === "prediction" ? "active" : ""} onClick={() => setCalculator("prediction")}>Previsão</button></div></div>
-          <label>Pace (min/km)<input value={pace} onChange={(event) => setPace(event.target.value)} placeholder="05:00" /></label>
-          {calculator === "prediction" && <label>Distância (km)<input type="number" min="0" step="0.1" value={distance} onChange={(event) => setDistance(event.target.value)} /></label>}
-          <strong>{calculator === "pace" ? `${velocity.toFixed(2)} km/h` : formatDuration(predictedTime)}</strong>
-          <button
-            className="btn-ghost"
-            onClick={() => setCalculator("pace")}
-          >
-            Limpar
-          </button>
+          <section className="student-calculators-page">
+            <header className="student-calculators-heading">
+              <div>
+                <p className="eyebrow">CALCULADORAS</p>
+                <h2>Ritmo, velocidade e previsão</h2>
+                <p className="muted">
+                  Faça conversões rápidas para apoiar o planejamento
+                  e a leitura dos seus treinos e provas.
+                </p>
+              </div>
+            </header>
+
+            <nav
+              className="student-calculator-selector"
+              aria-label="Selecionar calculadora"
+            >
+              <button
+                type="button"
+                className={calculator === "pace" ? "active" : ""}
+                onClick={() => setCalculator("pace")}
+              >
+                <strong>Pace e velocidade</strong>
+                <small>Converter min/km em km/h</small>
+              </button>
+
+              <button
+                type="button"
+                className={calculator === "prediction" ? "active" : ""}
+                onClick={() => setCalculator("prediction")}
+              >
+                <strong>Previsão de tempo</strong>
+                <small>Projetar tempo para uma distância</small>
+              </button>
+            </nav>
+
+            <section className="student-calculator-workspace">
+              <article className="student-calculator-form-card">
+                <div>
+                  <span>Dados de entrada</span>
+                  <h3>
+                    {calculator === "pace"
+                      ? "Converter pace"
+                      : "Calcular tempo final"}
+                  </h3>
+                  <p>
+                    {calculator === "pace"
+                      ? "Informe o ritmo médio em minutos por quilômetro."
+                      : "Informe o ritmo médio e a distância pretendida."}
+                  </p>
+                </div>
+
+                <div className="student-calculator-fields">
+                  <label>
+                    Pace
+                    <div className="student-calculator-input">
+                      <input
+                        value={pace}
+                        onChange={(event) =>
+                          setPace(event.target.value)
+                        }
+                        placeholder="05:00"
+                        inputMode="numeric"
+                        aria-describedby="pace-help"
+                      />
+                      <span>min/km</span>
+                    </div>
+                    <small id="pace-help">
+                      Use o formato MM:SS, por exemplo 04:30.
+                    </small>
+                  </label>
+
+                  {calculator === "prediction" && (
+                    <label>
+                      Distância
+                      <div className="student-calculator-input">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={distance}
+                          onChange={(event) =>
+                            setDistance(event.target.value)
+                          }
+                          placeholder="10"
+                        />
+                        <span>km</span>
+                      </div>
+                      <small>
+                        Informe a distância total da prova ou treino.
+                      </small>
+                    </label>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    setPace("");
+                    setDistance("");
+                  }}
+                >
+                  Limpar campos
+                </button>
+              </article>
+
+              <article className="student-calculator-result-card">
+                <span>Resultado</span>
+
+                {calculator === "pace" ? (
+                  <>
+                    <strong>
+                      {paceSeconds
+                        ? `${velocity.toFixed(2)} km/h`
+                        : "—"}
+                    </strong>
+                    <h3>Velocidade média</h3>
+                    <p>
+                      Conversão direta do pace informado para
+                      quilômetros por hora.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <strong>
+                      {paceSeconds && calculatorDistance > 0
+                        ? formatDuration(predictedTime)
+                        : "—"}
+                    </strong>
+                    <h3>Tempo estimado</h3>
+                    <p>
+                      Projeção matemática mantendo o mesmo pace
+                      durante toda a distância.
+                    </p>
+                  </>
+                )}
+
+                <div className="student-calculator-result-context">
+                  <div>
+                    <span>Pace informado</span>
+                    <strong>{pace || "—"}</strong>
+                  </div>
+
+                  {calculator === "prediction" && (
+                    <div>
+                      <span>Distância</span>
+                      <strong>
+                        {calculatorDistance > 0
+                          ? `${calculatorDistance.toLocaleString(
+                            "pt-BR",
+                            { maximumFractionDigits: 2 },
+                          )} km`
+                          : "—"}
+                      </strong>
+                    </div>
+                  )}
+                </div>
+
+                <small className="student-calculator-note">
+                  Resultado indicativo. Terreno, clima, fadiga
+                  e estratégia podem alterar o desempenho real.
+                </small>
+              </article>
+            </section>
           </section>
         )}
 

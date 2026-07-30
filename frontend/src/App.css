@@ -4051,3 +4051,237 @@ button {
     flex-direction: column;
   }
 }
+
+
+/* RUNCORE STUDENT CALCULATORS PAGE */
+.student-calculators-page {
+  display: grid;
+  gap: 20px;
+}
+
+.student-calculators-heading h2 {
+  color: var(--ink);
+  margin: 4px 0;
+}
+
+.student-calculators-heading .muted {
+  line-height: 1.5;
+  max-width: 700px;
+}
+
+.student-calculator-selector {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.student-calculator-selector button {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  gap: 5px;
+  padding: 16px 18px;
+  text-align: left;
+  transition:
+    background .18s ease,
+    border-color .18s ease,
+    transform .18s ease;
+}
+
+.student-calculator-selector button:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--line) 45%,
+    var(--accent) 55%
+  );
+  transform: translateY(-1px);
+}
+
+.student-calculator-selector button.active {
+  background: color-mix(
+    in srgb,
+    var(--surface) 84%,
+    var(--accent) 16%
+  );
+  border-color: var(--accent);
+}
+
+.student-calculator-selector strong {
+  font-size: 14px;
+}
+
+.student-calculator-selector small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.student-calculator-workspace {
+  align-items: stretch;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, .75fr);
+}
+
+.student-calculator-form-card,
+.student-calculator-result-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  color: var(--ink);
+  padding: 22px;
+}
+
+.student-calculator-form-card {
+  display: grid;
+  gap: 20px;
+}
+
+.student-calculator-form-card > div:first-child span,
+.student-calculator-result-card > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-calculator-form-card h3,
+.student-calculator-result-card h3 {
+  margin: 4px 0 0;
+}
+
+.student-calculator-form-card p,
+.student-calculator-result-card p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 7px 0 0;
+}
+
+.student-calculator-fields {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.student-calculator-fields label {
+  color: var(--ink);
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 7px;
+}
+
+.student-calculator-fields label > small {
+  color: var(--muted);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.student-calculator-input {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  display: flex;
+  overflow: hidden;
+}
+
+.student-calculator-input:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(
+    in srgb,
+    var(--accent) 20%,
+    transparent
+  );
+}
+
+.student-calculator-input input {
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+  outline: 0;
+  padding: 12px;
+}
+
+.student-calculator-input > span {
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 12px;
+}
+
+.student-calculator-form-card > button {
+  justify-self: start;
+}
+
+.student-calculator-result-card {
+  align-content: start;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--surface) 86%, var(--accent) 14%),
+      var(--surface)
+    );
+  display: grid;
+  gap: 8px;
+}
+
+.student-calculator-result-card > strong {
+  color: var(--accent-dark);
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1;
+  margin-top: 12px;
+}
+
+.student-calculator-result-context {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.student-calculator-result-context > div {
+  background: color-mix(
+    in srgb,
+    var(--surface) 90%,
+    var(--accent) 10%
+  );
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.student-calculator-result-context span,
+.student-calculator-note {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.student-calculator-result-context strong {
+  font-size: 14px;
+}
+
+.student-calculator-note {
+  line-height: 1.45;
+  margin-top: 10px;
+}
+
+@media (max-width: 860px) {
+  .student-calculator-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .student-calculator-selector,
+  .student-calculator-fields,
+  .student-calculator-result-context {
+    grid-template-columns: 1fr;
+  }
+}

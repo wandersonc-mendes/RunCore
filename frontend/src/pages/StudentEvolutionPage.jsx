@@ -88,6 +88,169 @@ function comparisonLabel(value, inverse = false) {
 }
 
 
+function activityLoad(activity) {
+  const suppliedLoad = Number(
+    activity?.training_load
+    || activity?.relative_effort
+    || activity?.suffer_score
+    || 0,
+  );
+
+  if (suppliedLoad > 0) return suppliedLoad;
+
+  const minutes = activitySeconds(activity) / 60;
+  const perceivedEffort = Number(
+    activity?.perceived_exertion
+    || activity?.rpe
+    || activity?.feedback?.perceived_exertion
+    || 1,
+  );
+
+  return minutes * Math.min(10, Math.max(1, perceivedEffort));
+}
+
+
+function dateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
+function buildLoadSeries(activities, days = 90) {
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+
+  const start = new Date(today);
+  start.setDate(start.getDate() - days + 1);
+
+  const dailyLoads = activities.reduce((result, activity) => {
+    const date = activityStartDate(activity);
+
+    if (!date) return result;
+
+    const key = dateKey(date);
+    result[key] = (result[key] || 0) + activityLoad(activity);
+    return result;
+  }, {});
+
+  const series = [];
+  let ctl = 0;
+  let atl = 0;
+
+  for (let index = 0; index < days; index += 1) {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+
+    const load = dailyLoads[dateKey(date)] || 0;
+
+    ctl += (load - ctl) / 42;
+    atl += (load - atl) / 7;
+
+    series.push({
+      date,
+      load,
+      ctl,
+      atl,
+      tsb: ctl - atl,
+    });
+  }
+
+  return series;
+}
+
+
+function linePath(values, width, height, minValue, maxValue) {
+  const range = Math.max(1, maxValue - minValue);
+
+  return values.map((value, index) => {
+    const x = values.length === 1
+      ? width / 2
+      : (index / (values.length - 1)) * width;
+    const y = height
+      - ((value - minValue) / range) * height;
+
+    return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+  }).join(" ");
+}
+
+
+function TrainingLoadChart({ series }) {
+  const width = 920;
+  const height = 280;
+  const padding = 24;
+  const chartWidth = width - padding * 2;
+  const chartHeight = height - padding * 2;
+
+  const allValues = series.flatMap(
+    (item) => [item.ctl, item.atl, item.tsb],
+  );
+  const minValue = Math.min(0, ...allValues);
+  const maxValue = Math.max(1, ...allValues);
+
+  const ctlPath = linePath(
+    series.map((item) => item.ctl),
+    chartWidth,
+    chartHeight,
+    minValue,
+    maxValue,
+  );
+  const atlPath = linePath(
+    series.map((item) => item.atl),
+    chartWidth,
+    chartHeight,
+    minValue,
+    maxValue,
+  );
+  const tsbPath = linePath(
+    series.map((item) => item.tsb),
+    chartWidth,
+    chartHeight,
+    minValue,
+    maxValue,
+  );
+
+  const zeroY = padding + chartHeight
+    - ((0 - minValue) / Math.max(1, maxValue - minValue))
+    * chartHeight;
+
+  return (
+    <div className="student-load-chart">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Gráfico de fitness, fadiga e forma"
+      >
+        <line
+          className="student-load-zero"
+          x1={padding}
+          x2={width - padding}
+          y1={zeroY}
+          y2={zeroY}
+        />
+
+        <g transform={`translate(${padding} ${padding})`}>
+          <path
+            className="student-load-line ctl"
+            d={ctlPath}
+          />
+          <path
+            className="student-load-line atl"
+            d={atlPath}
+          />
+          <path
+            className="student-load-line tsb"
+            d={tsbPath}
+          />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+
 export default function StudentEvolutionPage() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
@@ -129,6 +292,25 @@ export default function StudentEvolutionPage() {
       active = false;
     };
   }, []);
+
+  const loadSeries = useMemo(
+    () => buildLoadSeries(activities, 90),
+    [activities],
+  );
+
+  const loadSummary = useMemo(() => {
+    const latest = loadSeries[loadSeries.length - 1] || {
+      ctl: 0,
+      atl: 0,
+      tsb: 0,
+    };
+
+    return {
+      fitness: latest.ctl,
+      fatigue: latest.atl,
+      form: latest.tsb,
+    };
+  }, [loadSeries]);
 
   const evolution = useMemo(() => {
     const now = new Date();
@@ -305,15 +487,55 @@ export default function StudentEvolutionPage() {
             </div>
           </section>
 
-          <section className="student-evolution-next-step">
-            <div>
-              <span>Próxima etapa</span>
-              <h3>Carga, fadiga e forma</h3>
-              <p>
-                Os indicadores CTL, ATL e TSB serão incorporados
-                nesta página usando atividades e percepção de esforço.
-              </p>
+          <section className="student-training-load-section">
+            <header>
+              <div>
+                <span>Carga de treinamento</span>
+                <h3>Fitness, fadiga e forma</h3>
+                <p>
+                  Tendência estimada dos últimos 90 dias. A carga usa
+                  o valor da atividade quando disponível e duração × PSE
+                  como alternativa.
+                </p>
+              </div>
+            </header>
+
+            <section className="student-load-current-metrics">
+              <article>
+                <span>Fitness · CTL</span>
+                <strong>{loadSummary.fitness.toFixed(1)}</strong>
+                <small>carga crônica de 42 dias</small>
+              </article>
+
+              <article>
+                <span>Fadiga · ATL</span>
+                <strong>{loadSummary.fatigue.toFixed(1)}</strong>
+                <small>carga aguda de 7 dias</small>
+              </article>
+
+              <article>
+                <span>Forma · TSB</span>
+                <strong>
+                  {loadSummary.form > 0 ? "+" : ""}
+                  {loadSummary.form.toFixed(1)}
+                </strong>
+                <small>fitness menos fadiga</small>
+              </article>
+            </section>
+
+            <div className="student-load-legend">
+              <span className="ctl">Fitness · CTL</span>
+              <span className="atl">Fadiga · ATL</span>
+              <span className="tsb">Forma · TSB</span>
             </div>
+
+            <TrainingLoadChart series={loadSeries} />
+
+            <p className="student-load-disclaimer">
+              Estes indicadores são estimativas de acompanhamento e não
+              substituem avaliação profissional, recuperação percebida
+              ou análise clínica.
+            </p>
           </section>
         </>
       )}

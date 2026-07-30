@@ -37,7 +37,90 @@ function stepTone(type = "") {
 
 function paceToSeconds(value) {
   const match = String(value || "").match(/^(\d{1,2}):(\d{2})$/);
-  return match ? (Number(match[1]) * 60) + Number(match[2]) : null;
+  if (!match) return null;
+
+  const minutes = Number(match[1]);
+  const seconds = Number(match[2]);
+
+  return seconds < 60
+    ? (minutes * 60) + seconds
+    : null;
+}
+
+
+function formatPaceInput(value) {
+  const digits = String(value || "")
+    .replace(/\D/g, "")
+    .slice(0, 4);
+
+  if (digits.length <= 2) return digits;
+
+  return `${digits.slice(0, -2)}:${digits.slice(-2)}`;
+}
+
+
+function formatElapsedTimeInput(value) {
+  const digits = String(value || "")
+    .replace(/\D/g, "")
+    .slice(0, 6);
+
+  if (digits.length <= 2) return digits;
+
+  if (digits.length <= 4) {
+    return `${digits.slice(0, -2)}:${digits.slice(-2)}`;
+  }
+
+  return `${
+    digits.slice(0, -4)
+  }:${
+    digits.slice(-4, -2)
+  }:${
+    digits.slice(-2)
+  }`;
+}
+
+
+function elapsedTimeToSeconds(value) {
+  const parts = String(value || "")
+    .split(":")
+    .map(Number);
+
+  if (
+    parts.length < 2
+    || parts.length > 3
+    || parts.some((part) => !Number.isFinite(part))
+  ) {
+    return null;
+  }
+
+  if (parts.length === 2) {
+    const [minutes, seconds] = parts;
+
+    return seconds < 60
+      ? (minutes * 60) + seconds
+      : null;
+  }
+
+  const [hours, minutes, seconds] = parts;
+
+  return minutes < 60 && seconds < 60
+    ? (hours * 3600) + (minutes * 60) + seconds
+    : null;
+}
+
+
+function formatPaceSeconds(totalSeconds) {
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
+    return "—";
+  }
+
+  const rounded = Math.round(totalSeconds);
+
+  return `${
+    Math.floor(rounded / 60)
+  }:${
+    String(rounded % 60).padStart(2, "0")
+  }/km`;
 }
 
 function plannedDistanceKm(step) {
@@ -201,6 +284,8 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const [calculator, setCalculator] = useState(null);
   const [pace, setPace] = useState("05:00");
   const [distance, setDistance] = useState("10");
+  const [distanceMeters, setDistanceMeters] = useState("1000");
+  const [elapsedTime, setElapsedTime] = useState("05:00");
   const [goals, setGoals] = useState([]);
   const [goalForm, setGoalForm] = useState({ name: "", distance: "", target_date: "", priority: "Principal" });
   const [savingGoal, setSavingGoal] = useState(false);
@@ -318,11 +403,16 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const runTime = runs.reduce((total, activity) => total + activity.moving_time, 0);
   const currentWeekSessions = training?.sessions?.filter((session) => session.week === training.current_week) || [];
   const weekdays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-  const paceParts = pace.split(":").map(Number);
-  const paceSeconds = paceParts.length === 2 && paceParts.every(Number.isFinite) ? paceParts[0] * 60 + paceParts[1] : 0;
+  const paceSeconds = paceToSeconds(pace) || 0;
   const calculatorDistance = Number(distance) || 0;
   const velocity = paceSeconds ? 3600 / paceSeconds : 0;
   const predictedTime = paceSeconds * calculatorDistance;
+  const calculatorDistanceMeters = Number(distanceMeters) || 0;
+  const elapsedSeconds = elapsedTimeToSeconds(elapsedTime) || 0;
+  const calculatedPaceSeconds =
+    calculatorDistanceMeters > 0 && elapsedSeconds > 0
+      ? elapsedSeconds / (calculatorDistanceMeters / 1000)
+      : 0;
 
   const goalsPageSummary = (() => {
     const today = new Date();
@@ -1045,6 +1135,17 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                 <strong>Previsão de tempo</strong>
                 <small>Projetar tempo para uma distância</small>
               </button>
+
+              <button
+                type="button"
+                className={
+                  calculator === "paceByDistance" ? "active" : ""
+                }
+                onClick={() => setCalculator("paceByDistance")}
+              >
+                <strong>Calcular pace</strong>
+                <small>Usar tempo e distância em metros</small>
+              </button>
             </nav>
 
             <section className="student-calculator-workspace">
@@ -1054,34 +1155,41 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                   <h3>
                     {calculator === "pace"
                       ? "Converter pace"
-                      : "Calcular tempo final"}
+                      : calculator === "prediction"
+                        ? "Calcular tempo final"
+                        : "Calcular pace realizado"}
                   </h3>
                   <p>
                     {calculator === "pace"
                       ? "Informe o ritmo médio em minutos por quilômetro."
-                      : "Informe o ritmo médio e a distância pretendida."}
+                      : calculator === "prediction"
+                        ? "Informe o ritmo médio e a distância pretendida."
+                        : "Informe a distância em metros e o tempo total."}
                   </p>
                 </div>
 
                 <div className="student-calculator-fields">
-                  <label>
-                    Pace
-                    <div className="student-calculator-input">
-                      <input
-                        value={pace}
-                        onChange={(event) =>
-                          setPace(event.target.value)
-                        }
-                        placeholder="05:00"
-                        inputMode="numeric"
-                        aria-describedby="pace-help"
-                      />
-                      <span>min/km</span>
-                    </div>
-                    <small id="pace-help">
-                      Use o formato MM:SS, por exemplo 04:30.
-                    </small>
-                  </label>
+                  {calculator !== "paceByDistance" && (
+                    <label>
+                      Pace
+                      <div className="student-calculator-input">
+                        <input
+                          value={pace}
+                          onChange={(event) =>
+                            setPace(formatPaceInput(event.target.value))
+                          }
+                          placeholder="05:00"
+                          inputMode="numeric"
+                          maxLength="5"
+                          aria-describedby="pace-help"
+                        />
+                        <span>min/km</span>
+                      </div>
+                      <small id="pace-help">
+                        Digite apenas os números. Ex.: 430 vira 4:30.
+                      </small>
+                    </label>
+                  )}
 
                   {calculator === "prediction" && (
                     <label>
@@ -1104,6 +1212,53 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                       </small>
                     </label>
                   )}
+
+                  {calculator === "paceByDistance" && (
+                    <>
+                      <label>
+                        Distância
+                        <div className="student-calculator-input">
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={distanceMeters}
+                            onChange={(event) =>
+                              setDistanceMeters(event.target.value)
+                            }
+                            placeholder="1000"
+                          />
+                          <span>m</span>
+                        </div>
+                        <small>
+                          Ex.: 400, 800, 1600 ou 5000 metros.
+                        </small>
+                      </label>
+
+                      <label>
+                        Tempo realizado
+                        <div className="student-calculator-input">
+                          <input
+                            value={elapsedTime}
+                            onChange={(event) =>
+                              setElapsedTime(
+                                formatElapsedTimeInput(
+                                  event.target.value,
+                                ),
+                              )
+                            }
+                            placeholder="05:00"
+                            inputMode="numeric"
+                            maxLength="8"
+                          />
+                          <span>tempo</span>
+                        </div>
+                        <small>
+                          Digite MM:SS ou HH:MM:SS.
+                        </small>
+                      </label>
+                    </>
+                  )}
                 </div>
 
                 <button
@@ -1112,6 +1267,8 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                   onClick={() => {
                     setPace("");
                     setDistance("");
+                    setDistanceMeters("");
+                    setElapsedTime("");
                   }}
                 >
                   Limpar campos
@@ -1134,7 +1291,7 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                       quilômetros por hora.
                     </p>
                   </>
-                ) : (
+                ) : calculator === "prediction" ? (
                   <>
                     <strong>
                       {paceSeconds && calculatorDistance > 0
@@ -1147,13 +1304,46 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                       durante toda a distância.
                     </p>
                   </>
+                ) : (
+                  <>
+                    <strong>
+                      {formatPaceSeconds(calculatedPaceSeconds)}
+                    </strong>
+                    <h3>Pace médio realizado</h3>
+                    <p>
+                      Ritmo calculado a partir do tempo total
+                      e da distância informada em metros.
+                    </p>
+                  </>
                 )}
 
                 <div className="student-calculator-result-context">
-                  <div>
-                    <span>Pace informado</span>
-                    <strong>{pace || "—"}</strong>
-                  </div>
+                  {calculator !== "paceByDistance" ? (
+                    <div>
+                      <span>Pace informado</span>
+                      <strong>{pace || "—"}</strong>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <span>Distância</span>
+                        <strong>
+                          {calculatorDistanceMeters > 0
+                            ? `${
+                              calculatorDistanceMeters.toLocaleString(
+                                "pt-BR",
+                              )
+                            } m`
+                            : "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Tempo realizado</span>
+                        <strong>{elapsedTime || "—"}</strong>
+                      </div>
+                    </>
+                  )}
 
                   {calculator === "prediction" && (
                     <div>

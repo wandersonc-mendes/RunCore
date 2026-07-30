@@ -4480,3 +4480,96 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* RUNCORE GOALS AND CALCULATORS 54B */
+.student-goals-content {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: 1fr;
+}
+
+.student-goals-list-column,
+.student-goal-form-card {
+  min-width: 0;
+  width: 100%;
+}
+
+.student-goal-form-card {
+  box-sizing: border-box;
+  padding: 26px;
+}
+
+.student-goal-form-card > div:first-child {
+  margin-bottom: 22px;
+}
+
+.student-goal-form-card > div:first-child p {
+  line-height: 1.5;
+  max-width: 760px;
+}
+
+.student-goal-form-card .goal-form {
+  align-items: end;
+  display: grid;
+  gap: 16px;
+  grid-template-columns:
+    minmax(280px, 2fr)
+    minmax(140px, .75fr)
+    minmax(180px, 1fr)
+    minmax(170px, .9fr)
+    minmax(150px, auto);
+}
+
+.student-goal-form-card .goal-form label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.student-goal-form-card .goal-form input,
+.student-goal-form-card .goal-form select {
+  box-sizing: border-box;
+  min-height: 48px;
+  min-width: 0;
+  width: 100%;
+}
+
+.student-goal-form-card .goal-form button {
+  min-height: 48px;
+  width: 100%;
+}
+
+.student-calculator-selector {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1120px) {
+  .student-goal-form-card .goal-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .student-goal-form-card .goal-form label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .student-goal-form-card .goal-form button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .student-goal-form-card {
+    padding: 20px;
+  }
+
+  .student-goal-form-card .goal-form,
+  .student-calculator-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .student-goal-form-card .goal-form label,
+  .student-goal-form-card .goal-form label:first-child,
+  .student-goal-form-card .goal-form button {
+    grid-column: 1;
+  }
+}

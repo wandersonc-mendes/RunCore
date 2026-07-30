@@ -3350,3 +3350,122 @@ button {
 :root[data-theme="dark"] .muted {
   color: var(--muted);
 }
+
+
+/* RUNCORE STUDENT DASHBOARD PRIORITY */
+.student-dashboard-priority {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+}
+
+.student-next-session-card,
+.student-week-summary-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgb(18 57 49 / 6%);
+  color: var(--ink);
+  padding: 22px;
+}
+
+.student-next-session-card header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.student-next-session-card header > div,
+.student-week-summary-card {
+  display: grid;
+  gap: 6px;
+}
+
+.student-next-session-card span,
+.student-week-summary-card > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-next-session-card h3,
+.student-week-summary-card h3 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.student-next-session-content {
+  display: grid;
+  gap: 7px;
+  margin-top: 22px;
+}
+
+.student-next-session-content time {
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.student-next-session-content strong {
+  font-size: 15px;
+}
+
+.student-next-session-content p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.student-week-summary-metrics {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.student-week-summary-metrics > div {
+  background: color-mix(
+    in srgb,
+    var(--surface) 88%,
+    var(--accent) 12%
+  );
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+}
+
+.student-week-summary-metrics strong {
+  color: var(--ink);
+  font-size: 22px;
+}
+
+.student-week-summary-metrics small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+:root[data-theme="dark"] .student-next-session-card,
+:root[data-theme="dark"] .student-week-summary-card {
+  box-shadow: none;
+}
+
+@media (max-width: 940px) {
+  .student-dashboard-priority {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .student-next-session-card header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .student-week-summary-metrics {
+    grid-template-columns: 1fr;
+  }
+}

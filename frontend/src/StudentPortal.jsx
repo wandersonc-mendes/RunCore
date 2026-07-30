@@ -361,7 +361,40 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
       .sort((a, b) => a.target_date.localeCompare(b.target_date))
       .slice(0, 3);
 
-    return { recentDistance, completed, proposed, extra, upcomingGoals };
+    const upcomingSessions = [...(training?.sessions || [])]
+      .filter((session) => {
+        const date = dateFromKey(session.session_date);
+        return date && date >= today;
+      })
+      .sort((a, b) => a.session_date.localeCompare(b.session_date));
+
+    const nextSession = upcomingSessions[0] || null;
+
+    const weekDistance = currentWeekSessions.reduce(
+      (total, session) => total + (session.steps || []).reduce(
+        (sessionTotal, step) => sessionTotal
+          + plannedDistanceKm(step)
+          * Math.max(1, Number(step.repetitions || 1)),
+        0,
+      ),
+      0,
+    );
+
+    const weekCompleted = currentWeekSessions.filter(
+      (session) => activityDates.has(session.session_date),
+    ).length;
+
+    return {
+      recentDistance,
+      completed,
+      proposed,
+      extra,
+      upcomingGoals,
+      nextSession,
+      weekDistance,
+      weekCompleted,
+      weekTotal: currentWeekSessions.length,
+    };
   })();
 
   useEffect(() => {
@@ -403,6 +436,89 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                 <span>RUNCORE</span>
                 <strong>Seu treinamento em movimento</strong>
               </div>
+            </section>
+
+            <section className="student-dashboard-priority">
+              <article className="student-next-session-card">
+                <header>
+                  <div>
+                    <span>Próximo treino</span>
+                    <h3>
+                      {dashboardSummary.nextSession
+                        ? dashboardSummary.nextSession.workout_name
+                        : "Nenhum treino futuro"}
+                    </h3>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => navigate(studentPaths.training)}
+                  >
+                    Ver planilha
+                  </button>
+                </header>
+
+                {dashboardSummary.nextSession ? (
+                  <div className="student-next-session-content">
+                    <time>
+                      {new Intl.DateTimeFormat("pt-BR", {
+                        weekday: "long",
+                        day: "2-digit",
+                        month: "short",
+                      }).format(
+                        dateFromKey(
+                          dashboardSummary.nextSession.session_date,
+                        ),
+                      )}
+                    </time>
+
+                    <strong>
+                      {dashboardSummary.nextSession.zone
+                        || "Treino programado"}
+                    </strong>
+
+                    <p>
+                      {formatWorkoutSummary(
+                        dashboardSummary.nextSession,
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="muted">
+                    A próxima sessão aparecerá quando houver
+                    um treino futuro na planilha.
+                  </p>
+                )}
+              </article>
+
+              <article className="student-week-summary-card">
+                <span>Semana atual</span>
+                <h3>Resumo do planejamento</h3>
+
+                <div className="student-week-summary-metrics">
+                  <div>
+                    <strong>
+                      {dashboardSummary.weekCompleted}
+                      /{dashboardSummary.weekTotal}
+                    </strong>
+                    <small>treinos concluídos</small>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {dashboardSummary.weekDistance.toLocaleString(
+                        "pt-BR",
+                        {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 1,
+                        },
+                      )} km
+                    </strong>
+                    <small>volume planejado</small>
+                  </div>
+                </div>
+              </article>
             </section>
 
             <section className="student-dashboard-overview">

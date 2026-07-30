@@ -3625,3 +3625,93 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* RUNCORE STUDENT TRAINING TECHNICAL HEADER */
+.student-training-page-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 22px;
+  justify-content: space-between;
+}
+
+.student-training-page-heading h2 {
+  color: var(--ink);
+  margin: 4px 0;
+}
+
+.student-training-page-heading .muted {
+  line-height: 1.5;
+  max-width: 680px;
+}
+
+.student-training-page-summary {
+  display: grid;
+  gap: 14px;
+  grid-template-columns:
+    minmax(150px, .45fr)
+    minmax(150px, .55fr)
+    minmax(180px, .7fr)
+    minmax(280px, 1.3fr);
+}
+
+.student-training-page-summary article {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  color: var(--ink);
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+}
+
+.student-training-page-summary span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-training-page-summary strong {
+  color: var(--ink);
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+.student-training-page-summary small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.student-training-objective-card strong {
+  font-size: 16px;
+}
+
+:root[data-theme="dark"] .student-training-page-summary article {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+@media (max-width: 1040px) {
+  .student-training-page-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .student-training-objective-card {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .student-training-page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .student-training-page-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .student-training-objective-card {
+    grid-column: auto;
+  }
+}

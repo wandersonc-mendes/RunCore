@@ -319,6 +319,42 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const velocity = paceSeconds ? 3600 / paceSeconds : 0;
   const predictedTime = paceSeconds * calculatorDistance;
 
+  const trainingPageSummary = (() => {
+    const sessions = currentWeekSessions;
+    const volume = sessions.reduce(
+      (total, session) => total + (session.steps || []).reduce(
+        (sessionTotal, step) => sessionTotal
+          + plannedDistanceKm(step)
+          * Math.max(1, Number(step.repetitions || 1)),
+        0,
+      ),
+      0,
+    );
+
+    const zones = [
+      ...new Set(
+        sessions
+          .map((session) => session.zone)
+          .filter(Boolean),
+      ),
+    ];
+
+    return {
+      sessions: sessions.length,
+      volume,
+      zones,
+      phase:
+        sessions.find((session) => session.phase)?.phase
+        || training?.phase
+        || "Fase não informada",
+      objective:
+        training?.goal
+        || training?.objective
+        || training?.name
+        || "Evolução consistente",
+    };
+  })();
+
 
   const dashboardSummary = (() => {
     const now = new Date();
@@ -761,6 +797,67 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
 
         {view === "training" && (
           <>
+            <section className="student-training-page-heading">
+              <div>
+                <p className="eyebrow">MINHA PLANILHA</p>
+                <h2>Estrutura e execução dos treinos</h2>
+                <p className="muted">
+                  Consulte o objetivo da semana, o volume previsto
+                  e as orientações técnicas de cada sessão.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => navigate(studentPaths.calendar)}
+              >
+                Ver Agenda
+              </button>
+            </section>
+
+            {training && (
+              <section className="student-training-page-summary">
+                <article>
+                  <span>Semana atual</span>
+                  <strong>{training.current_week || 1}</strong>
+                  <small>{trainingPageSummary.phase}</small>
+                </article>
+
+                <article>
+                  <span>Sessões previstas</span>
+                  <strong>{trainingPageSummary.sessions}</strong>
+                  <small>treinos estruturados</small>
+                </article>
+
+                <article>
+                  <span>Volume planejado</span>
+                  <strong>
+                    {trainingPageSummary.volume.toLocaleString(
+                      "pt-BR",
+                      {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      },
+                    )} km
+                  </strong>
+                  <small>na semana atual</small>
+                </article>
+
+                <article className="student-training-objective-card">
+                  <span>Objetivo do ciclo</span>
+                  <strong>{trainingPageSummary.objective}</strong>
+                  <small>
+                    {trainingPageSummary.zones.length
+                      ? `Zonas trabalhadas: ${
+                        trainingPageSummary.zones.join(", ")
+                      }`
+                      : "As zonas aparecerão conforme o planejamento."}
+                  </small>
+                </article>
+              </section>
+            )}
+
             {training ? <article id="planilha" className="student-plan">
           <div className="student-plan-heading">
             <div className="student-plan-title-block">

@@ -31,8 +31,8 @@ function LoginInstitutionalFooter() {
       </div>
 
       <p>
-        © 2026 RunCore. Todos os direitos reservados.
-        <span aria-hidden="true"> · </span>
+        ©2026 - RunCoreApp - Todos os direitos reservados.
+        <br />
         Desenvolvido por Wanderson Mendes.
       </p>
     </footer>
@@ -750,7 +750,7 @@ export default function LoginScreen({
                     : (
                       loginRole === "admin"
                         ? "Contas administrativas são criadas por outro administrador."
-                        : "Novos treinadores são cadastrados pelo perfil administrativo."
+                        : null
                     )
                 }
               </small>

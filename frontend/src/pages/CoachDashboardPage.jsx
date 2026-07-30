@@ -87,6 +87,12 @@ export default function CoachDashboardPage({
   user,
   athletes,
   invitations,
+  inviteEmail,
+  setInviteEmail,
+  inviteLink,
+  onCreateInvitation,
+  onApproveInvitation,
+  onOpenProfile,
   onOpenTraining,
   onOpenEvaluations,
 }) {
@@ -328,6 +334,159 @@ export default function CoachDashboardPage({
           <strong>{invitations.pending.length}</strong>
           <p>Convites pendentes</p>
         </article>
+      </section>
+
+      <section
+        id="convites"
+        className="dashboard-invitations"
+      >
+        <header>
+          <div>
+            <span>NOVOS ALUNOS</span>
+            <h3>Convites e aprovações</h3>
+            <p>
+              Gere um link para o pré-cadastro e aprove os alunos
+              que concluírem o envio das informações.
+            </p>
+          </div>
+
+          <strong>
+            {invitations.pending.length} aguardando aprovação
+          </strong>
+        </header>
+
+        <form
+          className="dashboard-invite-form"
+          onSubmit={onCreateInvitation}
+        >
+          <label>
+            E-mail do aluno
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(event) =>
+                setInviteEmail(event.target.value)
+              }
+              placeholder="Opcional"
+            />
+          </label>
+
+          <button type="submit" className="btn-primary">
+            Gerar link de convite
+          </button>
+        </form>
+
+        {inviteLink && (
+          <div className="dashboard-invite-link">
+            <div>
+              <span>Link pronto para compartilhar</span>
+              <input
+                readOnly
+                value={inviteLink}
+                onFocus={(event) => event.target.select()}
+              />
+            </div>
+
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() =>
+                navigator.clipboard?.writeText(inviteLink)
+              }
+            >
+              Copiar
+            </button>
+          </div>
+        )}
+
+        <div className="dashboard-invitation-columns">
+          <section>
+            <header>
+              <strong>Aguardando aprovação</strong>
+              <span>{invitations.pending.length}</span>
+            </header>
+
+            {invitations.pending.length ? (
+              <div className="dashboard-invitation-list">
+                {invitations.pending.map((invitation) => (
+                  <article key={invitation.id}>
+                    <div>
+                      <strong>
+                        {invitation.student_name || "Novo aluno"}
+                      </strong>
+                      <small>
+                        {invitation.email
+                          || "E-mail informado no pré-cadastro"}
+                      </small>
+                    </div>
+
+                    <div className="dashboard-invitation-actions">
+                      {invitation.athlete_id && onOpenProfile && (
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          onClick={() =>
+                            onOpenProfile({
+                              id: invitation.athlete_id,
+                              name:
+                                invitation.student_name
+                                || "Novo aluno",
+                            })
+                          }
+                        >
+                          Ver cadastro
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={() =>
+                          onApproveInvitation(invitation.id)
+                        }
+                      >
+                        Aprovar
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="dashboard-invitation-empty">
+                Nenhum aluno aguardando aprovação.
+              </p>
+            )}
+          </section>
+
+          <section>
+            <header>
+              <strong>Convites enviados</strong>
+              <span>{invitations.sent.length}</span>
+            </header>
+
+            {invitations.sent.length ? (
+              <div className="dashboard-invitation-list sent">
+                {invitations.sent.slice(0, 5).map((invitation) => (
+                  <article key={invitation.id}>
+                    <div>
+                      <strong>
+                        {invitation.email
+                          || "Link sem e-mail definido"}
+                      </strong>
+                      <small>
+                        Aguardando utilização do convite
+                      </small>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="dashboard-invitation-empty">
+                Nenhum convite pendente de uso.
+              </p>
+            )}
+          </section>
+        </div>
       </section>
 
       <section className="dashboard-v2-content">

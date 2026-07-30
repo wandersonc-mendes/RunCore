@@ -390,3 +390,224 @@
     border-left: 0;
   }
 }
+
+
+/* RUNCORE DASHBOARD INVITATIONS 63 */
+.dashboard-invitations {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--shell-border);
+  border-radius: 16px;
+  background: var(--shell-surface);
+  color: var(--shell-text);
+}
+
+.dashboard-invitations > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dashboard-invitations > header h3,
+.dashboard-invitations > header p {
+  margin: 0;
+}
+
+.dashboard-invitations > header h3 {
+  margin-top: 4px;
+  font-size: 20px;
+}
+
+.dashboard-invitations > header div > span {
+  color: var(--shell-accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.dashboard-invitations > header p {
+  margin-top: 6px;
+  color: var(--shell-muted);
+  line-height: 1.45;
+}
+
+.dashboard-invitations > header > strong {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: var(--shell-accent-soft);
+  color: var(--shell-accent);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dashboard-invite-form {
+  display: grid;
+  align-items: end;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.dashboard-invite-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--shell-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-invite-form input,
+.dashboard-invite-link input {
+  width: 100%;
+  border: 1px solid var(--shell-border);
+  border-radius: 10px;
+  background: var(--shell-surface-soft);
+  color: var(--shell-text);
+  font: inherit;
+}
+
+.dashboard-invite-form input {
+  padding: 11px 12px;
+}
+
+.dashboard-invite-link {
+  display: grid;
+  align-items: end;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 14px;
+  border: 1px solid var(--shell-border);
+  border-radius: 12px;
+  background: var(--shell-surface-soft);
+}
+
+.dashboard-invite-link > div {
+  display: grid;
+  gap: 6px;
+}
+
+.dashboard-invite-link span {
+  color: var(--shell-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.dashboard-invite-link input {
+  padding: 9px 10px;
+  background: var(--shell-surface);
+}
+
+.dashboard-invitation-columns {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-invitation-columns > section {
+  min-width: 0;
+  border: 1px solid var(--shell-border);
+  border-radius: 13px;
+  background: var(--shell-surface-soft);
+}
+
+.dashboard-invitation-columns > section > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 15px;
+  border-bottom: 1px solid var(--shell-border);
+}
+
+.dashboard-invitation-columns > section > header span {
+  display: grid;
+  place-items: center;
+  min-width: 25px;
+  height: 25px;
+  border-radius: 999px;
+  background: var(--shell-accent-soft);
+  color: var(--shell-accent);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dashboard-invitation-list {
+  display: grid;
+}
+
+.dashboard-invitation-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--shell-border);
+}
+
+.dashboard-invitation-list article:last-child {
+  border-bottom: 0;
+}
+
+.dashboard-invitation-list article > div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dashboard-invitation-list small {
+  overflow: hidden;
+  color: var(--shell-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-invitation-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.dashboard-invitation-empty {
+  margin: 0;
+  padding: 20px 15px;
+  color: var(--shell-muted);
+  text-align: center;
+}
+
+@media (max-width: 820px) {
+  .dashboard-invitation-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .dashboard-invitations {
+    padding: 17px;
+  }
+
+  .dashboard-invitations > header,
+  .dashboard-invitation-list article {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-invitations > header > strong {
+    align-self: flex-start;
+  }
+
+  .dashboard-invite-form,
+  .dashboard-invite-link {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-invitation-actions {
+    width: 100%;
+  }
+
+  .dashboard-invitation-actions button {
+    flex: 1;
+  }
+}

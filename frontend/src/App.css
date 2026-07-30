@@ -3184,3 +3184,169 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* RUNCORE DARK THEME CONTENT FIX */
+:root[data-theme="dark"] {
+  --ink: #edf3ef;
+  --muted: #a8b4ae;
+  --line: #303832;
+  --surface: #171b19;
+  --bg: #0d100f;
+  --accent: #31a879;
+  --accent-dark: #73d4aa;
+  --canvas: #111513;
+}
+
+:root[data-theme="dark"] .routed-student-page,
+:root[data-theme="dark"] .student-content,
+:root[data-theme="dark"] .student-dashboard-overview {
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .student-month-distance-card,
+:root[data-theme="dark"] .student-race-calendar-card,
+:root[data-theme="dark"] .student-training-status-card,
+:root[data-theme="dark"] .connection-card,
+:root[data-theme="dark"] .student-stats article,
+:root[data-theme="dark"] .student-plan,
+:root[data-theme="dark"] .student-empty,
+:root[data-theme="dark"] .goals-card,
+:root[data-theme="dark"] .calculator-card,
+:root[data-theme="dark"] .activity-row,
+:root[data-theme="dark"] .activity-card-heading,
+:root[data-theme="dark"] .activity-details > div,
+:root[data-theme="dark"] .activity-details .adherence-card,
+:root[data-theme="dark"] .activity-details .laps,
+:root[data-theme="dark"] .activity-details .training-feedback {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .student-month-distance-card {
+  background:
+    radial-gradient(
+      circle at 85% 15%,
+      rgb(49 168 121 / 16%),
+      transparent 38%
+    ),
+    var(--surface);
+}
+
+:root[data-theme="dark"] .student-dashboard-hero {
+  background: linear-gradient(
+    120deg,
+    #116e58,
+    #168469
+  );
+  color: #fff;
+}
+
+:root[data-theme="dark"] .student-dashboard-hero p,
+:root[data-theme="dark"] .student-dashboard-hero strong,
+:root[data-theme="dark"] .student-dashboard-hero span,
+:root[data-theme="dark"] .student-dashboard-hero h2 {
+  color: #fff;
+}
+
+:root[data-theme="dark"] .student-dashboard-icon {
+  background: rgb(49 168 121 / 18%);
+  color: #73d4aa;
+}
+
+:root[data-theme="dark"] .student-race-calendar-list time {
+  background: rgb(49 168 121 / 15%);
+  color: #73d4aa;
+}
+
+:root[data-theme="dark"] .student-training-donut > div {
+  background: var(--surface);
+  box-shadow: 0 4px 18px rgb(0 0 0 / 24%);
+}
+
+:root[data-theme="dark"] .student-month-distance-card strong,
+:root[data-theme="dark"] .student-race-calendar-card h3,
+:root[data-theme="dark"] .student-training-status-card h3,
+:root[data-theme="dark"] .student-training-donut strong,
+:root[data-theme="dark"] .student-training-donut-legend strong,
+:root[data-theme="dark"] .student-race-calendar-list article > div > strong,
+:root[data-theme="dark"] .student-stats strong,
+:root[data-theme="dark"] .student-plan h3,
+:root[data-theme="dark"] .student-plan strong,
+:root[data-theme="dark"] .activity-toggle,
+:root[data-theme="dark"] .activity-details strong,
+:root[data-theme="dark"] .feedback-heading h4 {
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .student-month-distance-card span,
+:root[data-theme="dark"] .student-month-distance-card small,
+:root[data-theme="dark"] .student-race-calendar-card header span,
+:root[data-theme="dark"] .student-training-status-card header span,
+:root[data-theme="dark"] .student-race-calendar-list article > div > span,
+:root[data-theme="dark"] .student-training-donut span,
+:root[data-theme="dark"] .student-training-donut-legend > span,
+:root[data-theme="dark"] .connection-card p,
+:root[data-theme="dark"] .student-stats span,
+:root[data-theme="dark"] .student-stats small,
+:root[data-theme="dark"] .activity-toggle span,
+:root[data-theme="dark"] .activity-details span,
+:root[data-theme="dark"] .activity-details small,
+:root[data-theme="dark"] .training-feedback p,
+:root[data-theme="dark"] .training-feedback label {
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .connection-card {
+  background: #141917;
+}
+
+:root[data-theme="dark"] .student-stats article {
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .student-plan {
+  background: #141917;
+}
+
+:root[data-theme="dark"] .activity-card {
+  background: transparent;
+}
+
+:root[data-theme="dark"] .activity-details {
+  background: #111513;
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .activity-details .lap {
+  background: #1d2320;
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .activity-toggle > b {
+  background: rgb(49 168 121 / 17%);
+  color: #73d4aa;
+}
+
+:root[data-theme="dark"] .training-feedback input,
+:root[data-theme="dark"] .training-feedback select,
+:root[data-theme="dark"] .training-feedback textarea {
+  background: #202622;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .btn-ghost {
+  border-color: #4a5750;
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .btn-ghost:hover {
+  background: #202622;
+  border-color: #5f7067;
+}
+
+:root[data-theme="dark"] .muted {
+  color: var(--muted);
+}

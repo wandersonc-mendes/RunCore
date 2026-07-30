@@ -534,3 +534,9 @@
     width: 21px;
   }
 }
+
+
+/* RUNCORE WHITE SUN ICON 58D */
+:root[data-theme="dark"] .app-theme-toggle img {
+  filter: brightness(0) invert(1);
+}

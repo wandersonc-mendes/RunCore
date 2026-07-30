@@ -28,14 +28,79 @@ def athlete_id_for(user):
     return athlete_id
 
 
+REQUIRED_PERSONAL_FIELDS = {
+    "name": "Nome completo",
+    "birth_date": "Data de nascimento",
+    "sex": "Sexo",
+    "phone": "Celular",
+    "city": "Cidade",
+    "state": "Estado",
+}
+
+REQUIRED_TRAINING_FIELDS = {
+    "days": "Dias disponíveis",
+    "modality": "Modalidade principal",
+    "goal": "Objetivo atual",
+}
+
+
+def profile_completion(personal, parq, training):
+    missing = []
+
+    for field, label in REQUIRED_PERSONAL_FIELDS.items():
+        value = personal.get(field)
+
+        if not value or (
+            isinstance(value, str)
+            and not value.strip()
+        ):
+            missing.append(label)
+
+    for index in range(1, 8):
+        if parq.get(f"q{index}") not in {
+            "Sim",
+            "Não",
+        }:
+            missing.append(f"PAR-Q {index}")
+
+    for field, label in REQUIRED_TRAINING_FIELDS.items():
+        value = training.get(field)
+
+        if not value or (
+            isinstance(value, str)
+            and not value.strip()
+        ):
+            missing.append(label)
+
+    return {
+        "complete": len(missing) == 0,
+        "missing_fields": missing,
+    }
+
+
 def serialize(item, athlete=None):
     personal = dict(item.personal) if item else {}
+    parq = dict(item.parq) if item else {}
+    training = dict(item.training) if item else {}
+
     if athlete:
         personal.setdefault("name", athlete.name)
         personal.setdefault("email", athlete.email)
         personal.setdefault("phone", athlete.phone)
         personal.setdefault("goal", athlete.goal)
-    return {"personal": personal, "parq": item.parq if item else {}, "training": item.training if item else {}}
+
+    completion = profile_completion(
+        personal,
+        parq,
+        training,
+    )
+
+    return {
+        "personal": personal,
+        "parq": parq,
+        "training": training,
+        **completion,
+    }
 
 
 @router.get("")

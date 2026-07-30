@@ -18,9 +18,11 @@ import {
   createInvitation,
   listInvitations,
   approveInvitation,
+  getStudentProfile,
 } from "./api";
 import LoginScreen from "./LoginScreen";
 import StudentPortal from "./StudentPortal";
+import ProfilePanel from "./ProfilePanel";
 import AthleteProfileView from "./AthleteProfileView";
 import IptAssessmentView from "./IptAssessmentView";
 import AppShell from "./layout/AppShell";
@@ -839,6 +841,8 @@ export default function App() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [quickAction, setQuickAction] = useState(null);
+  const [studentProfileStatus, setStudentProfileStatus] = useState(null);
+  const [studentProfileLoading, setStudentProfileLoading] = useState(false);
 
   async function loadAthletes(currentSearch = search) {
     setLoading(true);
@@ -900,6 +904,43 @@ export default function App() {
 
   useEffect(() => {
     if (["coach", "master"].includes(currentUser?.role)) { loadAthletes(""); loadInvitations(); }
+  }, [currentUser]);
+
+  useEffect(() => {
+    let active = true;
+
+    if (currentUser?.role !== "student") {
+      setStudentProfileStatus(null);
+      setStudentProfileLoading(false);
+      return undefined;
+    }
+
+    setStudentProfileLoading(true);
+
+    getStudentProfile()
+      .then((profile) => {
+        if (active) {
+          setStudentProfileStatus(profile);
+        }
+      })
+      .catch((err) => {
+        if (active) {
+          setError(err.message);
+          setStudentProfileStatus({
+            complete: false,
+            missing_fields: [],
+          });
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setStudentProfileLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, [currentUser]);
 
   useEffect(() => {
@@ -1557,7 +1598,52 @@ export default function App() {
     const studentLogout = () => {
       clearSession();
       setCurrentUser(null);
+      setStudentProfileStatus(null);
     };
+
+    if (studentProfileLoading || studentProfileStatus === null) {
+      return (
+        <main
+          className="app-bootstrap-loading"
+          aria-label="Verificando cadastro"
+        >
+          <section className="app-bootstrap-loading-card">
+            <img
+              src="/logo-horizontal.png?v=2"
+              alt="RunCore"
+            />
+            <span
+              className="app-bootstrap-spinner"
+              aria-hidden="true"
+            />
+            <p>Verificando seu cadastro...</p>
+          </section>
+        </main>
+      );
+    }
+
+    if (!studentProfileStatus.complete) {
+      return (
+        <AppShell
+          user={currentUser}
+          onLogout={studentLogout}
+        >
+          <ProfilePanel
+            onboarding
+            onSaved={(savedProfile) => {
+              setStudentProfileStatus(savedProfile);
+
+              if (savedProfile.complete) {
+                navigate(
+                  studentPaths.dashboard,
+                  { replace: true },
+                );
+              }
+            }}
+          />
+        </AppShell>
+      );
+    }
 
     return (
       <Routes>

@@ -74,10 +74,6 @@
 .routed-student-page .connection-card,
 .routed-student-page .student-stats,
 .routed-student-page .activity-card,
-.routed-student-page .student-plan,
-.routed-student-page .student-empty {
-  display: none;
-}
 
 .routed-student-page[data-view="dashboard"] .connection-card,
 .routed-student-page[data-view="dashboard"] .student-plan,
@@ -89,8 +85,6 @@
   display: grid;
 }
 
-.routed-student-page[data-view="training"] .student-plan,
-.routed-student-page[data-view="training"] .student-empty,
 .routed-student-page[data-view="activities"] .connection-card,
 .routed-student-page[data-view="activities"] .activity-card {
   display: flex;

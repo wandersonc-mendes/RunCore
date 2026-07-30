@@ -526,7 +526,9 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           </>
         )}
 
-        {training ? <article id="planilha" className="student-plan">
+        {view === "training" && (
+          <>
+            {training ? <article id="planilha" className="student-plan">
           <div className="student-plan-heading">
             <div className="student-plan-title-block">
               <div className="student-plan-kicker">
@@ -582,6 +584,8 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
             ))}
           </div>
         </article> : <article id="planilha" className="student-empty"><h3>Planilha</h3><p>Seu plano e a execução dos treinos aparecerão aqui após o vínculo com seu treinador.</p></article>}
+          </>
+        )}
       </section>
       {selectedSession && <div className="student-session-modal-backdrop" role="presentation" onMouseDown={() => setSelectedSession(null)}><section className="student-session-modal" role="dialog" aria-modal="true" aria-labelledby="student-session-title" onMouseDown={(event) => event.stopPropagation()}><header><div><span>{weekdays[selectedSession.weekday] || "Treino"} · Semana {selectedSession.week}</span><h3 id="student-session-title">{selectedSession.workout_name}</h3><p>{selectedSession.zone} · {formatWorkoutSummary(selectedSession)}</p></div><button className="modal-close" onClick={() => setSelectedSession(null)} aria-label="Fechar">×</button></header><WorkoutChart steps={selectedSession.steps} /><section><h4>Como executar</h4><ol>{selectedSession.steps?.map((step) => <li className={`workout-step ${stepTone(step.type)}`} key={step.order}><strong>{step.type}</strong><span>{step.repetitions ? `${step.repetitions} × ${stepDistance(step)}` : stepDistance(step)} · {step.pace_min}–{step.pace_max}/km{step.recovery ? ` · recuperação: ${step.recovery}` : ""}</span><small>{step.notes}</small></li>)}</ol></section><section className="student-adaptations"><h4>Benefícios e adaptações</h4><ul>{selectedSession.adaptations?.map((adaptation) => <li key={adaptation}>{adaptation}</li>)}</ul></section><footer><button className="btn-ghost" onClick={() => setSelectedSession(null)}>Fechar</button></footer></section></div>}
     </main>

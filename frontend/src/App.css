@@ -4766,3 +4766,152 @@ button {
     width: 44%;
   }
 }
+
+
+/* RUNCORE DARK PROFILE AND SESSION MODAL 58A */
+:root[data-theme="dark"] .profile-page {
+  background: var(--shell-bg, #0d100f);
+  color: var(--shell-text, #edf3ef);
+}
+
+:root[data-theme="dark"] .profile-page .student-header,
+:root[data-theme="dark"] .profile-tabs,
+:root[data-theme="dark"] .profile-card {
+  background: var(--shell-surface, #171b19);
+  border-color: var(--shell-border, #303732);
+  color: var(--shell-text, #edf3ef);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .profile-page .student-header h1,
+:root[data-theme="dark"] .profile-card h2,
+:root[data-theme="dark"] .profile-card h3,
+:root[data-theme="dark"] .profile-card span,
+:root[data-theme="dark"] .profile-card strong {
+  color: var(--shell-text, #edf3ef);
+}
+
+:root[data-theme="dark"] .profile-page .student-header p,
+:root[data-theme="dark"] .profile-card p,
+:root[data-theme="dark"] .profile-grid label,
+:root[data-theme="dark"] .profile-grid small,
+:root[data-theme="dark"] .parq-questions label,
+:root[data-theme="dark"] .profile-tabs button {
+  color: var(--shell-muted, #9ba8a1);
+}
+
+:root[data-theme="dark"] .profile-tabs button:hover,
+:root[data-theme="dark"] .profile-tabs button:focus-visible {
+  background: var(--shell-surface-soft, #202522);
+  color: var(--shell-text, #edf3ef);
+  outline: none;
+}
+
+:root[data-theme="dark"] .profile-tabs button.active {
+  background: var(--shell-accent-soft, rgba(49, 168, 121, .2));
+  color: var(--shell-accent, #31a879);
+}
+
+:root[data-theme="dark"] .profile-grid input,
+:root[data-theme="dark"] .profile-grid select,
+:root[data-theme="dark"] .parq-questions select {
+  background: var(--shell-surface-soft, #202522);
+  border-color: var(--shell-border, #303732);
+  color: var(--shell-text, #edf3ef);
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] .profile-grid input::placeholder {
+  color: var(--shell-muted, #9ba8a1);
+  opacity: .78;
+}
+
+:root[data-theme="dark"] .profile-grid input:focus,
+:root[data-theme="dark"] .profile-grid select:focus,
+:root[data-theme="dark"] .parq-questions select:focus {
+  border-color: var(--shell-accent, #31a879);
+  box-shadow: 0 0 0 3px var(--shell-accent-soft, rgba(49, 168, 121, .2));
+  outline: none;
+}
+
+:root[data-theme="dark"] .parq-questions,
+:root[data-theme="dark"] .parq-questions label {
+  border-color: var(--shell-border, #303732);
+}
+
+:root[data-theme="dark"] .training-days label {
+  background: var(--shell-surface-soft, #202522);
+  border-color: var(--shell-border, #303732);
+  color: var(--shell-text, #edf3ef);
+}
+
+:root[data-theme="dark"] .profile-message {
+  color: var(--shell-accent, #31a879);
+}
+
+:root[data-theme="dark"] .student-session-modal-backdrop {
+  background: rgba(0, 0, 0, .76);
+  backdrop-filter: blur(3px);
+}
+
+:root[data-theme="dark"] .student-session-modal {
+  background: var(--shell-surface, #171b19);
+  border: 1px solid var(--shell-border, #303732);
+  color: var(--shell-text, #edf3ef);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .62);
+}
+
+:root[data-theme="dark"] .student-session-modal > header,
+:root[data-theme="dark"] .student-session-modal > section,
+:root[data-theme="dark"] .student-session-modal > footer {
+  border-color: var(--shell-border, #303732);
+}
+
+:root[data-theme="dark"] .student-session-modal h3,
+:root[data-theme="dark"] .student-session-modal h4,
+:root[data-theme="dark"] .student-session-modal strong {
+  color: var(--shell-text, #edf3ef);
+}
+
+:root[data-theme="dark"] .student-session-modal header span,
+:root[data-theme="dark"] .student-session-modal header p,
+:root[data-theme="dark"] .student-session-modal small,
+:root[data-theme="dark"] .student-session-modal .muted {
+  color: var(--shell-muted, #9ba8a1);
+}
+
+:root[data-theme="dark"] .student-session-modal .modal-close {
+  background: var(--shell-surface-soft, #202522);
+  border-color: var(--shell-border, #303732);
+  color: var(--shell-text, #edf3ef);
+}
+
+:root[data-theme="dark"] .student-session-modal .modal-close:hover,
+:root[data-theme="dark"] .student-session-modal .modal-close:focus-visible {
+  background: var(--shell-accent-soft, rgba(49, 168, 121, .2));
+  color: var(--shell-accent, #31a879);
+  outline: none;
+}
+
+:root[data-theme="dark"] .student-session-modal .workout-step,
+:root[data-theme="dark"] .student-session-modal .student-adaptations {
+  background: var(--shell-surface-soft, #202522);
+  border-color: var(--shell-border, #303732);
+  color: var(--shell-text, #edf3ef);
+}
+
+:root[data-theme="dark"] .student-session-modal .student-adaptations li {
+  color: var(--shell-text, #edf3ef);
+}
+
+:root[data-theme="dark"] .student-session-modal .student-adaptations li::marker {
+  color: var(--shell-accent, #31a879);
+}
+
+:root[data-theme="dark"] .student-session-modal svg text {
+  fill: var(--shell-muted, #9ba8a1);
+}
+
+:root[data-theme="dark"] .student-session-modal svg line {
+  stroke: var(--shell-border, #303732);
+}

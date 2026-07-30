@@ -319,6 +319,39 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const velocity = paceSeconds ? 3600 / paceSeconds : 0;
   const predictedTime = paceSeconds * calculatorDistance;
 
+  const goalsPageSummary = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sortedGoals = [...goals].sort(
+      (first, second) =>
+        first.target_date.localeCompare(second.target_date),
+    );
+
+    const futureGoals = sortedGoals.filter((goal) => {
+      const date = dateFromKey(goal.target_date);
+      return date && date >= today;
+    });
+
+    const pastGoals = sortedGoals
+      .filter((goal) => {
+        const date = dateFromKey(goal.target_date);
+        return date && date < today;
+      })
+      .reverse();
+
+    const mainGoal = futureGoals.find(
+      (goal) => goal.priority === "Principal",
+    ) || futureGoals[0] || null;
+
+    return {
+      futureGoals,
+      pastGoals,
+      mainGoal,
+    };
+  })();
+
+
   const trainingPageSummary = (() => {
     const sessions = currentWeekSessions;
     const volume = sessions.reduce(
@@ -714,10 +747,260 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           </>
         )}
         {view === "goals" && (
-          <section id="metas" className="goals-card">
-          <div className="goals-heading"><div><p className="eyebrow">SEUS OBJETIVOS</p><h3>Metas e provas</h3></div><span>{goals.length} {goals.length === 1 ? "meta" : "metas"}</span></div>
-          <form className="goal-form" onSubmit={saveGoal}><input required value={goalForm.name} onChange={(event) => setGoalForm((current) => ({ ...current, name: event.target.value }))} placeholder="Ex.: Maratona de Vitória" /><input required type="number" min="0.1" step="0.1" value={goalForm.distance} onChange={(event) => setGoalForm((current) => ({ ...current, distance: event.target.value }))} placeholder="Distância (km)" /><input required type="date" value={goalForm.target_date} onChange={(event) => setGoalForm((current) => ({ ...current, target_date: event.target.value }))} /><select value={goalForm.priority} onChange={(event) => setGoalForm((current) => ({ ...current, priority: event.target.value }))}><option>Principal</option><option>Secundária</option></select><button className="btn-primary" disabled={savingGoal}>{savingGoal ? "Salvando..." : "Adicionar"}</button></form>
-          {goals.length > 0 ? <div className="goals-list">{goals.map((goal) => { const days = Math.ceil((new Date(`${goal.target_date}T00:00:00`) - new Date()) / 86400000); return <article key={goal.id}><div><strong>{goal.name}</strong><span>{goal.distance.toFixed(3)} km · {goal.priority}</span></div><b className={days < 0 ? "late" : ""}>{days < 0 ? `há ${Math.abs(days)} dias` : days === 0 ? "é hoje" : `faltam ${days} dias`}</b><button className="btn-ghost" onClick={() => removeGoal(goal.id)}>Remover</button></article>; })}</div> : <p className="muted">Adicione sua próxima prova ou objetivo de corrida.</p>}
+          <section id="metas" className="student-goals-page">
+            <header className="student-goals-heading">
+              <div>
+                <p className="eyebrow">METAS E PROVAS</p>
+                <h2>Objetivos do seu ciclo</h2>
+                <p className="muted">
+                  Acompanhe a prova principal, organize os próximos
+                  compromissos e mantenha o histórico separado.
+                </p>
+              </div>
+
+              <span className="student-goals-total">
+                {goalsPageSummary.futureGoals.length} {
+                  goalsPageSummary.futureGoals.length === 1
+                    ? "prova futura"
+                    : "provas futuras"
+                }
+              </span>
+            </header>
+
+            {goalsPageSummary.mainGoal ? (() => {
+              const mainDate = dateFromKey(
+                goalsPageSummary.mainGoal.target_date,
+              );
+              const days = Math.ceil(
+                (mainDate - new Date().setHours(0, 0, 0, 0))
+                / 86400000,
+              );
+
+              return (
+                <article className="student-main-goal-card">
+                  <div>
+                    <span>Objetivo principal</span>
+                    <h3>{goalsPageSummary.mainGoal.name}</h3>
+                    <p>
+                      {Number(
+                        goalsPageSummary.mainGoal.distance,
+                      ).toLocaleString("pt-BR", {
+                        maximumFractionDigits: 2,
+                      })} km · {
+                        new Intl.DateTimeFormat("pt-BR", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        }).format(mainDate)
+                      }
+                    </p>
+                  </div>
+
+                  <div className="student-main-goal-countdown">
+                    <strong>{Math.max(0, days)}</strong>
+                    <span>
+                      {days === 1 ? "dia restante" : "dias restantes"}
+                    </span>
+                  </div>
+                </article>
+              );
+            })() : (
+              <section className="student-goals-empty-main">
+                <h3>Nenhum objetivo futuro cadastrado</h3>
+                <p>
+                  Use o formulário abaixo para registrar sua próxima
+                  prova ou meta esportiva.
+                </p>
+              </section>
+            )}
+
+            <section className="student-goals-content">
+              <div className="student-goals-list-column">
+                <section className="student-goals-section">
+                  <header>
+                    <div>
+                      <span>Planejamento futuro</span>
+                      <h3>Próximas provas</h3>
+                    </div>
+                  </header>
+
+                  {goalsPageSummary.futureGoals.length ? (
+                    <div className="student-goals-list">
+                      {goalsPageSummary.futureGoals.map((goal) => {
+                        const goalDate = dateFromKey(goal.target_date);
+                        const days = Math.ceil(
+                          (goalDate - new Date().setHours(0, 0, 0, 0))
+                          / 86400000,
+                        );
+
+                        return (
+                          <article key={goal.id}>
+                            <time>
+                              <strong>
+                                {String(goalDate.getDate()).padStart(2, "0")}
+                              </strong>
+                              <span>
+                                {new Intl.DateTimeFormat("pt-BR", {
+                                  month: "short",
+                                }).format(goalDate)}
+                              </span>
+                            </time>
+
+                            <div>
+                              <div className="student-goal-name-row">
+                                <strong>{goal.name}</strong>
+                                <span>{goal.priority}</span>
+                              </div>
+                              <small>
+                                {Number(goal.distance).toLocaleString(
+                                  "pt-BR",
+                                  { maximumFractionDigits: 2 },
+                                )} km · faltam {Math.max(0, days)} dias
+                              </small>
+                            </div>
+
+                            <button
+                              type="button"
+                              className="btn-ghost"
+                              onClick={() => removeGoal(goal.id)}
+                            >
+                              Remover
+                            </button>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="muted">
+                      Nenhuma prova futura cadastrada.
+                    </p>
+                  )}
+                </section>
+
+                {goalsPageSummary.pastGoals.length > 0 && (
+                  <section className="student-goals-section">
+                    <header>
+                      <div>
+                        <span>Registro anterior</span>
+                        <h3>Histórico</h3>
+                      </div>
+                    </header>
+
+                    <div className="student-goals-history">
+                      {goalsPageSummary.pastGoals.map((goal) => (
+                        <article key={goal.id}>
+                          <div>
+                            <strong>{goal.name}</strong>
+                            <small>
+                              {Number(goal.distance).toLocaleString(
+                                "pt-BR",
+                                { maximumFractionDigits: 2 },
+                              )} km · {
+                                new Intl.DateTimeFormat("pt-BR").format(
+                                  dateFromKey(goal.target_date),
+                                )
+                              }
+                            </small>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            onClick={() => removeGoal(goal.id)}
+                          >
+                            Remover
+                          </button>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              <aside className="student-goal-form-card">
+                <div>
+                  <span>Novo compromisso</span>
+                  <h3>Adicionar meta ou prova</h3>
+                  <p>
+                    O cadastro é responsabilidade do atleta e pode
+                    ser atualizado conforme o calendário esportivo.
+                  </p>
+                </div>
+
+                <form className="goal-form" onSubmit={saveGoal}>
+                  <label>
+                    Nome
+                    <input
+                      required
+                      value={goalForm.name}
+                      onChange={(event) =>
+                        setGoalForm((current) => ({
+                          ...current,
+                          name: event.target.value,
+                        }))
+                      }
+                      placeholder="Ex.: Maratona de Vitória"
+                    />
+                  </label>
+
+                  <label>
+                    Distância
+                    <input
+                      required
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={goalForm.distance}
+                      onChange={(event) =>
+                        setGoalForm((current) => ({
+                          ...current,
+                          distance: event.target.value,
+                        }))
+                      }
+                      placeholder="Distância em km"
+                    />
+                  </label>
+
+                  <label>
+                    Data
+                    <input
+                      required
+                      type="date"
+                      value={goalForm.target_date}
+                      onChange={(event) =>
+                        setGoalForm((current) => ({
+                          ...current,
+                          target_date: event.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Prioridade
+                    <select
+                      value={goalForm.priority}
+                      onChange={(event) =>
+                        setGoalForm((current) => ({
+                          ...current,
+                          priority: event.target.value,
+                        }))
+                      }
+                    >
+                      <option>Principal</option>
+                      <option>Secundária</option>
+                    </select>
+                  </label>
+
+                  <button
+                    className="btn-primary"
+                    disabled={savingGoal}
+                  >
+                    {savingGoal ? "Salvando..." : "Adicionar"}
+                  </button>
+                </form>
+              </aside>
+            </section>
           </section>
         )}
 

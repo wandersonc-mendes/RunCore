@@ -3715,3 +3715,313 @@ button {
     grid-column: auto;
   }
 }
+
+
+/* RUNCORE STUDENT GOALS PAGE */
+.student-goals-page {
+  display: grid;
+  gap: 20px;
+}
+
+.student-goals-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.student-goals-heading h2 {
+  color: var(--ink);
+  margin: 4px 0;
+}
+
+.student-goals-heading .muted {
+  line-height: 1.5;
+  max-width: 700px;
+}
+
+.student-goals-total {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 13px;
+}
+
+.student-main-goal-card {
+  align-items: center;
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--accent) 88%, #0d4d3d 12%),
+      color-mix(in srgb, var(--accent) 68%, #123d34 32%)
+    );
+  border-radius: 18px;
+  color: #fff;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.student-main-goal-card span,
+.student-main-goal-card p {
+  color: rgb(255 255 255 / 78%);
+}
+
+.student-main-goal-card h3 {
+  color: #fff;
+  font-size: 24px;
+  margin: 5px 0;
+}
+
+.student-main-goal-card p {
+  margin: 0;
+}
+
+.student-main-goal-countdown {
+  align-items: center;
+  background: rgb(255 255 255 / 12%);
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 15px;
+  display: grid;
+  min-width: 150px;
+  padding: 16px;
+  text-align: center;
+}
+
+.student-main-goal-countdown strong {
+  color: #fff;
+  font-size: 32px;
+}
+
+.student-goals-empty-main,
+.student-goals-section,
+.student-goal-form-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+}
+
+.student-goals-empty-main {
+  padding: 24px;
+}
+
+.student-goals-empty-main h3,
+.student-goals-empty-main p {
+  margin: 0;
+}
+
+.student-goals-empty-main p {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.student-goals-content {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, .6fr);
+}
+
+.student-goals-list-column {
+  display: grid;
+  gap: 18px;
+}
+
+.student-goals-section {
+  overflow: hidden;
+}
+
+.student-goals-section > header {
+  background: color-mix(
+    in srgb,
+    var(--surface) 90%,
+    var(--accent) 10%
+  );
+  border-bottom: 1px solid var(--line);
+  padding: 16px 18px;
+}
+
+.student-goals-section > header span,
+.student-goal-form-card > div > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-goals-section h3,
+.student-goal-form-card h3 {
+  margin: 4px 0 0;
+}
+
+.student-goals-list,
+.student-goals-history {
+  display: grid;
+}
+
+.student-goals-list article {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+  padding: 15px 18px;
+}
+
+.student-goals-list article:last-child,
+.student-goals-history article:last-child {
+  border-bottom: 0;
+}
+
+.student-goals-list time {
+  align-items: center;
+  background: color-mix(
+    in srgb,
+    var(--surface) 84%,
+    var(--accent) 16%
+  );
+  border-radius: 12px;
+  display: grid;
+  justify-items: center;
+  padding: 9px;
+}
+
+.student-goals-list time strong {
+  color: var(--ink);
+  font-size: 19px;
+}
+
+.student-goals-list time span {
+  color: var(--accent-dark);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.student-goal-name-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.student-goal-name-row > span {
+  background: color-mix(
+    in srgb,
+    var(--surface) 78%,
+    var(--accent) 22%
+  );
+  border-radius: 999px;
+  color: var(--accent-dark);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 7px;
+  text-transform: uppercase;
+}
+
+.student-goals-list small,
+.student-goals-history small,
+.student-goal-form-card p {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.student-goals-history article {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 15px 18px;
+}
+
+.student-goals-history article > div {
+  display: grid;
+  gap: 4px;
+}
+
+.student-goal-form-card {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  position: sticky;
+  top: 18px;
+}
+
+.student-goal-form-card p {
+  margin: 6px 0 0;
+}
+
+.student-goal-form-card .goal-form {
+  display: grid;
+  gap: 13px;
+}
+
+.student-goal-form-card .goal-form label {
+  color: var(--ink);
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+.student-goal-form-card .goal-form input,
+.student-goal-form-card .goal-form select {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  min-width: 0;
+  padding: 11px 12px;
+  width: 100%;
+}
+
+:root[data-theme="dark"] .student-goals-empty-main,
+:root[data-theme="dark"] .student-goals-section,
+:root[data-theme="dark"] .student-goal-form-card {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+@media (max-width: 940px) {
+  .student-goals-content {
+    grid-template-columns: 1fr;
+  }
+
+  .student-goal-form-card {
+    position: static;
+  }
+}
+
+@media (max-width: 680px) {
+  .student-goals-heading,
+  .student-main-goal-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .student-goals-total {
+    align-self: flex-start;
+  }
+
+  .student-main-goal-countdown {
+    min-width: 0;
+  }
+
+  .student-goals-list article {
+    align-items: start;
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .student-goals-list article > button {
+    grid-column: 1 / -1;
+  }
+
+  .student-goals-history article {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

@@ -29,16 +29,32 @@ activities = ActivityRepository()
 feedbacks = ActivityFeedbackRepository()
 access = AccessRepository()
 
+DEFAULT_STRAVA_REDIRECT_URI = (
+    "https://api.runcoreapp.com.br"
+    "/api/integrations/strava/callback"
+)
+
+
+def strava_redirect_uri():
+    return (
+        os.getenv("STRAVA_REDIRECT_URI")
+        or DEFAULT_STRAVA_REDIRECT_URI
+    )
+
 
 def strava_configured():
-    return bool(os.getenv("STRAVA_CLIENT_ID") and os.getenv("STRAVA_CLIENT_SECRET") and os.getenv("STRAVA_REDIRECT_URI"))
+    return bool(
+        os.getenv("STRAVA_CLIENT_ID")
+        and os.getenv("STRAVA_CLIENT_SECRET")
+        and strava_redirect_uri()
+    )
 
 
 def strava_config_status():
     return {
         "client_id": bool(os.getenv("STRAVA_CLIENT_ID")),
         "client_secret": bool(os.getenv("STRAVA_CLIENT_SECRET")),
-        "redirect_uri": bool(os.getenv("STRAVA_REDIRECT_URI")),
+        "redirect_uri": bool(strava_redirect_uri()),
     }
 
 
@@ -81,7 +97,14 @@ def connect_strava(user=Depends(current_user)):
     if not strava_configured():
         raise HTTPException(status_code=503, detail="A integração Strava ainda não foi configurada pelo administrador.")
     state = AuthService.create_token(user.id)
-    query = urlencode({"client_id": os.environ["STRAVA_CLIENT_ID"], "redirect_uri": os.environ["STRAVA_REDIRECT_URI"], "response_type": "code", "approval_prompt": "auto", "scope": "activity:read_all", "state": state})
+    query = urlencode({
+        "client_id": os.environ["STRAVA_CLIENT_ID"],
+        "redirect_uri": strava_redirect_uri(),
+        "response_type": "code",
+        "approval_prompt": "auto",
+        "scope": "activity:read_all",
+        "state": state,
+    })
     return {"authorization_url": f"https://www.strava.com/oauth/authorize?{query}"}
 
 
@@ -106,6 +129,7 @@ def strava_callback(
         "client_secret": os.environ["STRAVA_CLIENT_SECRET"],
         "code": code,
         "grant_type": "authorization_code",
+        "redirect_uri": strava_redirect_uri(),
     }).encode()
 
     try:

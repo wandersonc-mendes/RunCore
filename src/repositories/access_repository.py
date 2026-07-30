@@ -22,10 +22,33 @@ class AccessRepository:
         session.close()
 
     def athlete_for_student(self, user_id):
-        session = SessionLocal()
-        profile = session.get(AthleteProfile, user_id)
-        session.close()
-        return profile.athlete_id if profile else None
+        with SessionLocal() as session:
+            profile = session.get(
+                AthleteProfile,
+                user_id,
+            )
+
+            if profile is not None:
+                return profile.athlete_id
+
+            athlete_id = session.scalar(
+                select(Athlete.id).where(
+                    Athlete.user_id == user_id,
+                )
+            )
+
+            if athlete_id is None:
+                return None
+
+            session.add(
+                AthleteProfile(
+                    user_id=user_id,
+                    athlete_id=athlete_id,
+                )
+            )
+            session.commit()
+
+            return athlete_id
 
     def coach_has_athlete(self, coach_id, athlete_id):
         session = SessionLocal()

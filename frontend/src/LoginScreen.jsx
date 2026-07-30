@@ -79,10 +79,6 @@ export default function LoginScreen({
     urlResetToken,
   );
 
-  const [loginRole, setLoginRole] = useState(
-    "coach",
-  );
-
   const [error, setError] = useState(
     "",
   );
@@ -180,7 +176,6 @@ export default function LoginScreen({
     const session = await login({
       email: form.email,
       password: form.password,
-      role: loginRole,
     });
 
     saveSession(
@@ -370,15 +365,7 @@ export default function LoginScreen({
       return "Definir nova senha";
     }
 
-    return (
-      `Entrar como ${
-        loginRole === "coach"
-          ? "treinador"
-          : loginRole === "admin"
-            ? "administrativo"
-            : "atleta"
-      }`
-    );
+    return "";
   }
 
 
@@ -454,74 +441,11 @@ export default function LoginScreen({
           RC
         </span>
 
-        <h1>
-          RunCore
-        </h1>
-
-        <p>
-          {screenSubtitle()}
-        </p>
-
-        {
-          mode === "login"
-          && (
-            <div className="login-role-choice">
-              <button
-                type="button"
-                className={
-                  loginRole === "coach"
-                    ? "active"
-                    : ""
-                }
-                onClick={() => {
-                  setLoginRole(
-                    "coach",
-                  );
-
-                  clearMessages();
-                }}
-              >
-                Sou treinador
-              </button>
-
-              <button
-                type="button"
-                className={
-                  loginRole === "student"
-                    ? "active"
-                    : ""
-                }
-                onClick={() => {
-                  setLoginRole(
-                    "student",
-                  );
-
-                  clearMessages();
-                }}
-              >
-                Sou atleta
-              </button>
-
-              <button
-                type="button"
-                className={
-                  loginRole === "admin"
-                    ? "active"
-                    : ""
-                }
-                onClick={() => {
-                  setLoginRole(
-                    "admin",
-                  );
-
-                  clearMessages();
-                }}
-              >
-                Administrativo
-              </button>
-            </div>
-          )
-        }
+        {mode !== "login" && (
+          <p>
+            {screenSubtitle()}
+          </p>
+        )}
 
         {
           recoveringPassword
@@ -722,38 +646,18 @@ export default function LoginScreen({
 
         {
           !inviteToken
+          && mode !== "login"
           && !recoveringPassword
           && !resettingPassword
           && (
             <div className="auth-actions">
-              {
-                mode === "login"
-                  ? null
-                  : (
-                    <button
-                      type="button"
-                      className="auth-switch"
-                      onClick={showLogin}
-                    >
-                      Já tenho uma conta
-                    </button>
-                  )
-              }
-
-              <small>
-                {
-                  loginRole === "student"
-                    ? (
-                      "Ainda não possui acesso? "
-                      + "Solicite o link de convite ao seu treinador."
-                    )
-                    : (
-                      loginRole === "admin"
-                        ? "Contas administrativas são criadas por outro administrador."
-                        : null
-                    )
-                }
-              </small>
+              <button
+                type="button"
+                className="auth-switch"
+                onClick={showLogin}
+              >
+                Já tenho uma conta
+              </button>
             </div>
           )
         }

@@ -4696,3 +4696,38 @@ button {
     position: static;
   }
 }
+
+
+/* RUNCORE EMAIL-ONLY LOGIN 56D */
+.login-card > .brand-mark {
+  align-items: center;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 30px;
+  text-align: center;
+  width: 100%;
+}
+
+.login-card > .brand-mark img {
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  max-width: 190px;
+  width: 46%;
+}
+
+.login-card > form {
+  margin-top: 0;
+}
+
+@media (max-width: 620px) {
+  .login-card > .brand-mark {
+    margin-bottom: 26px;
+  }
+
+  .login-card > .brand-mark img {
+    max-width: 160px;
+    width: 44%;
+  }
+}

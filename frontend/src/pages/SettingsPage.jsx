@@ -1,4 +1,25 @@
+import { useState } from "react";
 import "./SettingsPage.css";
+
+
+const DEFAULT_NOTIFICATIONS = {
+  planChanges: true,
+  trainingReminders: true,
+  feedbackUpdates: true,
+};
+
+
+function readNotificationPreferences(storageKey) {
+  try {
+    const saved = window.localStorage.getItem(storageKey);
+
+    return saved
+      ? { ...DEFAULT_NOTIFICATIONS, ...JSON.parse(saved) }
+      : DEFAULT_NOTIFICATIONS;
+  } catch {
+    return DEFAULT_NOTIFICATIONS;
+  }
+}
 
 
 function SettingsItem({
@@ -22,8 +43,42 @@ function SettingsItem({
 }
 
 
+function NotificationToggle({
+  title,
+  description,
+  checked,
+  onChange,
+}) {
+  return (
+    <label className="settings-notification-toggle">
+      <div>
+        <strong>{title}</strong>
+        <p>{description}</p>
+      </div>
+
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+
+      <span className="settings-switch" aria-hidden="true">
+        <span />
+      </span>
+    </label>
+  );
+}
+
+
 export default function SettingsPage({ user }) {
   const isStudent = user?.role === "student";
+  const accountKey = user?.id || user?.email || "anonymous";
+  const notificationStorageKey =
+    `runcore.notification-preferences.${accountKey}`;
+
+  const [notifications, setNotifications] = useState(
+    () => readNotificationPreferences(notificationStorageKey),
+  );
 
   const panelLabel = isStudent
     ? "Área do atleta"
@@ -32,6 +87,22 @@ export default function SettingsPage({ user }) {
       : user?.role === "admin"
         ? "Painel administrativo"
         : "Painel do treinador";
+
+  function changeNotification(field, value) {
+    setNotifications((current) => {
+      const next = {
+        ...current,
+        [field]: value,
+      };
+
+      window.localStorage.setItem(
+        notificationStorageKey,
+        JSON.stringify(next),
+      );
+
+      return next;
+    });
+  }
 
   return (
     <section className="settings-page">
@@ -79,35 +150,54 @@ export default function SettingsPage({ user }) {
               <span>Comunicação</span>
               <h3>Notificações</h3>
               <p>
-                Controle como o RunCore informa alterações relevantes.
+                Defina quais avisos devem permanecer ativos neste
+                navegador.
               </p>
             </div>
           </header>
 
-          <div className="settings-list">
-            <SettingsItem
+          <div className="settings-notification-list">
+            <NotificationToggle
               title="Alterações na planilha"
               description={
                 isStudent
                   ? "Avisos quando o treinador alterar sessões ou orientações."
                   : "Avisos sobre mudanças importantes nos planejamentos."
               }
+              checked={notifications.planChanges}
+              onChange={(value) =>
+                changeNotification("planChanges", value)
+              }
             />
 
-            <SettingsItem
+            <NotificationToggle
               title="Lembretes de treino"
               description="Lembretes de sessões próximas e compromissos da agenda."
+              checked={notifications.trainingReminders}
+              onChange={(value) =>
+                changeNotification("trainingReminders", value)
+              }
             />
 
-            <SettingsItem
+            <NotificationToggle
               title="Feedback e acompanhamento"
               description={
                 isStudent
                   ? "Confirmações sobre relatos e retornos do treinador."
                   : "Avisos de novos feedbacks enviados pelos atletas."
               }
+              checked={notifications.feedbackUpdates}
+              onChange={(value) =>
+                changeNotification("feedbackUpdates", value)
+              }
             />
           </div>
+
+          <p className="settings-browser-note">
+            As preferências são salvas somente neste navegador.
+            O envio efetivo de notificações será conectado ao backend
+            em uma etapa posterior.
+          </p>
         </section>
 
         <section className="settings-card">

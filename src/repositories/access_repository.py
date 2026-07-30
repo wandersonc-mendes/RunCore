@@ -31,24 +31,11 @@ class AccessRepository:
             if profile is not None:
                 return profile.athlete_id
 
-            athlete_id = session.scalar(
+            return session.scalar(
                 select(Athlete.id).where(
                     Athlete.user_id == user_id,
                 )
             )
-
-            if athlete_id is None:
-                return None
-
-            session.add(
-                AthleteProfile(
-                    user_id=user_id,
-                    athlete_id=athlete_id,
-                )
-            )
-            session.commit()
-
-            return athlete_id
 
     def coach_has_athlete(self, coach_id, athlete_id):
         session = SessionLocal()

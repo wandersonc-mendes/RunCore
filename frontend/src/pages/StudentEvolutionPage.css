@@ -678,3 +678,141 @@
     justify-self: start;
   }
 }
+
+
+/* RUNCORE PERFORMANCE PREDICTIONS 60 */
+.student-performance-predictions {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      var(--shell-accent-soft),
+      transparent 58%
+    ),
+    var(--shell-surface-soft);
+}
+
+.student-performance-predictions > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.student-performance-predictions h4,
+.student-performance-predictions p {
+  margin: 0;
+}
+
+.student-performance-predictions h4 {
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.student-performance-predictions > header > div:first-child > span {
+  color: var(--shell-accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.student-performance-predictions > header p {
+  margin-top: 6px;
+  color: var(--shell-muted);
+  line-height: 1.45;
+}
+
+.student-performance-source {
+  display: grid;
+  gap: 3px;
+  min-width: 220px;
+  padding: 12px 14px;
+  border: 1px solid var(--shell-border);
+  border-radius: 11px;
+  background: var(--shell-surface);
+}
+
+.student-performance-source small,
+.student-performance-source span {
+  color: var(--shell-muted);
+}
+
+.student-performance-source small {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.student-performance-source strong {
+  color: var(--shell-text);
+  font-size: 14px;
+}
+
+.student-performance-source span {
+  font-size: 11px;
+}
+
+.student-performance-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.student-performance-grid article {
+  display: grid;
+  gap: 5px;
+  padding: 15px;
+  border: 1px solid var(--shell-border);
+  border-radius: 12px;
+  background: var(--shell-surface);
+}
+
+.student-performance-grid article > span {
+  color: var(--shell-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.student-performance-grid strong {
+  color: var(--shell-text);
+  font-size: 21px;
+}
+
+.student-performance-grid small {
+  color: var(--shell-muted);
+  line-height: 1.4;
+}
+
+.student-performance-note {
+  padding-top: 2px;
+  color: var(--shell-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .student-performance-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .student-performance-predictions > header {
+    flex-direction: column;
+  }
+
+  .student-performance-source {
+    width: 100%;
+  }
+
+  .student-performance-grid {
+    grid-template-columns: 1fr;
+  }
+}

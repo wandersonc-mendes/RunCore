@@ -34,6 +34,75 @@ function formatPace(seconds, distanceMeters) {
 }
 
 
+const PERFORMANCE_TARGETS = [
+  { label: "5 km", distance: 5000 },
+  { label: "10 km", distance: 10000 },
+  { label: "Meia maratona", distance: 21097.5 },
+  { label: "Maratona", distance: 42195 },
+];
+
+
+function predictedTime(
+  sourceTime,
+  sourceDistance,
+  targetDistance,
+) {
+  const time = Number(sourceTime || 0);
+  const distance = Number(sourceDistance || 0);
+
+  if (
+    time <= 0
+    || distance <= 0
+    || Number(targetDistance || 0) <= 0
+  ) {
+    return 0;
+  }
+
+  return time * (
+    Number(targetDistance) / distance
+  ) ** 1.06;
+}
+
+
+function validEvaluation(evaluation) {
+  return (
+    Number(evaluation?.time_seconds || 0) > 0
+    && Number(evaluation?.distance || 0) > 0
+    && evaluationDate(evaluation?.test_date)
+  );
+}
+
+
+function predictionSource(evaluations) {
+  const valid = evaluations.filter(validEvaluation);
+
+  if (!valid.length) return null;
+
+  const today = new Date();
+  const recentLimit = new Date(today);
+  recentLimit.setDate(recentLimit.getDate() - 180);
+
+  const recent = valid.filter(
+    (item) => evaluationDate(item.test_date) >= recentLimit,
+  );
+
+  const candidates = recent.length ? recent : valid;
+
+  return [...candidates].sort((a, b) => {
+    const vdotA = Number(a.vdot || 0);
+    const vdotB = Number(b.vdot || 0);
+
+    if (vdotA !== vdotB) {
+      return vdotB - vdotA;
+    }
+
+    const dateA = evaluationDate(a.test_date)?.getTime() || 0;
+    const dateB = evaluationDate(b.test_date)?.getTime() || 0;
+    return dateB - dateA;
+  })[0];
+}
+
+
 function evaluationDate(value) {
   if (!value) return null;
 
@@ -261,6 +330,29 @@ export default function StudentTestEvolution() {
     ? Number(previous.time_seconds) - Number(latest.time_seconds)
     : 0;
 
+  const performanceSource = useMemo(
+    () => predictionSource(evaluations),
+    [evaluations],
+  );
+
+  const performancePredictions = useMemo(() => {
+    if (!performanceSource) return [];
+
+    return PERFORMANCE_TARGETS.map((target) => {
+      const seconds = predictedTime(
+        performanceSource.time_seconds,
+        performanceSource.distance,
+        target.distance,
+      );
+
+      return {
+        ...target,
+        seconds,
+        pace: seconds / (target.distance / 1000),
+      };
+    });
+  }, [performanceSource]);
+
   return (
     <section className="student-test-evolution">
       <header>
@@ -376,6 +468,65 @@ export default function StudentTestEvolution() {
           </div>
 
           <TestChart items={selected} />
+
+          {performanceSource && (
+            <section className="student-performance-predictions">
+              <header>
+                <div>
+                  <span>PREVISÕES DE DESEMPENHO</span>
+                  <h4>Tempos estimados por distância</h4>
+                  <p>
+                    Projeções indicativas baseadas no teste de melhor
+                    desempenho dentro da janela recente.
+                  </p>
+                </div>
+
+                <div className="student-performance-source">
+                  <small>Teste de referência</small>
+                  <strong>
+                    {performanceSource.test_type}
+                    {" · "}
+                    {formatDuration(
+                      performanceSource.time_seconds,
+                    )}
+                  </strong>
+                  <span>
+                    {formatDate(performanceSource.test_date)}
+                    {performanceSource.vdot == null
+                      ? ""
+                      : ` · VDOT ${Number(
+                        performanceSource.vdot,
+                      ).toFixed(1)}`}
+                  </span>
+                </div>
+              </header>
+
+              <div className="student-performance-grid">
+                {performancePredictions.map((prediction) => (
+                  <article key={prediction.label}>
+                    <span>{prediction.label}</span>
+                    <strong>
+                      {formatDuration(prediction.seconds)}
+                    </strong>
+                    <small>
+                      Ritmo estimado:{" "}
+                      {formatPace(
+                        prediction.seconds,
+                        prediction.distance,
+                      )}
+                    </small>
+                  </article>
+                ))}
+              </div>
+
+              <p className="student-performance-note">
+                Estimativas não representam garantia de resultado.
+                Preparação específica, volume, terreno, clima,
+                estratégia e resistência em distâncias longas podem
+                alterar o desempenho real.
+              </p>
+            </section>
+          )}
 
           <div className="student-test-history">
             {selected.slice().reverse().map((item) => (

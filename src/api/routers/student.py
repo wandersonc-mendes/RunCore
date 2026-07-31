@@ -32,16 +32,23 @@ def get_student_training(user=Depends(current_user)):
     if goal is None:
         return None
 
+    training = trainings.get_active_by_athlete(
+        athlete_id,
+    )
+
+    if training is None:
+        return None
+
     evaluation = evaluations.last_evaluation(
         athlete_id,
     )
 
-    if evaluation is None:
+    if (
+        evaluation is None
+        and training.methodology
+        != "Observação inicial"
+    ):
         return None
-
-    training = trainings.get_active_by_athlete(
-        athlete_id,
-    )
 
     return (
         serialize_training(training)

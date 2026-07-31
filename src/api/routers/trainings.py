@@ -258,7 +258,10 @@ def create_training(athlete_id: int, payload: TrainingCreate):
         raise HTTPException(status_code=409, detail="Este atleta já possui um planejamento ativo.")
     if payload.target_date and payload.target_date <= payload.start_date:
         raise HTTPException(status_code=422, detail="A data da prova precisa ser posterior ao início do ciclo.")
-    evaluation = get_latest_evaluation(athlete_id)
+    evaluation = evaluation_repository.last_evaluation(
+        athlete_id,
+    )
+
     goal = get_primary_goal(
         athlete_id,
         payload.start_date,
@@ -283,11 +286,21 @@ def create_training(athlete_id: int, payload: TrainingCreate):
     target_date = goal_data["target_date"]
     total_weeks = goal_data["total_weeks"]
 
+    has_evaluation = evaluation is not None
+
     training = persistence_service.create_training(
         athlete_id=athlete_id,
-        vdot=evaluation.vdot,
+        vdot=(
+            evaluation.vdot
+            if has_evaluation
+            else None
+        ),
         name=payload.name,
-        methodology="Jack Daniels",
+        methodology=(
+            "Jack Daniels"
+            if has_evaluation
+            else "Observação inicial"
+        ),
         objective=objective,
         target_distance=target_distance,
         start_date=payload.start_date,

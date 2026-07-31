@@ -27,7 +27,7 @@ class TrainingPersistenceService:
     def create_training(
         self,
         athlete_id: int,
-        vdot: float,
+        vdot: float | None,
         name: str,
         methodology: str,
         objective: str,
@@ -52,13 +52,14 @@ class TrainingPersistenceService:
             training
         )
 
-        self._generate_sessions(
-            training.id,
-            vdot,
-            total_weeks,
-            ipt_profile,
-            target_distance=target_distance,
-        )
+        if vdot is not None:
+            self._generate_sessions(
+                training.id,
+                vdot,
+                total_weeks,
+                ipt_profile,
+                target_distance=target_distance,
+            )
 
         return training
 

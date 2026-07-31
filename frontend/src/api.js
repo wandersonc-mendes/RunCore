@@ -267,6 +267,7 @@ export function syncStravaActivities() {
     "/api/integrations/strava/sync",
     {
       method: "POST",
+      timeout: 60000,
     },
   );
 }

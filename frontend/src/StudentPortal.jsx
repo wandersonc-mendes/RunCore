@@ -293,29 +293,61 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const [selectedSession, setSelectedSession] = useState(null);
 
   useEffect(() => {
+    if (syncing) {
+      return undefined;
+    }
+
     function loadStatus() {
       getStravaStatus()
         .then((status) => {
           setStrava(status);
-          if (status.connected) listStravaActivities().then(setActivities).catch(() => {});
+
+          if (status.connected) {
+            listStravaActivities()
+              .then(setActivities)
+              .catch(() => {});
+          }
         })
         .catch((err) => setError(err.message));
-      getStudentTraining().then(setTraining).catch(() => {});
-      listGoals().then(setGoals).catch(() => {});
+
+      getStudentTraining()
+        .then(setTraining)
+        .catch(() => {});
+
+      listGoals()
+        .then(setGoals)
+        .catch(() => {});
     }
 
     loadStatus();
-    const interval = window.setInterval(loadStatus, 10000);
-    window.addEventListener("focus", loadStatus);
+
+    const interval = window.setInterval(
+      loadStatus,
+      10000,
+    );
+
+    window.addEventListener(
+      "focus",
+      loadStatus,
+    );
+
     return () => {
       window.clearInterval(interval);
-      window.removeEventListener("focus", loadStatus);
+      window.removeEventListener(
+        "focus",
+        loadStatus,
+      );
     };
-  }, []);
+  }, [syncing]);
 
   async function sync() {
+    if (syncing) {
+      return;
+    }
+
     setSyncing(true);
     setError("");
+
     try {
       const result = await syncStravaActivities();
       setActivities(result.activities);

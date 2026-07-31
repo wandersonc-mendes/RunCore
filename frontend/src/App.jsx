@@ -1623,10 +1623,23 @@ export default function App() {
     }
 
     if (!studentProfileStatus.complete) {
+      if (
+        location.pathname
+        !== studentPaths.completeProfile
+      ) {
+        return (
+          <Navigate
+            to={studentPaths.completeProfile}
+            replace
+          />
+        );
+      }
+
       return (
         <AppShell
           user={currentUser}
           onLogout={studentLogout}
+          onboarding
         >
           <ProfilePanel
             onboarding

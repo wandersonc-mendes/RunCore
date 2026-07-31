@@ -1,7 +1,12 @@
 import { NavLink } from "react-router-dom";
 import { adminMenu, coachMenu, masterMenu, studentMenu } from "./menuConfig";
 
-export default function Sidebar({ role, mobileOpen, onClose }) {
+export default function Sidebar({
+  role,
+  mobileOpen,
+  onClose,
+  onboarding = false,
+}) {
   const menu = role === "student"
     ? studentMenu
     : role === "master"
@@ -19,6 +24,7 @@ export default function Sidebar({ role, mobileOpen, onClose }) {
         <div className="app-sidebar-brand">
           <img src="/logo-horizontal.png?v=2" alt="RunCore" />
         </div>
+        {!onboarding && (
         <nav className="app-sidebar-nav" aria-label="Menu principal">
           {menu.map((item) => (
             <NavLink
@@ -32,6 +38,7 @@ export default function Sidebar({ role, mobileOpen, onClose }) {
             </NavLink>
           ))}
         </nav>
+        )}
       </aside>
     </>
   );

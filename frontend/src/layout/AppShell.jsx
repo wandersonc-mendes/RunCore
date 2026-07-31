@@ -16,6 +16,7 @@ const pageTitles = {
   "/treinador/avaliacoes": "Avaliações",
   "/treinador/relatorios": "Relatórios",
   "/treinador/configuracoes": "Configurações",
+  "/atleta/completar-cadastro": "Complete seu cadastro",
   "/atleta/dashboard": "Dashboard",
   "/atleta/minha-planilha": "Minha planilha",
   "/atleta/metas-e-provas": "Metas e provas",
@@ -36,13 +37,23 @@ function titleFor(pathname) {
   return "RunCore";
 }
 
-export default function AppShell({ user, onLogout, children }) {
+export default function AppShell({
+  user,
+  onLogout,
+  children,
+  onboarding = false,
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   return (
     <div className="app-shell">
-      <Sidebar role={user?.role} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <Sidebar
+        role={user?.role}
+        mobileOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        onboarding={onboarding}
+      />
       <div className="app-shell-main">
         <Topbar user={user} title={titleFor(location.pathname)} onMenu={() => setMobileMenuOpen(true)} onLogout={onLogout} />
         <main className="app-shell-content">{children || <Outlet />}</main>

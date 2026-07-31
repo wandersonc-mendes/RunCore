@@ -25,6 +25,7 @@ export const coachPaths = {
 };
 
 export const studentPaths = {
+  completeProfile: "/atleta/completar-cadastro",
   dashboard: "/atleta/dashboard",
   trainingPlan: "/atleta/minha-planilha",
   goals: "/atleta/metas-e-provas",

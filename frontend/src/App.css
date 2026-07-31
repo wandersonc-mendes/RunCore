@@ -4962,3 +4962,146 @@ button {
 :root[data-theme="dark"] .load-highlight small {
   color: currentColor;
 }
+
+/* RUNCORE MOBILE ACTIVITIES 68 */
+@media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .routed-student-page[data-view="activities"],
+  .routed-student-page[data-view="activities"] .student-content {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .routed-student-page[data-view="activities"] .student-content {
+    gap: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .routed-student-page[data-view="activities"] .connection-card,
+  .routed-student-page[data-view="activities"] .student-stats,
+  .routed-student-page[data-view="activities"] .activity-card,
+  .routed-student-page[data-view="activities"] .activity-list,
+  .routed-student-page[data-view="activities"] .activity-row {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .routed-student-page[data-view="activities"] .connection-card {
+    padding: 18px;
+  }
+
+  .routed-student-page[data-view="activities"] .connection-card > div {
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .routed-student-page[data-view="activities"] .connection-card > div > div {
+    min-width: 0;
+  }
+
+  .routed-student-page[data-view="activities"] .connection-card p {
+    overflow-wrap: anywhere;
+  }
+
+  .routed-student-page[data-view="activities"] .student-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .routed-student-page[data-view="activities"] .student-stats article {
+    min-width: 0;
+    padding: 15px;
+  }
+
+  .routed-student-page[data-view="activities"] .student-stats strong {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-card-heading {
+    padding: 16px;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .routed-student-page[data-view="activities"] .activity-row {
+    display: block;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-toggle {
+    grid-template-columns: minmax(0, 1fr) auto;
+    max-width: 100%;
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-toggle > div {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-toggle > div > strong,
+  .routed-student-page[data-view="activities"] .activity-toggle > div > span {
+    max-width: 100%;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-details {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    padding: 14px;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-details > *,
+  .routed-student-page[data-view="activities"] .training-feedback,
+  .routed-student-page[data-view="activities"] .adherence-card,
+  .routed-student-page[data-view="activities"] .activity-details .laps {
+    grid-column: 1;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-details .lap-main {
+    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+  }
+
+  .routed-student-page[data-view="activities"] .activity-details .lap-main strong,
+  .routed-student-page[data-view="activities"] .activity-details .lap-main span {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .routed-student-page[data-view="activities"] .adherence-block {
+    align-items: flex-start;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .routed-student-page[data-view="activities"] .adherence-block em {
+    text-align: left;
+  }
+}
+
+@media (max-width: 390px) {
+  .routed-student-page[data-view="activities"] .student-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

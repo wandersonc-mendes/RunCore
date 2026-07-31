@@ -4,12 +4,14 @@ from api.dependencies import current_user
 from api.routers.trainings import serialize_training
 from repositories.access_repository import AccessRepository
 from repositories.evaluation_repository import EvaluationRepository
+from repositories.goal_repository import GoalRepository
 from repositories.training_repository import TrainingRepository
 
 
 router = APIRouter(prefix="/student", tags=["student"])
 access = AccessRepository()
 evaluations = EvaluationRepository()
+goals = GoalRepository()
 trainings = TrainingRepository()
 
 
@@ -21,6 +23,13 @@ def get_student_training(user=Depends(current_user)):
     athlete_id = access.athlete_for_student(user.id)
 
     if athlete_id is None:
+        return None
+
+    goal = goals.get_active_primary_for_user(
+        user.id,
+    )
+
+    if goal is None:
         return None
 
     evaluation = evaluations.last_evaluation(

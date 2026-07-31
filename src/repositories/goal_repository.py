@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy import select
 
 from database.database import SessionLocal
@@ -10,6 +12,49 @@ class GoalRepository:
         items = session.scalars(select(Goal).where(Goal.user_id == user_id).order_by(Goal.target_date)).all()
         session.close()
         return items
+
+    def get_active_primary_for_user(
+        self,
+        user_id,
+    ):
+        with SessionLocal() as session:
+            statement = (
+                select(Goal)
+                .where(
+                    Goal.user_id == user_id,
+                    Goal.target_date >= date.today(),
+                    Goal.status == "Em andamento",
+                )
+                .order_by(
+                    Goal.target_date.asc(),
+                )
+            )
+
+            items = list(
+                session.scalars(statement)
+            )
+
+            principal = next(
+                (
+                    item
+                    for item in items
+                    if str(
+                        item.priority or "",
+                    ).strip().lower()
+                    == "principal"
+                ),
+                None,
+            )
+
+            selected = (
+                principal
+                or (items[0] if items else None)
+            )
+
+            if selected is not None:
+                session.expunge(selected)
+
+            return selected
 
     def create(self, goal):
         session = SessionLocal()

@@ -259,27 +259,29 @@ def create_training(athlete_id: int, payload: TrainingCreate):
     if payload.target_date and payload.target_date <= payload.start_date:
         raise HTTPException(status_code=422, detail="A data da prova precisa ser posterior ao início do ciclo.")
     evaluation = get_latest_evaluation(athlete_id)
-    goal = get_primary_goal(athlete_id, payload.start_date)
-    goal_data = goal_training_data(goal, payload.start_date)
+    goal = get_primary_goal(
+        athlete_id,
+        payload.start_date,
+    )
 
-    if goal_data:
-        objective = goal_data['objective']
-        target_distance = goal_data['target_distance']
-        target_date = goal_data['target_date']
-        total_weeks = goal_data['total_weeks']
-    else:
-        weeks_from_date = (
-            weeks_between_dates(
-                payload.start_date,
-                payload.target_date,
-            )
-            if payload.target_date
-            else None
+    if goal is None:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Cadastre uma meta ativa para o atleta "
+                "antes de gerar o planejamento."
+            ),
         )
-        objective = payload.objective
-        target_distance = payload.target_distance
-        target_date = payload.target_date
-        total_weeks = payload.total_weeks or weeks_from_date or 8
+
+    goal_data = goal_training_data(
+        goal,
+        payload.start_date,
+    )
+
+    objective = goal_data["objective"]
+    target_distance = goal_data["target_distance"]
+    target_date = goal_data["target_date"]
+    total_weeks = goal_data["total_weeks"]
 
     training = persistence_service.create_training(
         athlete_id=athlete_id,

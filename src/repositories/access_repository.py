@@ -23,18 +23,24 @@ class AccessRepository:
 
     def athlete_for_student(self, user_id):
         with SessionLocal() as session:
+            athlete_id = session.scalar(
+                select(Athlete.id).where(
+                    Athlete.user_id == user_id,
+                )
+            )
+
+            if athlete_id is not None:
+                return athlete_id
+
             profile = session.get(
                 AthleteProfile,
                 user_id,
             )
 
-            if profile is not None:
-                return profile.athlete_id
-
-            return session.scalar(
-                select(Athlete.id).where(
-                    Athlete.user_id == user_id,
-                )
+            return (
+                profile.athlete_id
+                if profile is not None
+                else None
             )
 
     def coach_has_athlete(self, coach_id, athlete_id):

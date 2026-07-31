@@ -1,11 +1,10 @@
 {
   "name": "RunCore",
   "short_name": "RunCore",
-  "description": "Plataforma de gestão de treinamento esportivo.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#071f1b",
-  "theme_color": "#0c8f7d",
+  "background_color": "#0A1F18",
+  "theme_color": "#0F6F5C",
   "icons": [
     {
       "src": "/icon-192.png",

@@ -631,3 +631,32 @@
     flex: 1;
   }
 }
+
+
+/* RUNCORE COPY FEEDBACK 65 */
+.dashboard-copy-feedback {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.dashboard-copy-feedback small {
+  color: var(--shell-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.dashboard-copy-feedback small.is-error {
+  color: #d96b5f;
+}
+
+@media (max-width: 620px) {
+  .dashboard-copy-feedback {
+    justify-items: stretch;
+  }
+
+  .dashboard-copy-feedback small {
+    text-align: left;
+  }
+}

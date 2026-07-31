@@ -99,6 +99,41 @@ export default function CoachDashboardPage({
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [inviteCopyStatus, setInviteCopyStatus] = useState("");
+
+  async function copyInvitationLink() {
+    setInviteCopyStatus("");
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(inviteLink);
+      } else {
+        const temporaryInput = document.createElement("textarea");
+        temporaryInput.value = inviteLink;
+        temporaryInput.setAttribute("readonly", "");
+        temporaryInput.style.position = "fixed";
+        temporaryInput.style.opacity = "0";
+        document.body.appendChild(temporaryInput);
+        temporaryInput.select();
+
+        const copied = document.execCommand("copy");
+        document.body.removeChild(temporaryInput);
+
+        if (!copied) {
+          throw new Error("Falha ao copiar.");
+        }
+      }
+
+      setInviteCopyStatus("copied");
+
+      window.setTimeout(() => {
+        setInviteCopyStatus("");
+      }, 2500);
+    } catch {
+      setInviteCopyStatus("error");
+    }
+  }
+
 
   useEffect(() => {
     let active = true;
@@ -387,15 +422,29 @@ export default function CoachDashboardPage({
               />
             </div>
 
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() =>
-                navigator.clipboard?.writeText(inviteLink)
-              }
-            >
-              Copiar
-            </button>
+            <div className="dashboard-copy-feedback">
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={copyInvitationLink}
+              >
+                {inviteCopyStatus === "copied"
+                  ? "Link copiado"
+                  : "Copiar"}
+              </button>
+
+              {inviteCopyStatus === "copied" && (
+                <small role="status">
+                  Copiado para a área de transferência.
+                </small>
+              )}
+
+              {inviteCopyStatus === "error" && (
+                <small role="alert" className="is-error">
+                  Não foi possível copiar. Selecione o link manualmente.
+                </small>
+              )}
+            </div>
           </div>
         )}
 

@@ -1,0 +1,165 @@
+=== DIAGNÓSTICO ETAPA 64B ===
+
+ARQUIVO: src\repositories\access_repository.py
+------------------------------------------------------------------------------
+encontrado
+
+ARQUIVO: src\api\routers\integrations.py
+------------------------------------------------------------------------------
+encontrado
+
+ARQUIVO: src\api\main.py
+------------------------------------------------------------------------------
+encontrado
+
+BRANCH ATUAL
+------------------------------------------------------------------------------
+main
+
+GIT STATUS
+------------------------------------------------------------------------------
+?? diagnostico-etapa-64.txt
+?? etapa-64-corrige-strava-e-vinculo-perfil.py
+?? etapa-64b-diagnostico-api-e-deploy.py
+
+ÚLTIMOS COMMITS
+------------------------------------------------------------------------------
+057021f fix: corrige vinculo do atleta e callback do strava
+c6414ef feat: restaura convites com confirmacao de copia
+4a913a2 feat: restaura convites no painel do treinador
+e6d0fb9 fix: corrige acesso e indicadores de evolucao
+86729ea style: reposiciona botao de atividades
+
+PY_COMPILE
+------------------------------------------------------------------------------
+returncode=0
+stdout=
+stderr=
+
+IMPORTAÇÃO DA API
+------------------------------------------------------------------------------
+returncode=1
+stdout=
+stderr=INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 7f9c2d46b1aa -> 6a81c36f42d0, promote primary administrator to master
+INFO  [alembic.runtime.migration] Running upgrade 6a81c36f42d0 -> b421ce718d20, add coach profiles
+INFO  [alembic.runtime.migration] Running upgrade b421ce718d20 -> d3f90c7a4e21, add coach permissions and photo data
+Traceback (most recent call last):
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: near "ALTER": syntax error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "D:\RunCore\src\api\main.py", line 26, in <module>
+    initialize_database()
+  File "D:\RunCore\src\database\bootstrap.py", line 37, in initialize_database
+    command.upgrade(
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\command.py", line 490, in upgrade
+    script.run_env()
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\script\base.py", line 556, in run_env
+    util.load_python_file(self.dir, "env.py")
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\util\pyfiles.py", line 116, in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\util\pyfiles.py", line 136, in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\RunCore\migrations\env.py", line 90, in <module>
+    run_migrations_online()
+  File "D:\RunCore\migrations\env.py", line 84, in run_migrations_online
+    context.run_migrations()
+  File "<string>", line 8, in run_migrations
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\runtime\environment.py", line 969, in run_migrations
+    self.get_context().run_migrations(**kw)
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\runtime\migration.py", line 626, in run_migrations
+    step.migration_fn(**kw)
+  File "D:\RunCore\migrations\versions\d3f90c7a4e21_add_coach_permissions_and_photo.py", line 21, in upgrade
+    op.alter_column(
+  File "<string>", line 8, in alter_column
+  File "<string>", line 3, in alter_column
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\operations\ops.py", line 1974, in alter_column
+    return operations.invoke(alt)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\operations\base.py", line 452, in invoke
+    return fn(self, operation)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\operations\toimpl.py", line 58, in alter_column
+    operations.impl.alter_column(
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\ddl\impl.py", line 341, in alter_column
+    self._exec(
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\alembic\ddl\impl.py", line 256, in _exec
+    return conn.execute(construct, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1421, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\sql\ddl.py", line 188, in _execute_on_connection
+    return connection._execute_ddl(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1532, in _execute_ddl
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 2365, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\notew\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) near "ALTER": syntax error
+[SQL: ALTER TABLE coach_profiles ALTER COLUMN photo_url TYPE TEXT]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+VARIÁVEIS LOCAIS
+------------------------------------------------------------------------------
+STRAVA_CLIENT_ID=não definido localmente
+STRAVA_CLIENT_SECRET=não definido localmente
+STRAVA_REDIRECT_URI=não definido localmente
+FRONTEND_URL=não definido localmente
+DATABASE_URL=não definido localmente
+
+TESTE HTTP: https://api.runcoreapp.com.br/
+------------------------------------------------------------------------------
+HTTPError=404
+body={"detail":"Not Found"}
+
+TESTE HTTP: https://api.runcoreapp.com.br/docs
+------------------------------------------------------------------------------
+status=200
+content-type=text/html; charset=utf-8
+body=
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+    <title>RunCore API - Swagger UI</title>
+    </head>
+    <body>
+    <div id="swagger-ui">
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.
+
+TESTE HTTP: https://api.runcoreapp.com.br/openapi.json
+------------------------------------------------------------------------------
+status=200
+content-type=application/json
+body={"openapi":"3.1.0","info":{"title":"RunCore API","version":"0.1.0"},"paths":{"/api/auth/register":{"post":{"tags":["auth"],"summary":"Register","operationId":"register_api_auth_register_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RegisterRequest"}}},"required":true},"responses":{"201":{"description":"Successful Response","content":{"application/json":{"schema":{"anyOf":[{"$ref":"#/components/schemas/AuthResponse"},{"$ref":"#/components/schemas/Pendi
+
+=== INSTRUÇÃO ADICIONAL ===
+
+No Railway, abra o deploy mais recente e copie as linhas do log
+desde o início da aplicação até a primeira exceção ou mensagem de erro.
+
+=== FIM DO DIAGNÓSTICO ===

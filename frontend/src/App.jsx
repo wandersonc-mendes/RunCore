@@ -162,6 +162,13 @@ function SessionAdjustment({
     {
       label: "Aquecimento",
       type: "Aquecimento",
+      prescription_type: "distance",
+      intensity_type: "pace",
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance: 2,
       distance_unit: "km",
       repetitions: 0,
@@ -173,6 +180,13 @@ function SessionAdjustment({
     {
       label: "Intervalado",
       type: "Corrida",
+      prescription_type: "distance",
+      intensity_type: "pace",
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance: 400,
       distance_unit: "m",
       repetitions: 8,
@@ -184,6 +198,13 @@ function SessionAdjustment({
     {
       label: "Ritmo",
       type: "Corrida",
+      prescription_type: "distance",
+      intensity_type: "pace",
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance: 6,
       distance_unit: "km",
       repetitions: 0,
@@ -195,6 +216,13 @@ function SessionAdjustment({
     {
       label: "Tempo Run",
       type: "Corrida",
+      prescription_type: "distance",
+      intensity_type: "pace",
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance: 5,
       distance_unit: "km",
       repetitions: 0,
@@ -206,6 +234,13 @@ function SessionAdjustment({
     {
       label: "Fartlek",
       type: "Corrida",
+      prescription_type: "distance",
+      intensity_type: "pace",
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance: 1,
       distance_unit: "km",
       repetitions: 6,
@@ -217,6 +252,13 @@ function SessionAdjustment({
     {
       label: "Longão",
       type: "Corrida",
+      prescription_type: "distance",
+      intensity_type: "pace",
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance: 16,
       distance_unit: "km",
       repetitions: 0,
@@ -228,6 +270,13 @@ function SessionAdjustment({
     {
       label: "Desaquecimento",
       type: "Desaquecimento",
+      prescription_type: "distance",
+      intensity_type: "pace",
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance: 1,
       distance_unit: "km",
       repetitions: 0,
@@ -249,10 +298,77 @@ function SessionAdjustment({
     }));
   }
 
+  function changePrescriptionType(
+    index,
+    prescriptionType,
+  ) {
+    onChange((session) => ({
+      ...session,
+      steps: session.steps.map((step, position) =>
+        position === index
+          ? {
+            ...step,
+            prescription_type: prescriptionType,
+            distance: prescriptionType === "distance"
+              ? step.distance
+              : 0,
+            duration: prescriptionType === "duration"
+              ? Number(step.duration || 0)
+              : 0,
+          }
+          : step
+      ),
+    }));
+  }
+
+  function changeIntensityType(
+    index,
+    intensityType,
+  ) {
+    onChange((session) => ({
+      ...session,
+      steps: session.steps.map((step, position) =>
+        position === index
+          ? {
+            ...step,
+            intensity_type: intensityType,
+            pace_min: intensityType === "pace"
+              ? step.pace_min || ""
+              : "",
+            pace_max: intensityType === "pace"
+              ? step.pace_max || ""
+              : "",
+            heart_rate_min:
+              intensityType === "heart_rate"
+                ? step.heart_rate_min
+                : null,
+            heart_rate_max:
+              intensityType === "heart_rate"
+                ? step.heart_rate_max
+                : null,
+            rpe_min: intensityType === "rpe"
+              ? step.rpe_min
+              : null,
+            rpe_max: intensityType === "rpe"
+              ? step.rpe_max
+              : null,
+          }
+          : step
+      ),
+    }));
+  }
+
   function addStep(preset = null) {
     const baseStep = preset || {
       type: "Corrida",
+      prescription_type: "distance",
+      intensity_type: "pace",
       distance: 1,
+      duration: 0,
+      heart_rate_min: null,
+      heart_rate_max: null,
+      rpe_min: null,
+      rpe_max: null,
       distance_unit: "km",
       repetitions: 0,
       recovery: "",
@@ -306,6 +422,13 @@ function SessionAdjustment({
   }
 
   function stepDistanceKm(step) {
+    if (
+      (step.prescription_type || "distance")
+      !== "distance"
+    ) {
+      return 0;
+    }
+
     const distance = Number(step.distance || 0);
     const repetitions = Math.max(
       Number(step.repetitions || 0),
@@ -351,6 +474,20 @@ function SessionAdjustment({
 
   const estimatedSeconds = value.steps.reduce(
     (total, step) => {
+      const repetitions = Math.max(
+        Number(step.repetitions || 0),
+        1,
+      );
+
+      if (
+        (step.prescription_type || "distance")
+        === "duration"
+      ) {
+        return total
+          + Number(step.duration || 0)
+          * repetitions;
+      }
+
       const distance = stepDistanceKm(step);
       const minPace = paceToSeconds(step.pace_min);
       const maxPace = paceToSeconds(step.pace_max);
@@ -402,8 +539,26 @@ function SessionAdjustment({
         ? Number(zoneMatch[1])
         : 2;
 
-      return total
-        + stepDistanceKm(step) * zoneFactor;
+      const repetitions = Math.max(
+        Number(step.repetitions || 0),
+        1,
+      );
+
+      const durationMinutes = (
+        (step.prescription_type || "distance")
+        === "duration"
+      )
+        ? Number(step.duration || 0)
+          * repetitions / 60
+        : 0;
+
+      const distanceLoad = stepDistanceKm(step)
+        * zoneFactor;
+
+      const durationLoad = durationMinutes
+        * zoneFactor / 5;
+
+      return total + distanceLoad + durationLoad;
     },
     0,
   );
@@ -659,44 +814,128 @@ function SessionAdjustment({
                   </label>
 
                   <label>
-                    Distância
-                    <div className="distance-input">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={step.distance}
-                        onChange={(event) =>
-                          changeStep(
-                            index,
-                            "distance",
-                            event.target.value,
-                          )
-                        }
-                      />
-
-                      <select
-                        value={
-                          step.distance_unit
-                          || (
-                            step.repetitions
-                              ? "m"
-                              : "km"
-                          )
-                        }
-                        onChange={(event) =>
-                          changeStep(
-                            index,
-                            "distance_unit",
-                            event.target.value,
-                          )
-                        }
-                      >
-                        <option value="km">km</option>
-                        <option value="m">m</option>
-                      </select>
-                    </div>
+                    Prescrição
+                    <select
+                      value={
+                        step.prescription_type
+                        || "distance"
+                      }
+                      onChange={(event) =>
+                        changePrescriptionType(
+                          index,
+                          event.target.value,
+                        )
+                      }
+                    >
+                      <option value="distance">
+                        Distância
+                      </option>
+                      <option value="duration">
+                        Tempo
+                      </option>
+                    </select>
                   </label>
+
+                  {(step.prescription_type || "distance")
+                    === "distance" ? (
+                    <label>
+                      Distância
+                      <div className="distance-input">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={step.distance}
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "distance",
+                              event.target.value,
+                            )
+                          }
+                        />
+
+                        <select
+                          value={
+                            step.distance_unit
+                            || (
+                              step.repetitions
+                                ? "m"
+                                : "km"
+                            )
+                          }
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "distance_unit",
+                              event.target.value,
+                            )
+                          }
+                        >
+                          <option value="km">km</option>
+                          <option value="m">m</option>
+                        </select>
+                      </div>
+                    </label>
+                  ) : (
+                    <label>
+                      Tempo do bloco
+                      <div className="duration-input">
+                        <input
+                          type="number"
+                          min="0"
+                          max="1440"
+                          value={Math.floor(
+                            Number(step.duration || 0)
+                            / 60,
+                          )}
+                          onChange={(event) => {
+                            const minutes = Number(
+                              event.target.value || 0,
+                            );
+                            const seconds = Number(
+                              step.duration || 0,
+                            ) % 60;
+
+                            changeStep(
+                              index,
+                              "duration",
+                              minutes * 60 + seconds,
+                            );
+                          }}
+                        />
+                        <span>min</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={
+                            Number(step.duration || 0)
+                            % 60
+                          }
+                          onChange={(event) => {
+                            const minutes = Math.floor(
+                              Number(step.duration || 0)
+                              / 60,
+                            );
+                            const seconds = Math.min(
+                              59,
+                              Number(
+                                event.target.value || 0,
+                              ),
+                            );
+
+                            changeStep(
+                              index,
+                              "duration",
+                              minutes * 60 + seconds,
+                            );
+                          }}
+                        />
+                        <span>s</span>
+                      </div>
+                    </label>
+                  )}
 
                   <label>
                     Repetições
@@ -718,7 +957,7 @@ function SessionAdjustment({
                     Recuperação
                     <input
                       value={step.recovery || ""}
-                      placeholder="Ex.: 200 m trote"
+                      placeholder="Ex.: 200 m ou 1min30 leve"
                       onChange={(event) =>
                         changeStep(
                           index,
@@ -730,42 +969,168 @@ function SessionAdjustment({
                   </label>
 
                   <label>
-                    Ritmo mínimo
-                    <input
-                      inputMode="numeric"
-                      maxLength={5}
-                      value={step.pace_min || ""}
-                      placeholder="05:20"
+                    Intensidade
+                    <select
+                      value={
+                        step.intensity_type || "pace"
+                      }
                       onChange={(event) =>
-                        changeStep(
+                        changeIntensityType(
                           index,
-                          "pace_min",
-                          formatPaceInput(
-                            event.target.value,
-                          ),
+                          event.target.value,
                         )
                       }
-                    />
+                    >
+                      <option value="pace">
+                        Ritmo
+                      </option>
+                      <option value="heart_rate">
+                        Frequência cardíaca
+                      </option>
+                      <option value="rpe">
+                        PSE
+                      </option>
+                      <option value="free">
+                        Livre
+                      </option>
+                    </select>
                   </label>
 
-                  <label>
-                    Ritmo máximo
-                    <input
-                      inputMode="numeric"
-                      maxLength={5}
-                      value={step.pace_max || ""}
-                      placeholder="05:00"
-                      onChange={(event) =>
-                        changeStep(
-                          index,
-                          "pace_max",
-                          formatPaceInput(
-                            event.target.value,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
+                  {(step.intensity_type || "pace")
+                    === "pace" && (
+                    <>
+                      <label>
+                        Ritmo mínimo
+                        <input
+                          inputMode="numeric"
+                          maxLength={5}
+                          value={step.pace_min || ""}
+                          placeholder="05:20"
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "pace_min",
+                              formatPaceInput(
+                                event.target.value,
+                              ),
+                            )
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        Ritmo máximo
+                        <input
+                          inputMode="numeric"
+                          maxLength={5}
+                          value={step.pace_max || ""}
+                          placeholder="05:00"
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "pace_max",
+                              formatPaceInput(
+                                event.target.value,
+                              ),
+                            )
+                          }
+                        />
+                      </label>
+                    </>
+                  )}
+
+                  {step.intensity_type
+                    === "heart_rate" && (
+                    <>
+                      <label>
+                        FC mínima
+                        <input
+                          type="number"
+                          min="1"
+                          max="260"
+                          value={
+                            step.heart_rate_min ?? ""
+                          }
+                          placeholder="140"
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "heart_rate_min",
+                              event.target.value
+                                ? Number(event.target.value)
+                                : null,
+                            )
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        FC máxima
+                        <input
+                          type="number"
+                          min="1"
+                          max="260"
+                          value={
+                            step.heart_rate_max ?? ""
+                          }
+                          placeholder="155"
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "heart_rate_max",
+                              event.target.value
+                                ? Number(event.target.value)
+                                : null,
+                            )
+                          }
+                        />
+                      </label>
+                    </>
+                  )}
+
+                  {step.intensity_type === "rpe" && (
+                    <>
+                      <label>
+                        PSE mínima
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={step.rpe_min ?? ""}
+                          placeholder="3"
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "rpe_min",
+                              event.target.value
+                                ? Number(event.target.value)
+                                : null,
+                            )
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        PSE máxima
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={step.rpe_max ?? ""}
+                          placeholder="5"
+                          onChange={(event) =>
+                            changeStep(
+                              index,
+                              "rpe_max",
+                              event.target.value
+                                ? Number(event.target.value)
+                                : null,
+                            )
+                          }
+                        />
+                      </label>
+                    </>
+                  )}
                 </div>
 
                 <label className="workout-block-notes">
@@ -1655,15 +2020,67 @@ export default function App() {
       return;
     }
 
-    const normalizedSteps = workoutEdit.steps.map((step) => ({
-      ...step,
-      distance: Number(
-        step.distance,
-      ),
-      repetitions: Number(
-        step.repetitions,
-      ),
-    }));
+    const normalizedSteps = workoutEdit.steps.map(
+      (step) => {
+        const prescriptionType = (
+          step.prescription_type || "distance"
+        );
+        const intensityType = (
+          step.intensity_type || "pace"
+        );
+
+        return {
+          ...step,
+          prescription_type: prescriptionType,
+          intensity_type: intensityType,
+          distance: prescriptionType === "distance"
+            ? Number(step.distance || 0)
+            : 0,
+          duration: prescriptionType === "duration"
+            ? Number(step.duration || 0)
+            : 0,
+          repetitions: Number(
+            step.repetitions || 0,
+          ),
+          pace_min: intensityType === "pace"
+            ? step.pace_min || ""
+            : "",
+          pace_max: intensityType === "pace"
+            ? step.pace_max || ""
+            : "",
+          heart_rate_min:
+            intensityType === "heart_rate"
+              ? (
+                step.heart_rate_min === ""
+                  ? null
+                  : step.heart_rate_min
+              )
+              : null,
+          heart_rate_max:
+            intensityType === "heart_rate"
+              ? (
+                step.heart_rate_max === ""
+                  ? null
+                  : step.heart_rate_max
+              )
+              : null,
+          rpe_min: intensityType === "rpe"
+            ? (
+              step.rpe_min === ""
+                ? null
+                : step.rpe_min
+            )
+            : null,
+          rpe_max: intensityType === "rpe"
+            ? (
+              step.rpe_max === ""
+                ? null
+                : step.rpe_max
+            )
+            : null,
+        };
+      },
+    );
     const workoutSummary = workoutSummaryFromSteps(
       normalizedSteps,
     );

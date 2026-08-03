@@ -863,6 +863,8 @@ export default function App() {
   });
   const [savingGoal, setSavingGoal] = useState(false);
   const [deletingGoalId, setDeletingGoalId] = useState(null);
+  const [applyingGoalId, setApplyingGoalId] = useState(null);
+  const [goalMessage, setGoalMessage] = useState("");
   const [trainingForm, setTrainingForm] = useState({ name: "Planejamento Principal", objective: "", target_distance: "", start_date: new Date().toISOString().slice(0, 10), target_date: "", total_weeks: "8" });
   const [workoutEdit, setWorkoutEdit] = useState(null);
   const [error, setError] = useState(null);
@@ -1555,13 +1557,60 @@ export default function App() {
     }
   }
 
-  function applyGoalToTraining(goal) {
-    setTrainingForm((current) => ({
-      ...current,
-      objective: goal.name,
-      target_distance: String(goal.distance),
-      target_date: goal.target_date,
-    }));
+  async function applyGoalToTraining(goal) {
+    setGoalMessage("");
+    setError(null);
+
+    if (!training) {
+      setTrainingForm((current) => ({
+        ...current,
+        objective: goal.name,
+        target_distance: String(goal.distance),
+        target_date: goal.target_date,
+      }));
+
+      setGoalMessage(
+        `Meta "${goal.name}" selecionada para o novo planejamento.`,
+      );
+
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Aplicar a meta "${goal.name}" ao planejamento ativo? `
+      + "A planilha será recalculada com a nova distância e data.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setApplyingGoalId(goal.id);
+    setSavingTraining(true);
+
+    try {
+      const updated = await regenerateTraining(
+        selectedAthlete.id,
+        goal.id,
+      );
+
+      setTraining(updated);
+      setTrainingForm((current) => ({
+        ...current,
+        objective: goal.name,
+        target_distance: String(goal.distance),
+        target_date: goal.target_date,
+      }));
+
+      setGoalMessage(
+        `Meta "${goal.name}" aplicada ao planejamento ativo.`,
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setApplyingGoalId(null);
+      setSavingTraining(false);
+    }
   }
 
 
@@ -2254,6 +2303,12 @@ export default function App() {
               </button>
             </form>
 
+            {goalMessage && (
+              <div className="success-message">
+                {goalMessage}
+              </div>
+            )}
+
             <div className="coach-goals-list">
               {athleteGoals.length === 0 ? (
                 <div className="coach-goals-empty">
@@ -2281,11 +2336,21 @@ export default function App() {
                       <button
                         type="button"
                         className="btn-ghost"
+                        disabled={
+                          applyingGoalId === goal.id
+                          || savingTraining
+                        }
                         onClick={() =>
                           applyGoalToTraining(goal)
                         }
                       >
-                        Usar no planejamento
+                        {applyingGoalId === goal.id
+                          ? "Aplicando..."
+                          : (
+                            training
+                              ? "Aplicar ao planejamento"
+                              : "Usar no planejamento"
+                          )}
                       </button>
 
                       <button

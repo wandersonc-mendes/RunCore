@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from api.schemas import (
     TrainingCreate,
@@ -98,6 +98,41 @@ def get_primary_goal(athlete_id: int, start_date):
         )
 
         return principal or (goals[0] if goals else None)
+    finally:
+        session.close()
+
+
+def get_goal_for_training(
+    athlete_id: int,
+    goal_id: int,
+    start_date,
+):
+    session = SessionLocal()
+
+    try:
+        athlete = session.get(
+            Athlete,
+            athlete_id,
+        )
+
+        if athlete is None or athlete.user_id is None:
+            return None
+
+        goal = (
+            session.query(Goal)
+            .filter(
+                Goal.id == goal_id,
+                Goal.user_id == athlete.user_id,
+                Goal.target_date > start_date,
+                Goal.status == "Em andamento",
+            )
+            .first()
+        )
+
+        if goal is not None:
+            session.expunge(goal)
+
+        return goal
     finally:
         session.close()
 
@@ -314,22 +349,39 @@ def create_training(athlete_id: int, payload: TrainingCreate):
 
 
 @router.post("/regenerate", response_model=TrainingOut)
-def regenerate_training(athlete_id: int):
+def regenerate_training(
+    athlete_id: int,
+    goal_id: int | None = Query(default=None),
+):
     get_athlete(athlete_id)
     evaluation = get_latest_evaluation(athlete_id)
     training = training_repository.get_active_by_athlete(athlete_id)
     if training is None:
         raise HTTPException(status_code=404, detail="Não há planejamento ativo para regenerar.")
     cycle_start = training.start_date or date.today()
-    goal = get_primary_goal(
-        athlete_id,
-        cycle_start,
+    goal = (
+        get_goal_for_training(
+            athlete_id,
+            goal_id,
+            cycle_start,
+        )
+        if goal_id is not None
+        else get_primary_goal(
+            athlete_id,
+            cycle_start,
+        )
     )
 
     if goal is None:
         raise HTTPException(
             status_code=409,
             detail=(
+                "A meta selecionada não pertence ao atleta, "
+                "não está ativa ou sua data não é posterior "
+                "ao início do planejamento."
+            )
+            if goal_id is not None
+            else (
                 "Cadastre uma meta ativa e futura para o atleta "
                 "antes de regenerar o planejamento."
             ),

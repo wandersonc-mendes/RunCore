@@ -451,9 +451,16 @@ export function createTraining(
   );
 }
 
-export function regenerateTraining(athleteId) {
+export function regenerateTraining(
+  athleteId,
+  goalId = null,
+) {
+  const query = goalId
+    ? `?goal_id=${encodeURIComponent(goalId)}`
+    : "";
+
   return request(
-    `/api/athletes/${athleteId}/training/regenerate`,
+    `/api/athletes/${athleteId}/training/regenerate${query}`,
     {
       method: "POST",
     },

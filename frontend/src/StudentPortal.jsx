@@ -1773,7 +1773,7 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                 </b>
                 <p className="student-session-objective">
                   <strong>Objetivo:</strong>{" "}
-                  {session.notes
+                  {session.objective
                     || session.steps?.[0]?.notes
                     || "Objetivo ainda não informado pelo treinador."}
                 </p>

@@ -782,19 +782,35 @@ function SessionAdjustment({
             ))}
           </div>
 
-          <label className="workout-general-notes">
-            Objetivo e benefícios do treino
-            <textarea
-              placeholder="Ex.: estimular recuperação ativa, desenvolver resistência aeróbica e preparar o atleta para o treino seguinte."
-              value={value.notes}
-              onChange={(event) =>
-                onChange((item) => ({
-                  ...item,
-                  notes: event.target.value,
-                }))
-              }
-            />
-          </label>
+          <div className="workout-session-texts">
+            <label className="workout-general-notes">
+              Objetivo e benefícios do treino
+              <textarea
+                placeholder="Ex.: estimular recuperação ativa, desenvolver resistência aeróbica e preparar o atleta para o treino seguinte."
+                value={value.objective || ""}
+                onChange={(event) =>
+                  onChange((item) => ({
+                    ...item,
+                    objective: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label className="workout-general-notes">
+              Orientações do treinador
+              <textarea
+                placeholder="Ex.: manter esforço confortável, não acelerar nas subidas e interromper em caso de dor."
+                value={value.notes || ""}
+                onChange={(event) =>
+                  onChange((item) => ({
+                    ...item,
+                    notes: event.target.value,
+                  }))
+                }
+              />
+            </label>
+          </div>
         </main>
 
         <aside className="workout-frequent-blocks">
@@ -2011,9 +2027,9 @@ export default function App() {
 >
   Abrir e ajustar
 </button>
-{session.notes && (
+{session.objective && (
   <p className="coach-session-objective">
-    <strong>Objetivo:</strong> {session.notes}
+    <strong>Objetivo:</strong> {session.objective}
   </p>
 )}
 </article>)}</div></section>

@@ -233,6 +233,7 @@ def serialize_training(training):
                 "planned_distance": session.planned_distance,
                 "repetitions": session.repetitions,
                 "recovery": session.recovery,
+                "objective": session.objective or "",
                 "notes": session.notes or "",
                 "completed": session.completed,
                 "session_date": session.scheduled_date or ((training.start_date + timedelta(days=((session.week - 1) * 7) + session.weekday)) if training.start_date else None),
@@ -399,6 +400,7 @@ def create_session(
     session.repetitions = payload.repetitions
     session.recovery = 0
     session.rpe = 0
+    session.objective = payload.objective
     session.notes = payload.notes
     session.completed = False
     session.scheduled_date = payload.session_date
@@ -433,6 +435,7 @@ def create_session(
         "planned_distance": refreshed.planned_distance,
         "repetitions": refreshed.repetitions,
         "recovery": refreshed.recovery,
+        "objective": refreshed.objective or "",
         "notes": refreshed.notes or "",
         "completed": refreshed.completed,
         "session_date": refreshed.scheduled_date,
@@ -484,6 +487,7 @@ def update_session(
     session.zone = payload.zone
     session.planned_distance = payload.planned_distance
     session.repetitions = payload.repetitions
+    session.objective = payload.objective
     session.notes = payload.notes
 
     session_repository.update(

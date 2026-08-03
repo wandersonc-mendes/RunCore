@@ -133,6 +133,7 @@ class TrainingSessionOut(BaseModel):
     planned_distance: float
     repetitions: int
     recovery: int
+    objective: str = ""
     notes: str = ""
     completed: bool
     session_date: date | None = None
@@ -229,6 +230,11 @@ class TrainingSessionCreate(BaseModel):
         le=100,
     )
 
+    objective: str = Field(
+        default="",
+        max_length=1000,
+    )
+
     notes: str = Field(
         default="",
         max_length=1000,
@@ -263,6 +269,11 @@ class TrainingSessionUpdate(BaseModel):
     repetitions: int = Field(
         ge=0,
         le=100,
+    )
+
+    objective: str = Field(
+        default="",
+        max_length=1000,
     )
 
     notes: str = Field(

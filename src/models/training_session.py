@@ -85,6 +85,11 @@ class TrainingSession(Base):
         default=0,
     )
 
+    objective: Mapped[str] = mapped_column(
+        String(1000),
+        default="",
+    )
+
     notes: Mapped[str] = mapped_column(
         String(1000),
         default="",

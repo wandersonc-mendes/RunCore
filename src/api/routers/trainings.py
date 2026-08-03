@@ -182,12 +182,28 @@ def serialize_step(step):
         "id": step.id,
         "order": step.order,
         "type": step.type,
+        "prescription_type": (
+            step.prescription_type
+            or "distance"
+        ),
+        "intensity_type": (
+            step.intensity_type
+            or "pace"
+        ),
         "distance": step.distance,
-        "distance_unit": step.distance_unit or ("m" if step.repetitions else "km"),
+        "distance_unit": (
+            step.distance_unit
+            or ("m" if step.repetitions else "km")
+        ),
+        "duration": step.duration,
         "repetitions": step.repetitions,
         "recovery": step.recovery,
         "pace_min": step.pace_min,
         "pace_max": step.pace_max,
+        "heart_rate_min": step.heart_rate_min,
+        "heart_rate_max": step.heart_rate_max,
+        "rpe_min": step.rpe_min,
+        "rpe_max": step.rpe_max,
         "notes": step.notes,
     }
 
@@ -222,12 +238,19 @@ def serialized_steps_for_session(
             "id": None,
             "order": interval_step["order"],
             "type": "Recuperação",
+            "prescription_type": "distance",
+            "intensity_type": "free",
             "distance": distance,
             "distance_unit": unit,
+            "duration": 0,
             "repetitions": interval_step["repetitions"],
             "recovery": "",
             "pace_min": "",
             "pace_max": "",
+            "heart_rate_min": None,
+            "heart_rate_max": None,
+            "rpe_min": None,
+            "rpe_max": None,
             "notes": interval_step["recovery"],
         })
     for order, item in enumerate(steps, start=1):

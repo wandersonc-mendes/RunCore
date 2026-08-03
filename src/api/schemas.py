@@ -148,12 +148,27 @@ class TrainingStepOut(BaseModel):
 
     order: int
     type: str
+    prescription_type: Literal[
+        "distance",
+        "duration",
+    ] = "distance"
+    intensity_type: Literal[
+        "pace",
+        "heart_rate",
+        "rpe",
+        "free",
+    ] = "pace"
     distance: float
     distance_unit: str = "km"
+    duration: int = 0
     repetitions: int
     recovery: str
     pace_min: str
     pace_max: str
+    heart_rate_min: int | None = None
+    heart_rate_max: int | None = None
+    rpe_min: int | None = None
+    rpe_max: int | None = None
     notes: str
 
 
@@ -295,12 +310,31 @@ class TrainingStepUpdate(BaseModel):
         max_length=30,
     )
 
+    prescription_type: Literal[
+        "distance",
+        "duration",
+    ] = "distance"
+
+    intensity_type: Literal[
+        "pace",
+        "heart_rate",
+        "rpe",
+        "free",
+    ] = "pace"
+
     distance: float = Field(
+        default=0,
         ge=0,
         le=1000,
     )
 
     distance_unit: Literal["km", "m"] = "km"
+
+    duration: int = Field(
+        default=0,
+        ge=0,
+        le=86400,
+    )
 
     repetitions: int = Field(
         ge=0,
@@ -320,6 +354,30 @@ class TrainingStepUpdate(BaseModel):
     pace_max: str = Field(
         default="",
         max_length=10,
+    )
+
+    heart_rate_min: int | None = Field(
+        default=None,
+        ge=1,
+        le=260,
+    )
+
+    heart_rate_max: int | None = Field(
+        default=None,
+        ge=1,
+        le=260,
+    )
+
+    rpe_min: int | None = Field(
+        default=None,
+        ge=1,
+        le=10,
+    )
+
+    rpe_max: int | None = Field(
+        default=None,
+        ge=1,
+        le=10,
     )
 
     notes: str = Field(

@@ -113,8 +113,333 @@ class ActivityAnalysisService:
 
         return "above"
 
+    @staticmethod
+    def _format_pace(seconds):
+        if seconds is None or seconds <= 0:
+            return None
+
+        rounded = round(seconds)
+
+        return (
+            f"{rounded // 60}:"
+            f"{rounded % 60:02d}/km"
+        )
+
+    @staticmethod
+    def _metric_label(status, metric):
+        labels = {
+            "distance": {
+                "inside": "Volume dentro do planejado",
+                "below": "Volume abaixo do planejado",
+                "above": "Volume acima do planejado",
+                "unknown": "Volume sem referência suficiente",
+            },
+            "duration": {
+                "inside": "Duração dentro do planejado",
+                "below": "Duração abaixo do planejado",
+                "above": "Duração acima do planejado",
+                "unknown": "Duração sem referência suficiente",
+            },
+            "pace": {
+                "inside": "Ritmo dentro do planejado",
+                "below": "Ritmo mais rápido que o planejado",
+                "above": "Ritmo mais lento que o planejado",
+                "unknown": "Ritmo sem referência única",
+            },
+        }
+
+        return labels.get(
+            metric,
+            {},
+        ).get(
+            status,
+            "Sem classificação",
+        )
+
     @classmethod
-    def analyse(cls, activity, laps=None):
+    def _build_interpretation(
+        cls,
+        analysis,
+        feedback,
+    ):
+        distance = analysis["distance"]
+        duration = analysis["duration"]
+        pace = analysis["pace"]
+        blocks = analysis["blocks"]
+        heart_rate = analysis["heart_rate"]
+        cadence = analysis["cadence"]
+
+        observations = []
+        alerts = []
+        positives = []
+
+        distance_status = distance["status"]
+
+        if distance_status == "inside":
+            positives.append(
+                "O volume total ficou dentro da tolerância "
+                "do treino planejado."
+            )
+        elif distance_status == "above":
+            observations.append(
+                "O volume executado ficou acima do planejado "
+                f"em {abs(distance['difference_km']):.2f} km "
+                f"({abs(distance['variance_percent']):.1f}%)."
+            )
+        elif distance_status == "below":
+            observations.append(
+                "O volume executado ficou abaixo do planejado "
+                f"em {abs(distance['difference_km']):.2f} km "
+                f"({abs(distance['variance_percent']):.1f}%)."
+            )
+
+        if duration["status"] == "inside":
+            positives.append(
+                "A duração ficou dentro da faixa esperada."
+            )
+        elif duration["status"] in {"above", "below"}:
+            direction = (
+                "acima"
+                if duration["status"] == "above"
+                else "abaixo"
+            )
+            observations.append(
+                "A duração ficou "
+                f"{direction} do planejado "
+                f"({abs(duration['variance_percent']):.1f}%)."
+            )
+
+        if pace["status"] == "inside":
+            positives.append(
+                "O ritmo médio ficou dentro da faixa prescrita."
+            )
+        elif pace["status"] == "below":
+            observations.append(
+                "O ritmo médio foi mais rápido que a faixa "
+                "prescrita."
+            )
+        elif pace["status"] == "above":
+            observations.append(
+                "O ritmo médio foi mais lento que a faixa "
+                "prescrita."
+            )
+
+        if blocks["aligned"]:
+            valid_blocks = [
+                item
+                for item in blocks["items"]
+                if (
+                    item["distance_status"] != "unknown"
+                    or item["pace_status"] != "unknown"
+                )
+            ]
+
+            compliant_blocks = [
+                item
+                for item in valid_blocks
+                if (
+                    item["distance_status"] == "inside"
+                    and (
+                        item["pace_status"] in {
+                            "inside",
+                            "unknown",
+                        }
+                    )
+                )
+            ]
+
+            if valid_blocks:
+                compliance = round(
+                    (
+                        len(compliant_blocks)
+                        / len(valid_blocks)
+                    )
+                    * 100,
+                )
+
+                if compliance >= 80:
+                    positives.append(
+                        "Os blocos identificados apresentaram "
+                        f"boa aderência ao treino ({compliance}%)."
+                    )
+                elif compliance < 50:
+                    observations.append(
+                        "Menos da metade dos blocos identificados "
+                        "ficou dentro das referências planejadas."
+                    )
+        else:
+            observations.append(
+                "As voltas do Strava não correspondem "
+                "diretamente à estrutura dos blocos. "
+                "A análise por bloco tem confiança reduzida."
+            )
+
+        average_hr = heart_rate["average"]
+        maximum_hr = heart_rate["maximum"]
+
+        if average_hr is not None and maximum_hr is not None:
+            observations.append(
+                "Frequência cardíaca registrada: "
+                f"{average_hr:.0f} bpm de média e "
+                f"{maximum_hr:.0f} bpm de máxima."
+            )
+
+        steps_per_minute = cadence["steps_per_minute"]
+
+        if steps_per_minute is not None:
+            observations.append(
+                "Cadência média estimada em "
+                f"{steps_per_minute:.0f} passos por minuto."
+            )
+
+        perceived_effort = (
+            getattr(
+                feedback,
+                "perceived_effort",
+                None,
+            )
+            if feedback is not None
+            else None
+        )
+
+        feeling = (
+            getattr(
+                feedback,
+                "feeling",
+                "",
+            )
+            if feedback is not None
+            else ""
+        )
+
+        pain = (
+            getattr(
+                feedback,
+                "pain",
+                "",
+            )
+            if feedback is not None
+            else ""
+        )
+
+        if perceived_effort is not None:
+            observations.append(
+                "Esforço percebido informado pelo atleta: "
+                f"{perceived_effort}/10."
+            )
+
+            if perceived_effort >= 9:
+                alerts.append(
+                    "Esforço percebido muito alto. "
+                    "Convém revisar recuperação e resposta "
+                    "ao treino antes da próxima sessão intensa."
+                )
+            elif perceived_effort >= 7:
+                observations.append(
+                    "O esforço percebido foi alto."
+                )
+
+        normalized_feeling = str(feeling or "").lower()
+
+        if normalized_feeling in {
+            "muito mal",
+            "mal",
+            "péssimo",
+            "pessimo",
+        }:
+            alerts.append(
+                "O atleta relatou sensação negativa "
+                "após o treino."
+            )
+
+        normalized_pain = str(pain or "").strip()
+
+        if normalized_pain and normalized_pain.lower() not in {
+            "não",
+            "nao",
+            "nenhuma",
+            "sem dor",
+        }:
+            alerts.append(
+                "Há relato de dor: "
+                f"{normalized_pain}."
+            )
+
+        if alerts:
+            classification = "attention"
+            title = "Treino concluído com pontos de atenção"
+        elif (
+            distance_status == "inside"
+            and pace["status"] in {
+                "inside",
+                "unknown",
+            }
+        ):
+            classification = "on_target"
+            title = "Treino executado dentro do esperado"
+        elif distance_status == "above":
+            classification = "above_plan"
+            title = "Treino executado acima do volume previsto"
+        elif distance_status == "below":
+            classification = "below_plan"
+            title = "Treino executado abaixo do volume previsto"
+        else:
+            classification = "review"
+            title = "Treino concluído com análise parcial"
+
+        summary_parts = []
+
+        if distance["planned_km"] > 0:
+            summary_parts.append(
+                f"{distance['executed_km']:.2f} km executados "
+                f"de {distance['planned_km']:.2f} km planejados"
+            )
+
+        executed_pace = cls._format_pace(
+            pace["executed_seconds"],
+        )
+
+        if executed_pace:
+            summary_parts.append(
+                f"ritmo médio de {executed_pace}"
+            )
+
+        summary = (
+            ". ".join(summary_parts) + "."
+            if summary_parts
+            else "Não há métricas suficientes para o resumo."
+        )
+
+        return {
+            "classification": classification,
+            "title": title,
+            "summary": summary,
+            "positives": positives,
+            "observations": observations,
+            "alerts": alerts,
+            "labels": {
+                "distance": cls._metric_label(
+                    distance["status"],
+                    "distance",
+                ),
+                "duration": cls._metric_label(
+                    duration["status"],
+                    "duration",
+                ),
+                "pace": cls._metric_label(
+                    pace["status"],
+                    "pace",
+                ),
+            },
+        }
+
+    @classmethod
+    def analyse(
+        cls,
+        activity,
+        laps=None,
+        feedback=None,
+    ):
         if (
             activity is None
             or activity.training_session_id is None
@@ -398,7 +723,7 @@ class ActivityAnalysisService:
         elif not aligned:
             confidence = "medium"
 
-        return {
+        analysis = {
             "available": True,
             "confidence": confidence,
             "training_session": {
@@ -452,3 +777,12 @@ class ActivityAnalysisService:
                 "items": blocks,
             },
         }
+
+        analysis["interpretation"] = (
+            cls._build_interpretation(
+                analysis,
+                feedback,
+            )
+        )
+
+        return analysis

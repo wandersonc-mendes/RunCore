@@ -196,9 +196,14 @@ def strava_activity_details(activity_id: int, user=Depends(current_user)):
     def kilometers(value):
         return round((value or 0) / 1000, 3)
 
+    activity_feedback = feedbacks.get_for_activity(
+        activity.id,
+    )
+
     analysis = ActivityAnalysisService.analyse(
         activity,
         laps,
+        activity_feedback,
     )
 
     return {

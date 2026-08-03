@@ -200,6 +200,10 @@ def strava_activity_details(activity_id: int, user=Depends(current_user)):
         "max_heartrate": detail.get("max_heartrate"),
         "total_elevation_gain": detail.get("total_elevation_gain"),
         "average_cadence": detail.get("average_cadence"),
+        "max_cadence": activity.max_cadence,
+        "average_speed": detail.get("average_speed"),
+        "max_speed": detail.get("max_speed"),
+        "elapsed_time": detail.get("elapsed_time"),
         "laps": [
             {
                 "number": index + 1,
@@ -332,6 +336,13 @@ def sync_strava_activities(user=Depends(current_user)):
         item.sport_type = activity.get("sport_type") or activity.get("type", "")
         item.distance = round(activity.get("distance", 0) / 1000, 3)
         item.moving_time = activity.get("moving_time", 0)
+        item.elapsed_time = activity.get("elapsed_time")
+        item.average_speed = activity.get("average_speed")
+        item.max_speed = activity.get("max_speed")
+        item.average_heartrate = activity.get("average_heartrate")
+        item.max_heartrate = activity.get("max_heartrate")
+        item.average_cadence = activity.get("average_cadence")
+        item.total_elevation_gain = activity.get("total_elevation_gain")
         item.start_at = datetime.fromisoformat(activity["start_date"].replace("Z", "+00:00")) if activity.get("start_date") else None
         activities.save(item)
 

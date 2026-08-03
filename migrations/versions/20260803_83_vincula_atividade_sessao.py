@@ -1,12 +1,12 @@
 # Vincula atividade importada à sessão planejada.
-# Revision ID: 20260803_83_activity_session_link
+# Revision ID: 20260803_83_activity_link
 # Revises: 20260803_81_activity_metrics
 
 from alembic import op
 import sqlalchemy as sa
 
 
-revision = "20260803_83_activity_session_link"
+revision = "20260803_83_activity_link"
 down_revision = "20260803_81_activity_metrics"
 branch_labels = None
 depends_on = None

@@ -8,7 +8,8 @@ from urllib.request import Request, urlopen
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
-from sqlalchemy import text
+from pydantic import BaseModel
+from sqlalchemy import select, text
 
 from api.dependencies import current_user, require_coach
 from api.schemas import ActivityFeedbackPayload
@@ -17,6 +18,8 @@ from core.training.activity_analysis_service import ActivityAnalysisService
 from repositories.integration_repository import IntegrationRepository
 from models.external_integration import ExternalIntegration
 from models.imported_activity import ImportedActivity
+from models.training import Training
+from models.training_session import TrainingSession
 from repositories.activity_repository import ActivityRepository
 from repositories.activity_feedback_repository import ActivityFeedbackRepository
 from repositories.access_repository import AccessRepository
@@ -29,6 +32,10 @@ repository = IntegrationRepository()
 activities = ActivityRepository()
 feedbacks = ActivityFeedbackRepository()
 access = AccessRepository()
+
+class ActivityTrainingSessionPayload(BaseModel):
+    training_session_id: int | None = None
+
 
 DEFAULT_STRAVA_REDIRECT_URI = (
     "https://api.runcoreapp.com.br"
@@ -168,6 +175,134 @@ def list_strava_activities(user=Depends(current_user)):
     if integration is None or not integration.active:
         raise HTTPException(status_code=404, detail="Conta Strava não conectada.")
     return activities.list_for_integration(integration.id)
+
+
+@router.put(
+    "/strava/activities/{activity_id}/training-session"
+)
+def update_activity_training_session(
+    activity_id: int,
+    payload: ActivityTrainingSessionPayload,
+    user=Depends(current_user),
+):
+    integration = repository.get(
+        user.id,
+        "strava",
+    )
+
+    if integration is None or not integration.active:
+        raise HTTPException(
+            status_code=404,
+            detail="Conta Strava não conectada.",
+        )
+
+    activity = activities.get_for_integration(
+        activity_id,
+        integration.id,
+    )
+
+    if activity is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Atividade não encontrada.",
+        )
+
+    athlete_id = access.athlete_for_student(
+        user.id,
+    )
+
+    if athlete_id is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Perfil de atleta não encontrado.",
+        )
+
+    with SessionLocal() as session:
+        managed_activity = session.get(
+            ImportedActivity,
+            activity.id,
+        )
+
+        if managed_activity is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Atividade não encontrada.",
+            )
+
+        target_session_id = (
+            payload.training_session_id
+        )
+
+        if target_session_id is None:
+            managed_activity.training_session_id = None
+            session.commit()
+
+            return {
+                "activity_id": managed_activity.id,
+                "training_session_id": None,
+                "message": (
+                    "Vínculo com o treino removido."
+                ),
+            }
+
+        training_session = session.scalar(
+            select(TrainingSession)
+            .join(
+                Training,
+                Training.id
+                == TrainingSession.training_id,
+            )
+            .where(
+                TrainingSession.id
+                == target_session_id,
+                Training.athlete_id == athlete_id,
+            )
+        )
+
+        if training_session is None:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    "A sessão selecionada não pertence "
+                    "ao atleta conectado."
+                ),
+            )
+
+        linked_activity = session.scalar(
+            select(ImportedActivity)
+            .where(
+                ImportedActivity.training_session_id
+                == target_session_id,
+                ImportedActivity.id
+                != managed_activity.id,
+            )
+        )
+
+        if linked_activity is not None:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "A sessão selecionada já está vinculada "
+                    "a outra atividade."
+                ),
+            )
+
+        managed_activity.training_session_id = (
+            training_session.id
+        )
+
+        session.commit()
+
+        return {
+            "activity_id": managed_activity.id,
+            "training_session_id": (
+                managed_activity.training_session_id
+            ),
+            "message": (
+                "Atividade vinculada ao treino "
+                "selecionado."
+            ),
+        }
 
 
 @router.get("/strava/activities/{activity_id}/details")

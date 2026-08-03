@@ -81,7 +81,7 @@ def get_primary_goal(athlete_id: int, start_date):
             session.query(Goal)
             .filter(
                 Goal.user_id == athlete.user_id,
-                Goal.target_date >= start_date,
+                Goal.target_date > start_date,
                 Goal.status == 'Em andamento',
             )
             .order_by(Goal.target_date.asc())
@@ -320,16 +320,35 @@ def regenerate_training(athlete_id: int):
     if training is None:
         raise HTTPException(status_code=404, detail="Não há planejamento ativo para regenerar.")
     cycle_start = training.start_date or date.today()
-    goal = get_primary_goal(athlete_id, cycle_start)
-    goal_data = goal_training_data(goal, cycle_start)
-    total_weeks = None
+    goal = get_primary_goal(
+        athlete_id,
+        cycle_start,
+    )
 
-    if goal_data:
-        training.objective = goal_data['objective']
-        training.target_distance = goal_data['target_distance']
-        training.target_date = goal_data['target_date']
-        training_repository.update(training)
-        total_weeks = goal_data['total_weeks']
+    if goal is None:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Cadastre uma meta ativa e futura para o atleta "
+                "antes de regenerar o planejamento."
+            ),
+        )
+
+    goal_data = goal_training_data(
+        goal,
+        cycle_start,
+    )
+
+    training.objective = goal_data["objective"]
+    training.target_distance = goal_data["target_distance"]
+    training.target_date = goal_data["target_date"]
+    training.methodology = "Jack Daniels"
+
+    training_repository.update(
+        training,
+    )
+
+    total_weeks = goal_data["total_weeks"]
 
     persistence_service.regenerate_training(
         training.id,

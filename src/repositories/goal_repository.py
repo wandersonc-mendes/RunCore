@@ -13,6 +13,24 @@ class GoalRepository:
         session.close()
         return items
 
+    def get_for_user(
+        self,
+        goal_id,
+        user_id,
+    ):
+        with SessionLocal() as session:
+            goal = session.scalar(
+                select(Goal).where(
+                    Goal.id == goal_id,
+                    Goal.user_id == user_id,
+                )
+            )
+
+            if goal is not None:
+                session.expunge(goal)
+
+            return goal
+
     def get_active_primary_for_user(
         self,
         user_id,

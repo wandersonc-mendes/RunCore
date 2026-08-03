@@ -25,8 +25,111 @@ function formatPace(speed) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}/km`;
 }
 
-function stepDistance(step) {
-  return `${Number(step.distance).toFixed(step.distance_unit === "m" ? 0 : 1)} ${step.distance_unit || (step.repetitions ? "m" : "km")}`;
+function stepPrescription(step) {
+  if (
+    (step?.prescription_type || "distance")
+    === "duration"
+  ) {
+    const seconds = Number(step?.duration || 0);
+    const minutes = Math.floor(seconds / 60);
+    const remainder = seconds % 60;
+
+    if (minutes > 0 && remainder > 0) {
+      return `${minutes}min ${remainder}s`;
+    }
+
+    if (minutes > 0) {
+      return `${minutes} min`;
+    }
+
+    return `${remainder}s`;
+  }
+
+  return `${
+    Number(step?.distance || 0).toFixed(
+      step?.distance_unit === "m" ? 0 : 1,
+    )
+  } ${
+    step?.distance_unit
+    || (step?.repetitions ? "m" : "km")
+  }`;
+}
+
+
+function stepIntensity(step) {
+  const intensityType = (
+    step?.intensity_type || "pace"
+  );
+
+  if (intensityType === "heart_rate") {
+    const minimum = step?.heart_rate_min;
+    const maximum = step?.heart_rate_max;
+
+    if (minimum && maximum) {
+      return `FC ${minimum}–${maximum} bpm`;
+    }
+
+    if (minimum) {
+      return `FC a partir de ${minimum} bpm`;
+    }
+
+    if (maximum) {
+      return `FC até ${maximum} bpm`;
+    }
+
+    return "Frequência cardíaca controlada";
+  }
+
+  if (intensityType === "rpe") {
+    const minimum = step?.rpe_min;
+    const maximum = step?.rpe_max;
+
+    if (minimum && maximum) {
+      return `PSE ${minimum}–${maximum}`;
+    }
+
+    if (minimum) {
+      return `PSE ${minimum}`;
+    }
+
+    if (maximum) {
+      return `PSE até ${maximum}`;
+    }
+
+    return "PSE orientada";
+  }
+
+  if (intensityType === "free") {
+    return "Intensidade livre";
+  }
+
+  const minimum = step?.pace_min || "";
+  const maximum = step?.pace_max || "";
+
+  if (minimum && maximum) {
+    return `ritmo ${minimum}–${maximum}/km`;
+  }
+
+  if (minimum || maximum) {
+    return `ritmo ${minimum || maximum}/km`;
+  }
+
+  return "Ritmo confortável";
+}
+
+
+function stepExecution(step) {
+  const prescription = stepPrescription(step);
+  const repetitions = Number(step?.repetitions || 0);
+  const amount = repetitions > 1
+    ? `${repetitions} × ${prescription}`
+    : prescription;
+
+  const recovery = step?.recovery
+    ? ` · recuperação: ${step.recovery}`
+    : "";
+
+  return `${amount} · ${stepIntensity(step)}${recovery}`;
 }
 
 function stepTone(type = "") {
@@ -2171,7 +2274,16 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           </>
         )}
       </section>
-      {view === "training" && selectedSession && <div className="student-session-modal-backdrop" role="presentation" onMouseDown={() => setSelectedSession(null)}><section className="student-session-modal" role="dialog" aria-modal="true" aria-labelledby="student-session-title" onMouseDown={(event) => event.stopPropagation()}><header><div><span>{weekdays[selectedSession.weekday] || "Treino"} · Semana {selectedSession.week}</span><h3 id="student-session-title">{selectedSession.workout_name}</h3><p>{selectedSession.zone} · {formatWorkoutSummary(selectedSession)}</p></div><button className="modal-close" onClick={() => setSelectedSession(null)} aria-label="Fechar">×</button></header><WorkoutChart steps={selectedSession.steps} /><section><h4>Como executar</h4><ol>{selectedSession.steps?.map((step) => <li className={`workout-step ${stepTone(step.type)}`} key={step.order}><strong>{step.type}</strong><span>{step.repetitions ? `${step.repetitions} × ${stepDistance(step)}` : stepDistance(step)} · {step.pace_min}–{step.pace_max}/km{step.recovery ? ` · recuperação: ${step.recovery}` : ""}</span><small>{step.notes}</small></li>)}</ol></section><section className="student-adaptations"><h4>Benefícios e adaptações</h4><ul>{selectedSession.adaptations?.map((adaptation) => <li key={adaptation}>{adaptation}</li>)}</ul></section><footer><button className="btn-ghost" onClick={() => setSelectedSession(null)}>Fechar</button></footer></section></div>}
+      {view === "training" && selectedSession && <div className="student-session-modal-backdrop" role="presentation" onMouseDown={() => setSelectedSession(null)}><section className="student-session-modal" role="dialog" aria-modal="true" aria-labelledby="student-session-title" onMouseDown={(event) => event.stopPropagation()}><header><div><span>{weekdays[selectedSession.weekday] || "Treino"} · Semana {selectedSession.week}</span><h3 id="student-session-title">{selectedSession.workout_name}</h3><p>{selectedSession.zone} · {formatWorkoutSummary(selectedSession)}</p></div><button className="modal-close" onClick={() => setSelectedSession(null)} aria-label="Fechar">×</button></header>{selectedSession.steps?.some(
+  (step) =>
+    (step.intensity_type || "pace") === "pace"
+    && (
+      step.pace_min
+      || step.pace_max
+    ),
+) && (
+  <WorkoutChart steps={selectedSession.steps} />
+)}<section><h4>Como executar</h4><ol>{selectedSession.steps?.map((step) => <li className={`workout-step ${stepTone(step.type)}`} key={step.order}><strong>{step.type}</strong><span>{stepExecution(step)}</span><small>{step.notes}</small></li>)}</ol></section><section className="student-adaptations"><h4>Benefícios e adaptações</h4><ul>{selectedSession.adaptations?.map((adaptation) => <li key={adaptation}>{adaptation}</li>)}</ul></section><footer><button className="btn-ghost" onClick={() => setSelectedSession(null)}>Fechar</button></footer></section></div>}
     </main>
   );
 }

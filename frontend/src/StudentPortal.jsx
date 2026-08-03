@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { clearSession, connectStrava, createGoal, deleteGoal, getActivityFeedback, getStravaActivityDetails, getStravaStatus, getStudentTraining, listGoals, listStravaActivities, saveActivityFeedback, syncStravaActivities,
   updateActivityTrainingSession,
@@ -2274,16 +2275,128 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
           </>
         )}
       </section>
-      {view === "training" && selectedSession && <div className="student-session-modal-backdrop" role="presentation" onMouseDown={() => setSelectedSession(null)}><section className="student-session-modal" role="dialog" aria-modal="true" aria-labelledby="student-session-title" onMouseDown={(event) => event.stopPropagation()}><header><div><span>{weekdays[selectedSession.weekday] || "Treino"} · Semana {selectedSession.week}</span><h3 id="student-session-title">{selectedSession.workout_name}</h3><p>{selectedSession.zone} · {formatWorkoutSummary(selectedSession)}</p></div><button className="modal-close" onClick={() => setSelectedSession(null)} aria-label="Fechar">×</button></header>{selectedSession.steps?.some(
-  (step) =>
-    (step.intensity_type || "pace") === "pace"
-    && (
-      step.pace_min
-      || step.pace_max
-    ),
-) && (
-  <WorkoutChart steps={selectedSession.steps} />
-)}<section><h4>Como executar</h4><ol>{selectedSession.steps?.map((step) => <li className={`workout-step ${stepTone(step.type)}`} key={step.order}><strong>{step.type}</strong><span>{stepExecution(step)}</span><small>{step.notes}</small></li>)}</ol></section><section className="student-adaptations"><h4>Benefícios e adaptações</h4><ul>{selectedSession.adaptations?.map((adaptation) => <li key={adaptation}>{adaptation}</li>)}</ul></section><footer><button className="btn-ghost" onClick={() => setSelectedSession(null)}>Fechar</button></footer></section></div>}
+      {view === "training"
+        && selectedSession
+        && createPortal(
+          <div
+            className="student-session-modal-backdrop"
+            role="presentation"
+            onMouseDown={() => setSelectedSession(null)}
+          >
+            <section
+              className="student-session-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="student-session-title"
+              onMouseDown={(event) =>
+                event.stopPropagation()
+              }
+            >
+              <header>
+                <div>
+                  <span>
+                    {weekdays[selectedSession.weekday]
+                      || "Treino"} · Semana {
+                      selectedSession.week
+                    }
+                  </span>
+
+                  <h3 id="student-session-title">
+                    {selectedSession.workout_name}
+                  </h3>
+
+                  <p>
+                    {selectedSession.zone} · {
+                      formatWorkoutSummary(
+                        selectedSession,
+                      )
+                    }
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="modal-close"
+                  onClick={() =>
+                    setSelectedSession(null)
+                  }
+                  aria-label="Fechar"
+                >
+                  ×
+                </button>
+              </header>
+
+              {selectedSession.steps?.some(
+                (step) =>
+                  (
+                    step.intensity_type || "pace"
+                  ) === "pace"
+                  && (
+                    step.pace_min
+                    || step.pace_max
+                  ),
+              ) && (
+                <WorkoutChart
+                  steps={selectedSession.steps}
+                />
+              )}
+
+              <section>
+                <h4>Como executar</h4>
+
+                <ol>
+                  {selectedSession.steps?.map(
+                    (step) => (
+                      <li
+                        className={
+                          `workout-step ${
+                            stepTone(step.type)
+                          }`
+                        }
+                        key={step.order}
+                      >
+                        <strong>{step.type}</strong>
+                        <span>
+                          {stepExecution(step)}
+                        </span>
+                        {step.notes && (
+                          <small>{step.notes}</small>
+                        )}
+                      </li>
+                    ),
+                  )}
+                </ol>
+              </section>
+
+              <section className="student-adaptations">
+                <h4>Benefícios e adaptações</h4>
+
+                <ul>
+                  {selectedSession.adaptations?.map(
+                    (adaptation) => (
+                      <li key={adaptation}>
+                        {adaptation}
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </section>
+
+              <footer>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() =>
+                    setSelectedSession(null)
+                  }
+                >
+                  Fechar
+                </button>
+              </footer>
+            </section>
+          </div>,
+          document.body,
+        )}
     </main>
   );
 }

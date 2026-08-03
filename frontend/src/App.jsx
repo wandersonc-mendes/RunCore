@@ -466,9 +466,60 @@ function SessionAdjustment({
     return minutes * 60 + seconds;
   }
 
+  function stepEstimatedDistanceKm(step) {
+    if (
+      (step.prescription_type || "distance")
+      !== "duration"
+      || (step.intensity_type || "pace")
+        !== "pace"
+    ) {
+      return 0;
+    }
+
+    const durationSeconds = Number(
+      step.duration || 0,
+    );
+    const repetitions = Math.max(
+      Number(step.repetitions || 0),
+      1,
+    );
+    const paces = [
+      paceToSeconds(step.pace_min),
+      paceToSeconds(step.pace_max),
+    ].filter((pace) =>
+      Number.isFinite(pace)
+      && pace > 0
+    );
+
+    if (
+      durationSeconds <= 0
+      || paces.length === 0
+    ) {
+      return 0;
+    }
+
+    const averagePace = paces.reduce(
+      (total, pace) => total + pace,
+      0,
+    ) / paces.length;
+
+    return (
+      durationSeconds
+      * repetitions
+      / averagePace
+    );
+  }
+
+  const hasEstimatedDistance = value.steps.some(
+    (step) =>
+      stepEstimatedDistanceKm(step) > 0,
+  );
+
   const totalDistance = value.steps.reduce(
     (total, step) =>
-      total + stepDistanceKm(step),
+      total
+      + stepDistanceKm(step)
+      + stepEstimatedDistanceKm(step),
     0,
   );
 
@@ -649,7 +700,11 @@ function SessionAdjustment({
             <h3>Resumo</h3>
 
             <div>
-              <span>Distância total</span>
+              <span>
+                {hasEstimatedDistance
+                  ? "Distância estimada"
+                  : "Distância total"}
+              </span>
               <strong>
                 {totalDistance.toLocaleString(
                   "pt-BR",

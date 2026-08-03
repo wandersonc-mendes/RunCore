@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { clearSession, connectStrava, createGoal, deleteGoal, getActivityFeedback, getStravaActivityDetails, getStravaStatus, getStudentTraining, listGoals, listStravaActivities, saveActivityFeedback, syncStravaActivities } from "./api";
+import { clearSession, connectStrava, createGoal, deleteGoal, getActivityFeedback, getStravaActivityDetails, getStravaStatus, getStudentTraining, listGoals, listStravaActivities, saveActivityFeedback, syncStravaActivities,
+  updateActivityTrainingSession,
+} from "./api";
 import ProfilePanel from "./ProfilePanel";
 import { studentPaths } from "./router/paths";
 import { formatWorkoutSummary } from "./utils/workoutSummary";
@@ -505,6 +507,7 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const [feedbackForms, setFeedbackForms] = useState({});
   const [savingFeedback, setSavingFeedback] = useState(null);
   const [loadingActivity, setLoadingActivity] = useState(null);
+  const [savingActivityLink, setSavingActivityLink] = useState(null);
   const [training, setTraining] = useState(null);
   const [showActivities, setShowActivities] = useState(false);
   const [calculator, setCalculator] = useState(null);
@@ -607,6 +610,50 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
       setLoadingActivity(null);
     }
   }
+
+  async function changeActivityTrainingSession(
+    activity,
+    trainingSessionId,
+  ) {
+    setSavingActivityLink(activity.id);
+    setError("");
+
+    try {
+      const normalizedSessionId = trainingSessionId
+        ? Number(trainingSessionId)
+        : null;
+
+      await updateActivityTrainingSession(
+        activity.id,
+        normalizedSessionId,
+      );
+
+      setActivities((current) =>
+        current.map((item) =>
+          item.id === activity.id
+            ? {
+              ...item,
+              training_session_id: normalizedSessionId,
+            }
+            : item,
+        ),
+      );
+
+      const refreshedDetails = await getStravaActivityDetails(
+        activity.id,
+      );
+
+      setActivityDetails((current) => ({
+        ...current,
+        [activity.id]: refreshedDetails,
+      }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingActivityLink(null);
+    }
+  }
+
 
   async function saveGoal(event) {
     event.preventDefault();
@@ -1864,6 +1911,36 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
               const analysis = details?.analysis?.available
                 ? null
                 : analyseActivity(training, activity, details);
+
+              const activityDate = activityStartDate(activity);
+
+              const linkableSessions = [...(training?.sessions || [])]
+                .filter((session) => session.session_date)
+                .sort((first, second) => {
+                  if (!activityDate) {
+                    return first.session_date.localeCompare(
+                      second.session_date,
+                    );
+                  }
+
+                  const firstDate = dateFromKey(
+                    first.session_date,
+                  );
+                  const secondDate = dateFromKey(
+                    second.session_date,
+                  );
+
+                  const firstDistance = firstDate
+                    ? Math.abs(firstDate - activityDate)
+                    : Number.MAX_SAFE_INTEGER;
+
+                  const secondDistance = secondDate
+                    ? Math.abs(secondDate - activityDate)
+                    : Number.MAX_SAFE_INTEGER;
+
+                  return firstDistance - secondDistance;
+                })
+                .slice(0, 12);
               return <article className={`activity-row ${expanded ? "expanded" : ""}`} key={activity.id}>
                 <button className="activity-toggle" onClick={() => toggleActivity(activity.id)}>
                   <div><strong>{activity.name}</strong><span>{activity.sport_type} · {activity.distance.toFixed(2)} km · {Math.floor(activity.moving_time / 60)} min</span></div><b>{expanded ? "−" : "+"}</b>
@@ -1893,6 +1970,58 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                       </strong>
                     </div>
                     <div><span>Data</span><strong>{activityStartValue(activity) ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(activityStartDate(activity)) : "Não informada"}</strong></div>
+                    <section className="activity-session-link">
+                      <div>
+                        <span>VÍNCULO COM A PLANILHA</span>
+                        <strong>
+                          {activity.training_session_id
+                            ? "Sessão associada"
+                            : "Atividade sem sessão associada"}
+                        </strong>
+                        <small>
+                          Ajuste apenas quando o vínculo automático
+                          não corresponder ao treino executado.
+                        </small>
+                      </div>
+
+                      <label>
+                        Sessão planejada
+                        <select
+                          value={activity.training_session_id || ""}
+                          disabled={
+                            savingActivityLink === activity.id
+                            || loadingActivity === activity.id
+                          }
+                          onChange={(event) =>
+                            changeActivityTrainingSession(
+                              activity,
+                              event.target.value,
+                            )
+                          }
+                        >
+                          <option value="">
+                            Nenhuma sessão
+                          </option>
+
+                          {linkableSessions.map((session) => (
+                            <option
+                              key={session.id}
+                              value={session.id}
+                            >
+                              {session.session_date} · {
+                                session.workout_name
+                              }
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      {savingActivityLink === activity.id && (
+                        <small className="muted">
+                          Atualizando vínculo e recalculando análise...
+                        </small>
+                      )}
+                    </section>
                     <ActivityAnalysisCard analysis={details?.analysis} />{analysis && <section className="adherence-card"><div className="adherence-heading"><div><span>ADERÊNCIA AO TREINO</span><strong>{analysis.session.workout_name}</strong></div><b className={`adherence-status ${analysis.distanceStatus}`}>{statusLabel(analysis.distanceStatus, "distance")}</b></div><p>Planejado: {analysis.plannedDistance.toFixed(2)} km · Executado: {activity.distance.toFixed(2)} km</p>{analysis.aligned ? <><strong className="adherence-result">{analysis.inside} de {analysis.blocks.length} blocos dentro do planejado</strong><div className="adherence-blocks">{analysis.blocks.map((block, index) => <div className="adherence-block" key={`${block.step.order}-${index}`}><span>{block.step.type} {index + 1}</span><div><b className={`adherence-dot ${block.paceStatus}`} title={statusLabel(block.paceStatus)}></b><strong>{formatPace(block.lap.average_speed)}</strong><small>{block.lap.distance.toFixed(2)} km · alvo {block.expectedDistance.toFixed(2)} km</small></div><em className={block.paceStatus}>{statusLabel(block.paceStatus)}</em></div>)}</div></> : <p className="muted">As voltas importadas não correspondem diretamente às etapas do plano; por enquanto, a comparação está disponível para a sessão como um todo.</p>}</section>}
                     {details?.laps?.length > 0 && <div className="laps"><strong>Parciais</strong>{details.laps.map((lap) => <div className="lap" key={lap.number}><div className="lap-main"><strong>Volta {lap.number} — {formatDuration(lap.moving_time)}</strong><span>{lap.distance.toFixed(2)} km · {formatPace(lap.average_speed)}</span></div><small>{lap.average_heartrate ? `${Math.round(lap.average_heartrate)} bpm` : "FC não informada"} · {lap.elevation_gain == null ? "elevação não informada" : `${Math.round(lap.elevation_gain)} m`}</small></div>)}</div>}
                     <section className="training-feedback">

@@ -5403,3 +5403,63 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* RUNCORE ACTIVITY SESSION LINK 88B */
+.activity-session-link {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 420px);
+  gap: 18px;
+  align-items: end;
+  padding: 16px 18px;
+  border: 1px solid var(--border, #dfe5e2);
+  border-radius: 15px;
+  background: var(--surface-soft, #f5f8f6);
+}
+
+.activity-session-link > div {
+  display: grid;
+  gap: 5px;
+}
+
+.activity-session-link > div > span {
+  color: var(--muted, #66736d);
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.activity-session-link > div > small {
+  color: var(--muted, #66736d);
+  line-height: 1.45;
+}
+
+.activity-session-link label {
+  display: grid;
+  gap: 7px;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.activity-session-link select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid var(--border, #dfe5e2);
+  border-radius: 10px;
+  background: var(--surface, #ffffff);
+  color: inherit;
+}
+
+.activity-session-link select:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+@media (max-width: 760px) {
+  .activity-session-link {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+}

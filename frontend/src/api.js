@@ -243,6 +243,22 @@ export function getStravaActivityDetails(activityId) {
   );
 }
 
+export function updateActivityTrainingSession(
+  activityId,
+  trainingSessionId,
+) {
+  return request(
+    `/api/integrations/strava/activities/${activityId}/training-session`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        training_session_id: trainingSessionId,
+      }),
+    },
+  );
+}
+
+
 export function getActivityFeedback(activityId) {
   return request(
     `/api/integrations/strava/activities/${activityId}/feedback`,

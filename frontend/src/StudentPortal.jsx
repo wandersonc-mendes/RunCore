@@ -143,9 +143,33 @@ function statusLabel(status, metric = "pace") {
 }
 
 function sessionForActivity(training, activity) {
-  if (!training?.sessions || !activity?.start_at) return null;
-  const date = activityStartDate(activity).toISOString().slice(0, 10);
-  return training.sessions.find((session) => session.session_date === date) || null;
+  if (!training?.sessions || !activity) return null;
+
+  if (activity.training_session_id) {
+    const linkedSession = training.sessions.find(
+      (session) =>
+        Number(session.id)
+        === Number(activity.training_session_id),
+    );
+
+    if (linkedSession) {
+      return linkedSession;
+    }
+  }
+
+  const startedAt = activityStartDate(activity);
+
+  if (!startedAt) {
+    return null;
+  }
+
+  const date = startedAt
+    .toISOString()
+    .slice(0, 10);
+
+  return training.sessions.find(
+    (session) => session.session_date === date,
+  ) || null;
 }
 
 function analyseActivity(training, activity, details) {

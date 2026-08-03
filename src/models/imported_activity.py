@@ -12,6 +12,14 @@ class ImportedActivity(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     integration_id: Mapped[int] = mapped_column(ForeignKey("external_integrations.id"), nullable=False)
+    training_session_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "training_sessions.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        unique=True,
+    )
     provider_activity_id: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), default="")
     sport_type: Mapped[str] = mapped_column(String(50), default="")

@@ -344,6 +344,39 @@ def sync_strava_activities(user=Depends(current_user)):
         item.average_cadence = activity.get("average_cadence")
         item.total_elevation_gain = activity.get("total_elevation_gain")
         item.start_at = datetime.fromisoformat(activity["start_date"].replace("Z", "+00:00")) if activity.get("start_date") else None
-        activities.save(item)
+        saved_item = activities.save(item)
+
+        sport_type = str(
+            activity.get("sport_type")
+            or activity.get("type")
+            or ""
+        ).lower()
+
+        local_start = activity.get(
+            "start_date_local",
+        )
+        local_day = None
+
+        if local_start:
+            local_day = datetime.fromisoformat(
+                local_start.replace(
+                    "Z",
+                    "+00:00",
+                )
+            ).date()
+
+        if sport_type in {
+            "run",
+            "virtualrun",
+            "trailrun",
+        }:
+            athlete_id = access.athlete_for_student(
+                user.id,
+            )
+            activities.link_training_session(
+                saved_item.id,
+                athlete_id,
+                local_day,
+            )
 
     return {"imported": imported, "activities": activities.list_for_integration(integration.id)}

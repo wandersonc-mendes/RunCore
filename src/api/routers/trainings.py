@@ -233,6 +233,7 @@ def serialize_training(training):
                 "planned_distance": session.planned_distance,
                 "repetitions": session.repetitions,
                 "recovery": session.recovery,
+                "notes": session.notes or "",
                 "completed": session.completed,
                 "session_date": session.scheduled_date or ((training.start_date + timedelta(days=((session.week - 1) * 7) + session.weekday)) if training.start_date else None),
                 "phase": phase_for_week(session.week, total_weeks),
@@ -413,6 +414,7 @@ def create_session(
         "planned_distance": refreshed.planned_distance,
         "repetitions": refreshed.repetitions,
         "recovery": refreshed.recovery,
+        "notes": refreshed.notes or "",
         "completed": refreshed.completed,
         "session_date": refreshed.scheduled_date,
         "phase": phase_for_week(

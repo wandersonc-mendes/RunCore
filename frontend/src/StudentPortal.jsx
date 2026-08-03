@@ -1771,9 +1771,11 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                 <b>
                   {formatWorkoutSummary(session)}
                 </b>
-                <p>
-                  {session.steps?.[0]?.notes
-                    || "Confira os detalhes do treino com seu treinador."}
+                <p className="student-session-objective">
+                  <strong>Objetivo:</strong>{" "}
+                  {session.notes
+                    || session.steps?.[0]?.notes
+                    || "Objetivo ainda não informado pelo treinador."}
                 </p>
                 <button
                   className="btn-link"

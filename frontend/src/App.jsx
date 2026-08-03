@@ -783,8 +783,9 @@ function SessionAdjustment({
           </div>
 
           <label className="workout-general-notes">
-            Orientação geral do treinador
+            Objetivo e benefícios do treino
             <textarea
+              placeholder="Ex.: estimular recuperação ativa, desenvolver resistência aeróbica e preparar o atleta para o treino seguinte."
               value={value.notes}
               onChange={(event) =>
                 onChange((item) => ({
@@ -2009,7 +2010,13 @@ export default function App() {
   }
 >
   Abrir e ajustar
-</button></article>)}</div></section>
+</button>
+{session.notes && (
+  <p className="coach-session-objective">
+    <strong>Objetivo:</strong> {session.notes}
+  </p>
+)}
+</article>)}</div></section>
               ))}
             </>
           )}

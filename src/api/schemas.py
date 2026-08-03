@@ -133,6 +133,7 @@ class TrainingSessionOut(BaseModel):
     planned_distance: float
     repetitions: int
     recovery: int
+    notes: str = ""
     completed: bool
     session_date: date | None = None
     phase: str = "Base"

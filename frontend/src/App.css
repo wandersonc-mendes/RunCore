@@ -5139,3 +5139,23 @@ button {
     max-width: 64px;
   }
 }
+
+/* RUNCORE SESSION OBJECTIVE 74 */
+.student-session-objective,
+.coach-session-objective {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 8px 0 10px;
+  overflow-wrap: anywhere;
+}
+
+.student-session-objective strong,
+.coach-session-objective strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.workout-general-notes textarea {
+  min-height: 88px;
+}

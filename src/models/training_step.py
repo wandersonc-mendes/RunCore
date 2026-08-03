@@ -36,6 +36,16 @@ class TrainingStep(Base):
         String(30),
     )
 
+    prescription_type: Mapped[str] = mapped_column(
+        String(16),
+        default="distance",
+    )
+
+    intensity_type: Mapped[str] = mapped_column(
+        String(20),
+        default="pace",
+    )
+
     distance: Mapped[float] = mapped_column(
         Float,
         default=0,
@@ -69,6 +79,26 @@ class TrainingStep(Base):
     pace_max: Mapped[str] = mapped_column(
         String(10),
         default="",
+    )
+
+    heart_rate_min: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    heart_rate_max: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    rpe_min: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    rpe_max: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
     )
 
     notes: Mapped[str] = mapped_column(

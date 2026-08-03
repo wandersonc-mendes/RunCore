@@ -7,7 +7,7 @@ import {
 } from "./api";
 
 const TEXT = {
-  title: "Indice de Perfil de Treinamento",
+  title: "IPT/Avaliação",
   subtitle: "Compare a velocidade do esfor\u00e7o curto com a capacidade de sustenta\u00e7\u00e3o.",
   newAssessment: "Nova avalia\u00e7\u00e3o IPT",
   protocol: "Protocolo",
@@ -18,7 +18,7 @@ const TEXT = {
   longDistance: "Dist\u00e2ncia no esfor\u00e7o longo (m)",
   timeHint: "Informe MM:SS ou HH:MM:SS.",
   notes: "Observa\u00e7\u00f5es",
-  save: "Calcular e salvar IPT",
+  save: "Calcular e salvar",
   saving: "Calculando...",
   loading: "Carregando...",
   current: "IPT atual",
@@ -107,7 +107,6 @@ function profileClass(profile) {
 export default function IptAssessmentView({
   athlete,
   onBack,
-  onEvaluations,
   onTraining,
 }) {
   const [protocols, setProtocols] = useState([]);
@@ -217,10 +216,6 @@ export default function IptAssessmentView({
         </div>
 
         <div className="header-actions">
-          <button className="btn-ghost" onClick={onEvaluations}>
-            {TEXT.evaluations}
-          </button>
-
           <button className="btn-ghost" onClick={onTraining}>
             {TEXT.training}
           </button>

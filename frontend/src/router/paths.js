@@ -14,7 +14,7 @@ export const coachPaths = {
   athletePlanning: (athleteId = ":athleteId") =>
     `/treinador/atletas/${athleteId}/planejamento`,
   athleteEvaluations: (athleteId = ":athleteId") =>
-    `/treinador/atletas/${athleteId}/avaliacoes`,
+    `/treinador/atletas/${athleteId}/ipt`,
   athleteIpt: (athleteId = ":athleteId") =>
     `/treinador/atletas/${athleteId}/ipt`,
   workouts: "/treinador/treinos",

@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from math import exp
 
 from fastapi import APIRouter, HTTPException, Query, status
 
@@ -41,11 +42,123 @@ def get_athlete(athlete_id: int):
     return athlete
 
 
-def get_latest_evaluation(athlete_id: int):
-    evaluation = evaluation_repository.last_evaluation(athlete_id)
-    if evaluation is None:
-        raise HTTPException(status_code=409, detail="Registre uma avaliação antes de gerar o planejamento.")
-    return evaluation
+def get_optional_evaluation(athlete_id: int):
+    return evaluation_repository.last_evaluation(
+        athlete_id,
+    )
+
+
+def get_latest_ipt(athlete_id: int):
+    return ipt_repository.get_latest_by_athlete(
+        athlete_id,
+    )
+
+
+def vdot_from_ipt(assessment) -> float | None:
+    if assessment is None:
+        return None
+
+    protocol_code = str(
+        assessment.get("protocol_code") or ""
+    )
+    long_result = float(
+        assessment.get("long_result") or 0
+    )
+
+    distance_protocols = {
+        "DIST_500_1600": 1600,
+        "DIST_1000_2400": 2400,
+        "DIST_1000_3000": 3000,
+        "DIST_1000_3200": 3200,
+        "DIST_1000_5000": 5000,
+    }
+
+    time_protocols = {
+        "TIME_2_5": 300,
+        "TIME_4_12": 720,
+    }
+
+    if (
+        protocol_code in distance_protocols
+        and long_result > 0
+    ):
+        distance_m = distance_protocols[
+            protocol_code
+        ]
+        duration_seconds = long_result
+    elif (
+        protocol_code in time_protocols
+        and long_result > 0
+    ):
+        distance_m = long_result
+        duration_seconds = time_protocols[
+            protocol_code
+        ]
+    else:
+        return None
+
+    duration_minutes = duration_seconds / 60
+
+    if duration_minutes <= 0:
+        return None
+
+    velocity_m_min = distance_m / duration_minutes
+
+    oxygen_cost = (
+        -4.60
+        + 0.182258 * velocity_m_min
+        + 0.000104 * velocity_m_min ** 2
+    )
+
+    fraction = (
+        0.8
+        + 0.1894393
+        * exp(-0.012778 * duration_minutes)
+        + 0.2989558
+        * exp(-0.1932605 * duration_minutes)
+    )
+
+    if fraction <= 0:
+        return None
+
+    return round(oxygen_cost / fraction, 2)
+
+
+def training_reference(athlete_id: int):
+    evaluation = get_optional_evaluation(
+        athlete_id,
+    )
+    ipt_assessment = get_latest_ipt(
+        athlete_id,
+    )
+
+    vdot = (
+        float(evaluation.vdot)
+        if evaluation is not None
+        else vdot_from_ipt(ipt_assessment)
+    )
+
+    methodology = (
+        "Jack Daniels"
+        if evaluation is not None
+        else (
+            "IPT/Avaliação"
+            if ipt_assessment is not None
+            else "Observação inicial"
+        )
+    )
+
+    return {
+        "evaluation": evaluation,
+        "ipt": ipt_assessment,
+        "vdot": vdot,
+        "methodology": methodology,
+        "ipt_profile": (
+            ipt_assessment.get("profile")
+            if ipt_assessment
+            else None
+        ),
+    }
 
 
 def get_latest_ipt_profile(athlete_id: int) -> str | None:
@@ -318,7 +431,7 @@ def create_training(athlete_id: int, payload: TrainingCreate):
         raise HTTPException(status_code=409, detail="Este atleta já possui um planejamento ativo.")
     if payload.target_date and payload.target_date <= payload.start_date:
         raise HTTPException(status_code=422, detail="A data da prova precisa ser posterior ao início do ciclo.")
-    evaluation = evaluation_repository.last_evaluation(
+    reference = training_reference(
         athlete_id,
     )
 
@@ -327,46 +440,33 @@ def create_training(athlete_id: int, payload: TrainingCreate):
         payload.start_date,
     )
 
-    if goal is None:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Cadastre uma meta ativa para o atleta "
-                "antes de gerar o planejamento."
-            ),
+    if goal is not None:
+        goal_data = goal_training_data(
+            goal,
+            payload.start_date,
         )
 
-    goal_data = goal_training_data(
-        goal,
-        payload.start_date,
-    )
-
-    objective = goal_data["objective"]
-    target_distance = goal_data["target_distance"]
-    target_date = goal_data["target_date"]
-    total_weeks = goal_data["total_weeks"]
-
-    has_evaluation = evaluation is not None
+        objective = goal_data["objective"]
+        target_distance = goal_data["target_distance"]
+        target_date = goal_data["target_date"]
+        total_weeks = goal_data["total_weeks"]
+    else:
+        objective = payload.objective
+        target_distance = payload.target_distance
+        target_date = payload.target_date
+        total_weeks = payload.total_weeks or 8
 
     training = persistence_service.create_training(
         athlete_id=athlete_id,
-        vdot=(
-            evaluation.vdot
-            if has_evaluation
-            else None
-        ),
+        vdot=reference["vdot"],
         name=payload.name,
-        methodology=(
-            "Jack Daniels"
-            if has_evaluation
-            else "Observação inicial"
-        ),
+        methodology=reference["methodology"],
         objective=objective,
         target_distance=target_distance,
         start_date=payload.start_date,
         target_date=target_date,
         total_weeks=total_weeks,
-        ipt_profile=get_latest_ipt_profile(athlete_id),
+        ipt_profile=reference["ipt_profile"],
     )
     return serialize_training(training_repository.get_by_id(training.id))
 
@@ -377,7 +477,9 @@ def regenerate_training(
     goal_id: int | None = Query(default=None),
 ):
     get_athlete(athlete_id)
-    evaluation = get_latest_evaluation(athlete_id)
+    reference = training_reference(
+        athlete_id,
+    )
     training = training_repository.get_active_by_athlete(athlete_id)
     if training is None:
         raise HTTPException(status_code=404, detail="Não há planejamento ativo para regenerar.")
@@ -395,43 +497,50 @@ def regenerate_training(
         )
     )
 
-    if goal is None:
+    if goal_id is not None and goal is None:
         raise HTTPException(
             status_code=409,
             detail=(
                 "A meta selecionada não pertence ao atleta, "
                 "não está ativa ou sua data não é posterior "
                 "ao início do planejamento."
-            )
-            if goal_id is not None
-            else (
-                "Cadastre uma meta ativa e futura para o atleta "
-                "antes de regenerar o planejamento."
             ),
         )
 
-    goal_data = goal_training_data(
-        goal,
-        cycle_start,
-    )
+    total_weeks = None
 
-    training.objective = goal_data["objective"]
-    training.target_distance = goal_data["target_distance"]
-    training.target_date = goal_data["target_date"]
-    training.methodology = "Jack Daniels"
+    if goal is not None:
+        goal_data = goal_training_data(
+            goal,
+            cycle_start,
+        )
+
+        training.objective = goal_data["objective"]
+        training.target_distance = goal_data[
+            "target_distance"
+        ]
+        training.target_date = goal_data[
+            "target_date"
+        ]
+        total_weeks = goal_data["total_weeks"]
+
+    training.methodology = reference[
+        "methodology"
+    ]
 
     training_repository.update(
         training,
     )
 
-    total_weeks = goal_data["total_weeks"]
-
-    persistence_service.regenerate_training(
-        training.id,
-        evaluation.vdot,
-        ipt_profile=get_latest_ipt_profile(athlete_id),
-        total_weeks=total_weeks,
-    )
+    if reference["vdot"] is not None:
+        persistence_service.regenerate_training(
+            training.id,
+            reference["vdot"],
+            ipt_profile=reference[
+                "ipt_profile"
+            ],
+            total_weeks=total_weeks,
+        )
     return serialize_training(training_repository.get_by_id(training.id))
 
 

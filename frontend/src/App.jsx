@@ -1488,7 +1488,7 @@ export default function App() {
     const viewSection = routeSection === "planejamento"
       ? "training"
       : routeSection === "avaliacoes"
-        ? "evaluations"
+        ? "ipt"
         : routeSection;
 
     const athlete = athletes.find(
@@ -1695,14 +1695,7 @@ export default function App() {
   }
 
   function openEvaluations(athlete) {
-    setSelectedAthlete(athlete);
-    setSelectedView("evaluations");
-    setEvaluationForm(emptyEvaluation);
-    setSelectedWorkout(null);
-    navigate(
-      coachPaths.athleteEvaluations(athlete.id),
-    );
-    loadEvaluations(athlete.id);
+    openIpt(athlete);
   }
 
   function openProfile(athlete) {
@@ -2522,9 +2515,6 @@ export default function App() {
               setSelectedAthlete(null);
               navigate(coachPaths.athletes);
             }}
-            onEvaluations={() =>
-              openEvaluations(selectedAthlete)
-            }
             onTraining={() =>
               openTraining(selectedAthlete)
             }
@@ -2546,7 +2536,7 @@ export default function App() {
               <p>Aluno: {selectedAthlete.name}</p>
             </div>
           </div>
-          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT</button><button className="btn-ghost" onClick={() => openTraining(selectedAthlete)}>Planejamento</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
+          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT/Avaliação</button><button className="btn-ghost" onClick={() => openTraining(selectedAthlete)}>Planejamento</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
         </header>
 
         <main className="content">
@@ -2660,7 +2650,7 @@ export default function App() {
         <div className="page routed-training-page">
         <header className="topbar">
           <div className="brand"><BrandLogo /><div><h1>Planejamento de treino</h1><p>Aluno: {selectedAthlete.name}</p></div></div>
-          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT</button><button className="btn-ghost" onClick={() => openEvaluations(selectedAthlete)}>Avaliações</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
+          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT/Avaliação</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
         </header>
         <main className="content">
           {error && <div className="alert">{error}</div>}
@@ -2932,7 +2922,7 @@ export default function App() {
                 {quickAction === "athletes"
                   ? "Abrir cadastro do atleta"
                   : quickAction === "evaluations"
-                    ? "Abrir avaliações"
+                    ? "Abrir IPT/Avaliação"
                     : "Abrir planejamento"}
               </h2>
 
@@ -3047,7 +3037,7 @@ export default function App() {
             type="button"
             onClick={() => setQuickAction("evaluations")}
           >
-            Avaliações
+            IPT/Avaliação
           </button>
 
           <button
@@ -3244,8 +3234,8 @@ export default function App() {
 
             <div>
               <span>Próximo passo</span>
-              <strong>Avaliar</strong>
-              <small>atualize o VDOT dos atletas</small>
+              <strong>IPT/Avaliação</strong>
+              <small>atualize o perfil de treinamento</small>
             </div>
           </article>
         </section>
@@ -3456,17 +3446,7 @@ export default function App() {
                         openIpt(athlete)
                       }
                     >
-                      IPT
-                    </button>
-
-                    <button
-                      type="button"
-                      className="btn-link"
-                      onClick={() =>
-                        openEvaluations(athlete)
-                      }
-                    >
-                      Avaliações
+                      IPT/Avaliação
                     </button>
 
                     <button

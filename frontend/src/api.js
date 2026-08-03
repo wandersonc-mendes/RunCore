@@ -302,6 +302,38 @@ export function listGoals() {
   return request("/api/goals");
 }
 
+export function listAthleteGoals(athleteId) {
+  return request(
+    `/api/goals/athletes/${athleteId}`,
+  );
+}
+
+export function createAthleteGoal(
+  athleteId,
+  data,
+) {
+  return request(
+    `/api/goals/athletes/${athleteId}`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+}
+
+export function deleteAthleteGoal(
+  athleteId,
+  goalId,
+) {
+  return request(
+    `/api/goals/athletes/${athleteId}/${goalId}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+
 export function createGoal(data) {
   return request("/api/goals", {
     method: "POST",

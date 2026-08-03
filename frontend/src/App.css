@@ -5463,3 +5463,140 @@ button {
     align-items: stretch;
   }
 }
+
+
+/* RUNCORE COACH GOALS 92B */
+.coach-goals-card {
+  display: grid;
+  gap: 20px;
+}
+
+.coach-goals-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.coach-goals-heading h2 {
+  margin: 4px 0 6px;
+}
+
+.coach-goals-count {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: var(--surface-soft, #edf3f0);
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.coach-goal-form {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.5fr)
+    minmax(130px, .65fr)
+    minmax(150px, .75fr)
+    minmax(140px, .65fr)
+    auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.coach-goal-form label {
+  display: grid;
+  gap: 7px;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.coach-goal-form input,
+.coach-goal-form select {
+  width: 100%;
+  min-height: 42px;
+}
+
+.coach-goals-list {
+  display: grid;
+  gap: 10px;
+}
+
+.coach-goals-list article {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--border, #dfe5e2);
+  border-radius: 13px;
+  background: var(--surface-soft, #f5f8f6);
+}
+
+.coach-goals-list article > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.coach-goals-list article span {
+  color: var(--muted, #66736d);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.coach-goals-list article small {
+  color: var(--muted, #66736d);
+}
+
+.coach-goal-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.coach-goals-empty {
+  padding: 18px;
+  border: 1px dashed var(--border, #dfe5e2);
+  border-radius: 13px;
+  color: var(--muted, #66736d);
+  text-align: center;
+}
+
+.btn-link.danger {
+  color: #b53f3a;
+}
+
+@media (max-width: 1080px) {
+  .coach-goal-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .coach-goal-form .btn-primary {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 680px) {
+  .coach-goals-heading,
+  .coach-goals-list article,
+  .coach-goal-actions {
+    align-items: stretch;
+  }
+
+  .coach-goals-heading,
+  .coach-goals-list article {
+    display: grid;
+  }
+
+  .coach-goals-count {
+    justify-self: start;
+  }
+
+  .coach-goal-form {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-goal-actions {
+    display: grid;
+  }
+}

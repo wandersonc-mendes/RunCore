@@ -19,6 +19,9 @@ import {
   listInvitations,
   approveInvitation,
   getStudentProfile,
+  listAthleteGoals,
+  createAthleteGoal,
+  deleteAthleteGoal,
 } from "./api";
 import LoginScreen from "./LoginScreen";
 import StudentPortal from "./StudentPortal";
@@ -851,6 +854,15 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [savingEvaluation, setSavingEvaluation] = useState(false);
   const [savingTraining, setSavingTraining] = useState(false);
+  const [athleteGoals, setAthleteGoals] = useState([]);
+  const [goalForm, setGoalForm] = useState({
+    name: "",
+    distance: "",
+    target_date: "",
+    priority: "Principal",
+  });
+  const [savingGoal, setSavingGoal] = useState(false);
+  const [deletingGoalId, setDeletingGoalId] = useState(null);
   const [trainingForm, setTrainingForm] = useState({ name: "Planejamento Principal", objective: "", target_distance: "", start_date: new Date().toISOString().slice(0, 10), target_date: "", total_weeks: "8" });
   const [workoutEdit, setWorkoutEdit] = useState(null);
   const [error, setError] = useState(null);
@@ -1420,10 +1432,21 @@ export default function App() {
     });
 
     setLoading(true);
+    setAthleteGoals([]);
 
     try {
-      setTraining(
-        await getTraining(athlete.id),
+      const [trainingData, goalsData] = await Promise.all([
+        getTraining(athlete.id),
+        listAthleteGoals(athlete.id),
+      ]);
+
+      setTraining(trainingData);
+      setAthleteGoals(
+        [...goalsData].sort((first, second) =>
+          first.target_date.localeCompare(
+            second.target_date,
+          ),
+        ),
       );
     } catch (err) {
       setError(err.message);
@@ -1431,6 +1454,116 @@ export default function App() {
       setLoading(false);
     }
   }
+
+  async function loadAthleteGoals(athleteId) {
+    try {
+      const items = await listAthleteGoals(
+        athleteId,
+      );
+
+      setAthleteGoals(
+        [...items].sort((first, second) =>
+          first.target_date.localeCompare(
+            second.target_date,
+          ),
+        ),
+      );
+    } catch (err) {
+      setError(err.message);
+      setAthleteGoals([]);
+    }
+  }
+
+  async function handleCreateAthleteGoal(event) {
+    event.preventDefault();
+
+    if (
+      savingGoal
+      || !selectedAthlete
+      || !goalForm.name.trim()
+      || !goalForm.distance
+      || !goalForm.target_date
+    ) {
+      return;
+    }
+
+    setSavingGoal(true);
+    setError(null);
+
+    try {
+      const created = await createAthleteGoal(
+        selectedAthlete.id,
+        {
+          ...goalForm,
+          name: goalForm.name.trim(),
+          distance: Number(goalForm.distance),
+        },
+      );
+
+      setAthleteGoals((current) =>
+        [...current, created].sort((first, second) =>
+          first.target_date.localeCompare(
+            second.target_date,
+          ),
+        ),
+      );
+
+      setGoalForm({
+        name: "",
+        distance: "",
+        target_date: "",
+        priority: "Principal",
+      });
+
+      setTrainingForm((current) => ({
+        ...current,
+        objective: created.name,
+        target_distance: String(created.distance),
+        target_date: created.target_date,
+      }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingGoal(false);
+    }
+  }
+
+  async function handleDeleteAthleteGoal(goalId) {
+    if (
+      !selectedAthlete
+      || deletingGoalId
+    ) {
+      return;
+    }
+
+    setDeletingGoalId(goalId);
+    setError(null);
+
+    try {
+      await deleteAthleteGoal(
+        selectedAthlete.id,
+        goalId,
+      );
+
+      setAthleteGoals((current) =>
+        current.filter((goal) => goal.id !== goalId),
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeletingGoalId(null);
+    }
+  }
+
+  function applyGoalToTraining(goal) {
+    setTrainingForm((current) => ({
+      ...current,
+      objective: goal.name,
+      target_distance: String(goal.distance),
+      target_date: goal.target_date,
+    }));
+  }
+
 
   async function handleCreateTraining(regenerate = false) {
     if (savingTraining) return;
@@ -2010,6 +2143,170 @@ export default function App() {
         </header>
         <main className="content">
           {error && <div className="alert">{error}</div>}
+
+          <section className="card coach-goals-card">
+            <div className="coach-goals-heading">
+              <div>
+                <p className="eyebrow">
+                  METAS E OBJETIVOS
+                </p>
+                <h2>Objetivos do atleta</h2>
+                <p className="muted">
+                  Cadastre a prova ou objetivo que servirá
+                  de referência para o planejamento.
+                </p>
+              </div>
+
+              <span className="coach-goals-count">
+                {athleteGoals.length} {
+                  athleteGoals.length === 1
+                    ? "meta"
+                    : "metas"
+                }
+              </span>
+            </div>
+
+            <form
+              className="coach-goal-form"
+              onSubmit={handleCreateAthleteGoal}
+            >
+              <label>
+                Nome da meta
+                <input
+                  required
+                  value={goalForm.name}
+                  placeholder="Ex.: Meia Maratona de Vitória"
+                  onChange={(event) =>
+                    setGoalForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Distância (km)
+                <input
+                  required
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  value={goalForm.distance}
+                  placeholder="21.1"
+                  onChange={(event) =>
+                    setGoalForm((current) => ({
+                      ...current,
+                      distance: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Data-alvo
+                <input
+                  required
+                  type="date"
+                  value={goalForm.target_date}
+                  onChange={(event) =>
+                    setGoalForm((current) => ({
+                      ...current,
+                      target_date: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <label>
+                Prioridade
+                <select
+                  value={goalForm.priority}
+                  onChange={(event) =>
+                    setGoalForm((current) => ({
+                      ...current,
+                      priority: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="Principal">
+                    Principal
+                  </option>
+                  <option value="Secundária">
+                    Secundária
+                  </option>
+                </select>
+              </label>
+
+              <button
+                className="btn-primary"
+                type="submit"
+                disabled={
+                  savingGoal
+                  || !goalForm.name.trim()
+                  || !goalForm.distance
+                  || !goalForm.target_date
+                }
+              >
+                {savingGoal
+                  ? "Salvando meta..."
+                  : "Adicionar meta"}
+              </button>
+            </form>
+
+            <div className="coach-goals-list">
+              {athleteGoals.length === 0 ? (
+                <div className="coach-goals-empty">
+                  Nenhuma meta cadastrada para este atleta.
+                </div>
+              ) : (
+                athleteGoals.map((goal) => (
+                  <article key={goal.id}>
+                    <div>
+                      <span>{goal.priority}</span>
+                      <strong>{goal.name}</strong>
+                      <small>
+                        {Number(goal.distance).toLocaleString(
+                          "pt-BR",
+                          {
+                            maximumFractionDigits: 2,
+                          },
+                        )} km · {
+                          formatTestDate(goal.target_date)
+                        }
+                      </small>
+                    </div>
+
+                    <div className="coach-goal-actions">
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() =>
+                          applyGoalToTraining(goal)
+                        }
+                      >
+                        Usar no planejamento
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn-link danger"
+                        disabled={deletingGoalId === goal.id}
+                        onClick={() =>
+                          handleDeleteAthleteGoal(goal.id)
+                        }
+                      >
+                        {deletingGoalId === goal.id
+                          ? "Excluindo..."
+                          : "Excluir"}
+                      </button>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+
           {loading ? <p className="muted">Carregando...</p> : !training ? (
             <section className="card training-config"><p className="eyebrow">NOVO MACROCICLO</p><h2>Monte o ciclo a partir da meta do aluno</h2><p className="muted">Use a data da prova para calcular as semanas disponíveis ou informe a duração do ciclo.</p><div className="form-grid"><label>Planejamento<input value={trainingForm.name} onChange={(event) => setTrainingForm((form) => ({ ...form, name: event.target.value }))} /></label><label>Objetivo principal<input required value={trainingForm.objective} onChange={(event) => setTrainingForm((form) => ({ ...form, objective: event.target.value }))} placeholder="Ex.: Meia Maratona de Vitória" /></label><label>Distância-alvo (km)<input required type="number" min="0.1" step="0.1" value={trainingForm.target_distance} onChange={(event) => setTrainingForm((form) => ({ ...form, target_distance: event.target.value }))} placeholder="21.1" /></label><label>Início do ciclo<input required type="date" value={trainingForm.start_date} onChange={(event) => setTrainingForm((form) => ({ ...form, start_date: event.target.value }))} /></label><label>Data da prova (opcional)<input type="date" value={trainingForm.target_date} onChange={(event) => setTrainingForm((form) => ({ ...form, target_date: event.target.value }))} /></label><label>Semanas disponíveis {trainingForm.target_date && <small>(calculadas entre o início e a prova)</small>}<input disabled={Boolean(trainingForm.target_date)} type="number" min="1" max="52" value={trainingForm.total_weeks} onChange={(event) => setTrainingForm((form) => ({ ...form, total_weeks: event.target.value }))} /></label></div><button className="btn-primary" disabled={savingTraining || !trainingForm.objective || !trainingForm.target_distance} onClick={() => handleCreateTraining()}>{savingTraining ? "Gerando ciclo..." : "Gerar macrociclo"}</button></section>
           ) : (

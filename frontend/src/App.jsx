@@ -2407,12 +2407,10 @@ export default function App() {
     && location.pathname === coachPaths.evaluations
   ) {
     return (
-      <AppShell user={currentUser} onLogout={coachLogout}>
-        <EvaluationsPage
-          athletes={athletes}
-          onOpenEvaluations={openEvaluations}
-        />
-      </AppShell>
+      <Navigate
+        to={coachPaths.athletes}
+        replace
+      />
     );
   }
 
@@ -2983,7 +2981,7 @@ export default function App() {
             <h2>Olá, {currentUser.name}.</h2>
 
             <p>
-              Organize seus atletas, acompanhe avaliações e mantenha
+              Organize seus atletas, acompanhe o IPT e mantenha
               cada plano em dia.
             </p>
           </div>

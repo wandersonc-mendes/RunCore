@@ -19,7 +19,7 @@ export const coachPaths = {
     `/treinador/atletas/${athleteId}/ipt`,
   workouts: "/treinador/treinos",
   calendar: "/treinador/agenda",
-  evaluations: "/treinador/avaliacoes",
+  evaluations: "/treinador/ipt-avaliacao",
   reports: "/treinador/relatorios",
   settings: "/treinador/configuracoes",
 };

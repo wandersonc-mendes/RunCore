@@ -342,7 +342,7 @@ function WorkoutChart({ steps = [] }) {
     return "68%";
   };
   return <section className="workout-chart" aria-label="Gráfico da estrutura do treino">
-    <div className="workout-chart-bars">{weightedSteps.map((step) => <div key={step.chartKey} className={`chart-segment ${stepTone(step.type)}`} style={{ flexGrow: step.weight, height: chartHeight(step) }} title={`${step.type}: ${stepDistance(step)} `}><span>{weightedSteps.length <= 7 ? step.type : ""}</span></div>)}</div>
+    <div className="workout-chart-bars">{weightedSteps.map((step) => <div key={step.chartKey} className={`chart-segment ${stepTone(step.type)}`} style={{ flexGrow: step.weight, height: chartHeight(step) }} title={`${step.type}: ${stepPrescription(step)} `}><span>{weightedSteps.length <= 7 ? step.type : ""}</span></div>)}</div>
     <div className="workout-chart-legend"><span className="warmup">Aquecimento</span><span className="run">Corrida</span><span className="recovery">Recuperação</span><span className="cooldown">Desaquecimento</span></div>
   </section>;
 }

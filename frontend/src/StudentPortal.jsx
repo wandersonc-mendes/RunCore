@@ -120,11 +120,51 @@ function stepIntensity(step) {
 
 
 function stepExecution(step) {
+  const tone = stepTone(step?.type);
+  const prescriptionType = (
+    step?.prescription_type || "distance"
+  );
+  const distance = Number(step?.distance || 0);
+  const duration = Number(step?.duration || 0);
+  const hasPrescription = (
+    prescriptionType === "duration"
+      ? duration > 0
+      : distance > 0
+  );
+
+  if (tone === "recovery" && !hasPrescription) {
+    return (
+      step?.notes
+      || step?.recovery
+      || "Recuperação livre"
+    );
+  }
+
   const prescription = stepPrescription(step);
   const repetitions = Number(step?.repetitions || 0);
   const amount = repetitions > 1
     ? `${repetitions} × ${prescription}`
     : prescription;
+
+  if (
+    tone === "recovery"
+    && (
+      step?.intensity_type === "free"
+      || (
+        !step?.pace_min
+        && !step?.pace_max
+        && !step?.heart_rate_min
+        && !step?.heart_rate_max
+        && !step?.rpe_min
+        && !step?.rpe_max
+      )
+    )
+  ) {
+    return [
+      amount,
+      step?.notes || step?.recovery,
+    ].filter(Boolean).join(" · ");
+  }
 
   const recovery = step?.recovery
     ? ` · recuperação: ${step.recovery}`

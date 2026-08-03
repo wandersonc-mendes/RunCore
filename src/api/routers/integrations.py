@@ -13,6 +13,7 @@ from sqlalchemy import text
 from api.dependencies import current_user, require_coach
 from api.schemas import ActivityFeedbackPayload
 from core.auth_service import AuthService
+from core.training.activity_analysis_service import ActivityAnalysisService
 from repositories.integration_repository import IntegrationRepository
 from models.external_integration import ExternalIntegration
 from models.imported_activity import ImportedActivity
@@ -195,7 +196,13 @@ def strava_activity_details(activity_id: int, user=Depends(current_user)):
     def kilometers(value):
         return round((value or 0) / 1000, 3)
 
+    analysis = ActivityAnalysisService.analyse(
+        activity,
+        laps,
+    )
+
     return {
+        "analysis": analysis,
         "average_heartrate": detail.get("average_heartrate"),
         "max_heartrate": detail.get("max_heartrate"),
         "total_elevation_gain": detail.get("total_elevation_gain"),

@@ -241,6 +241,208 @@ function WorkoutChart({ steps = [] }) {
   </section>;
 }
 
+function ActivityAnalysisCard({ analysis }) {
+  if (!analysis?.available || !analysis?.interpretation) {
+    return null;
+  }
+
+  const interpretation = analysis.interpretation;
+  const distance = analysis.distance || {};
+  const duration = analysis.duration || {};
+  const pace = analysis.pace || {};
+  const blocks = analysis.blocks || {};
+  const confidenceLabels = {
+    high: "Alta confiança",
+    medium: "Confiança moderada",
+    low: "Baixa confiança",
+  };
+
+  return (
+    <section
+      className={`activity-analysis-card ${interpretation.classification}`}
+      aria-label="Análise automática do treino"
+    >
+      <header className="activity-analysis-heading">
+        <div>
+          <span>ANÁLISE DO TREINO</span>
+          <h4>{interpretation.title}</h4>
+        </div>
+
+        <b className="activity-analysis-confidence">
+          {confidenceLabels[analysis.confidence]
+            || "Análise parcial"}
+        </b>
+      </header>
+
+      <p className="activity-analysis-summary">
+        {interpretation.summary}
+      </p>
+
+      <div className="activity-analysis-metrics">
+        <article className={distance.status || "unknown"}>
+          <span>Volume</span>
+          <strong>
+            {Number(distance.executed_km || 0).toLocaleString(
+              "pt-BR",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              },
+            )} km
+          </strong>
+          <small>
+            planejado: {Number(distance.planned_km || 0).toLocaleString(
+              "pt-BR",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              },
+            )} km
+          </small>
+          <em>{interpretation.labels?.distance}</em>
+        </article>
+
+        <article className={pace.status || "unknown"}>
+          <span>Ritmo médio</span>
+          <strong>
+            {pace.executed_seconds
+              ? formatPaceSeconds(pace.executed_seconds)
+              : "Sem dado"}
+          </strong>
+          <small>
+            {pace.planned_min_seconds && pace.planned_max_seconds
+              ? `alvo: ${formatPaceSeconds(
+                pace.planned_min_seconds,
+              )} a ${formatPaceSeconds(
+                pace.planned_max_seconds,
+              )}`
+              : "sem faixa global única"}
+          </small>
+          <em>{interpretation.labels?.pace}</em>
+        </article>
+
+        <article className={duration.status || "unknown"}>
+          <span>Duração</span>
+          <strong>
+            {formatDuration(duration.executed_seconds || 0)}
+          </strong>
+          <small>
+            {duration.planned_seconds
+              ? `planejado: ${formatDuration(
+                duration.planned_seconds,
+              )}`
+              : "sem duração prescrita"}
+          </small>
+          <em>{interpretation.labels?.duration}</em>
+        </article>
+
+        <article>
+          <span>Blocos</span>
+          <strong>
+            {blocks.aligned
+              ? `${blocks.items?.length || 0} analisados`
+              : "Análise global"}
+          </strong>
+          <small>
+            {blocks.aligned
+              ? `${blocks.available_laps || 0} voltas disponíveis`
+              : `${blocks.expected_count || 0} blocos esperados`}
+          </small>
+          <em>
+            {blocks.aligned
+              ? "Voltas compatíveis"
+              : "Voltas não alinhadas"}
+          </em>
+        </article>
+      </div>
+
+      {interpretation.positives?.length > 0 && (
+        <div className="activity-analysis-section positive">
+          <strong>Pontos positivos</strong>
+          <ul>
+            {interpretation.positives.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {interpretation.observations?.length > 0 && (
+        <div className="activity-analysis-section observation">
+          <strong>Leitura técnica</strong>
+          <ul>
+            {interpretation.observations.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {interpretation.alerts?.length > 0 && (
+        <div className="activity-analysis-section alerting">
+          <strong>Pontos de atenção</strong>
+          <ul>
+            {interpretation.alerts.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {blocks.aligned && blocks.items?.length > 0 && (
+        <details className="activity-analysis-blocks">
+          <summary>Ver comparação por bloco</summary>
+
+          <div>
+            {blocks.items.map((block) => (
+              <article
+                key={`${block.step_id}-${block.repetition}`}
+              >
+                <div>
+                  <strong>
+                    {block.type} {block.repetition}
+                  </strong>
+                  <span>
+                    previsto: {Number(
+                      block.distance_km || 0,
+                    ).toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })} km
+                  </span>
+                </div>
+
+                <div>
+                  <strong>
+                    {block.executed_pace_seconds
+                      ? formatPaceSeconds(
+                        block.executed_pace_seconds,
+                      )
+                      : "Sem ritmo"}
+                  </strong>
+                  <span>
+                    executado: {Number(
+                      block.executed_distance_km || 0,
+                    ).toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })} km
+                  </span>
+                </div>
+
+                <em className={block.pace_status}>
+                  {statusLabel(block.pace_status)}
+                </em>
+              </article>
+            ))}
+          </div>
+        </details>
+      )}
+    </section>
+  );
+}
+
+
 function activityMetric(activity) {
   if (!activity.distance || !activity.moving_time) return "Sem dados de distância";
   if (activity.sport_type === "Run") return `Pace médio: ${formatPace(activity.distance * 1000 / activity.moving_time)}`;
@@ -447,6 +649,15 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
       });
       setActivityFeedbacks((current) => ({ ...current, [activityId]: feedback }));
       setFeedbackForms((current) => ({ ...current, [activityId]: feedback }));
+
+      const refreshedDetails = await getStravaActivityDetails(
+        activityId,
+      );
+
+      setActivityDetails((current) => ({
+        ...current,
+        [activityId]: refreshedDetails,
+      }));
     } catch (err) { setError(err.message); } finally { setSavingFeedback(null); }
   }
 
@@ -1650,7 +1861,9 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
             {activities.map((activity) => {
               const expanded = expandedActivity === activity.id;
               const details = activityDetails[activity.id];
-              const analysis = analyseActivity(training, activity, details);
+              const analysis = details?.analysis?.available
+                ? null
+                : analyseActivity(training, activity, details);
               return <article className={`activity-row ${expanded ? "expanded" : ""}`} key={activity.id}>
                 <button className="activity-toggle" onClick={() => toggleActivity(activity.id)}>
                   <div><strong>{activity.name}</strong><span>{activity.sport_type} · {activity.distance.toFixed(2)} km · {Math.floor(activity.moving_time / 60)} min</span></div><b>{expanded ? "−" : "+"}</b>
@@ -1663,9 +1876,24 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
                     <div><span>Elevação</span><strong>{details?.total_elevation_gain == null ? "Não informada" : `${Math.round(details.total_elevation_gain)} m`}</strong></div>
                     <div><span>FC média</span><strong>{details?.average_heartrate ? `${Math.round(details.average_heartrate)} bpm` : "Não informada"}</strong></div>
                     <div><span>FC máxima</span><strong>{details?.max_heartrate ? `${Math.round(details.max_heartrate)} bpm` : "Não informada"}</strong></div>
-                    <div><span>Cadência média</span><strong>{details?.average_cadence ? `${Math.round(details.average_cadence)} spm` : "Não informada"}</strong></div>
+                    <div>
+                      <span>Cadência média</span>
+                      <strong>
+                        {details?.analysis?.cadence?.steps_per_minute
+                          ? `${Math.round(
+                            details.analysis.cadence.steps_per_minute,
+                          )} passos/min`
+                          : details?.average_cadence
+                            ? `${Math.round(
+                              activity.sport_type === "Run"
+                                ? details.average_cadence * 2
+                                : details.average_cadence,
+                            )} passos/min`
+                            : "Não informada"}
+                      </strong>
+                    </div>
                     <div><span>Data</span><strong>{activityStartValue(activity) ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(activityStartDate(activity)) : "Não informada"}</strong></div>
-                    {analysis && <section className="adherence-card"><div className="adherence-heading"><div><span>ADERÊNCIA AO TREINO</span><strong>{analysis.session.workout_name}</strong></div><b className={`adherence-status ${analysis.distanceStatus}`}>{statusLabel(analysis.distanceStatus, "distance")}</b></div><p>Planejado: {analysis.plannedDistance.toFixed(2)} km · Executado: {activity.distance.toFixed(2)} km</p>{analysis.aligned ? <><strong className="adherence-result">{analysis.inside} de {analysis.blocks.length} blocos dentro do planejado</strong><div className="adherence-blocks">{analysis.blocks.map((block, index) => <div className="adherence-block" key={`${block.step.order}-${index}`}><span>{block.step.type} {index + 1}</span><div><b className={`adherence-dot ${block.paceStatus}`} title={statusLabel(block.paceStatus)}></b><strong>{formatPace(block.lap.average_speed)}</strong><small>{block.lap.distance.toFixed(2)} km · alvo {block.expectedDistance.toFixed(2)} km</small></div><em className={block.paceStatus}>{statusLabel(block.paceStatus)}</em></div>)}</div></> : <p className="muted">As voltas importadas não correspondem diretamente às etapas do plano; por enquanto, a comparação está disponível para a sessão como um todo.</p>}</section>}
+                    <ActivityAnalysisCard analysis={details?.analysis} />{analysis && <section className="adherence-card"><div className="adherence-heading"><div><span>ADERÊNCIA AO TREINO</span><strong>{analysis.session.workout_name}</strong></div><b className={`adherence-status ${analysis.distanceStatus}`}>{statusLabel(analysis.distanceStatus, "distance")}</b></div><p>Planejado: {analysis.plannedDistance.toFixed(2)} km · Executado: {activity.distance.toFixed(2)} km</p>{analysis.aligned ? <><strong className="adherence-result">{analysis.inside} de {analysis.blocks.length} blocos dentro do planejado</strong><div className="adherence-blocks">{analysis.blocks.map((block, index) => <div className="adherence-block" key={`${block.step.order}-${index}`}><span>{block.step.type} {index + 1}</span><div><b className={`adherence-dot ${block.paceStatus}`} title={statusLabel(block.paceStatus)}></b><strong>{formatPace(block.lap.average_speed)}</strong><small>{block.lap.distance.toFixed(2)} km · alvo {block.expectedDistance.toFixed(2)} km</small></div><em className={block.paceStatus}>{statusLabel(block.paceStatus)}</em></div>)}</div></> : <p className="muted">As voltas importadas não correspondem diretamente às etapas do plano; por enquanto, a comparação está disponível para a sessão como um todo.</p>}</section>}
                     {details?.laps?.length > 0 && <div className="laps"><strong>Parciais</strong>{details.laps.map((lap) => <div className="lap" key={lap.number}><div className="lap-main"><strong>Volta {lap.number} — {formatDuration(lap.moving_time)}</strong><span>{lap.distance.toFixed(2)} km · {formatPace(lap.average_speed)}</span></div><small>{lap.average_heartrate ? `${Math.round(lap.average_heartrate)} bpm` : "FC não informada"} · {lap.elevation_gain == null ? "elevação não informada" : `${Math.round(lap.elevation_gain)} m`}</small></div>)}</div>}
                     <section className="training-feedback">
                       <div className="feedback-heading"><div><span>SEU RELATO</span><h4>Como foi este treino?</h4></div>{activityFeedbacks[activity.id] && <b>Registrado</b>}</div>

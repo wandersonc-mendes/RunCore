@@ -56,58 +56,142 @@ class TrainingPlanService:
         else:
             phase = "Polimento"
 
-        work_volume = interval_reps * 400
-        interval_distance = 400
-        interval_name = "Intervalado"
-        threshold_name = "Limiar"
-        threshold_factor = 1.0
+        target = float(target_distance or 10)
 
-        if normalized_profile == "resistente":
-            if phase == "Base":
-                interval_distance = (200, 300, 400, 200)[block_position]
-                interval_name = "Velocidade e economia"
-                threshold_name = "Limiar controlado"
-                threshold_factor = 0.85
-            elif phase == "Desenvolvimento":
-                interval_distance = (200, 300, 400, 300)[block_position]
-                interval_name = "Intervalado curto"
-                threshold_name = "Limiar"
-                threshold_factor = 0.95
-            elif phase == "Específica":
-                interval_distance = (400, 600, 400, 300)[block_position]
-                interval_name = "Intervalado específico"
-                threshold_name = "Limiar específico"
-            else:
-                interval_distance = (200, 300, 200, 200)[block_position]
-                interval_name = "Ativação de velocidade"
-                threshold_name = "Limiar reduzido"
-                threshold_factor = 0.65
+        if target <= 5:
+            race_group = "5k"
+            volume_factor = 0.90
+        elif target <= 10:
+            race_group = "10k"
+            volume_factor = 1.00
+        elif target <= 21.1:
+            race_group = "half"
+            volume_factor = 1.15
+        else:
+            race_group = "marathon"
+            volume_factor = 1.25
 
-        elif normalized_profile == "potente":
-            if phase == "Base":
-                interval_distance = (400, 600, 400, 600)[block_position]
-                interval_name = "Intervalado moderado"
-                threshold_name = "Limiar controlado"
-                threshold_factor = 0.85
-            elif phase == "Desenvolvimento":
-                interval_distance = (800, 1000, 800, 600)[block_position]
-                interval_name = "Intervalado longo"
-                threshold_name = "Limiar sustentado"
-            elif phase == "Específica":
-                interval_distance = (1000, 1200, 800, 600)[block_position]
-                interval_name = "Resistência de velocidade"
-                threshold_name = "Limiar específico"
-                threshold_factor = 1.05
-            else:
-                interval_distance = (400, 600, 400, 400)[block_position]
-                interval_name = "Ativação intervalada"
-                threshold_name = "Limiar reduzido"
-                threshold_factor = 0.65
+        base_work_volume = interval_reps * 400
+        phase_volume_factor = {
+            "Base": 0.90,
+            "Desenvolvimento": 1.10,
+            "Específica": 1.20,
+            "Polimento": 0.60,
+        }[phase]
 
-        elif phase == "Polimento":
-            interval_name = "Intervalado reduzido"
-            threshold_name = "Limiar reduzido"
-            threshold_factor = 0.65
+        work_volume = max(
+            1600,
+            round(
+                base_work_volume
+                * volume_factor
+                * phase_volume_factor,
+                -2,
+            ),
+        )
+
+        interval_catalog = {
+            "equilibrado": {
+                "Base": {
+                    "distances": (200, 400, 500, 600),
+                    "name": "Economia e velocidade",
+                },
+                "Desenvolvimento": {
+                    "distances": (800, 1000, 1200, 600),
+                    "name": "Intervalado progressivo",
+                },
+                "Específica": {
+                    "5k": (1000, 1200, 800, 1600),
+                    "10k": (1000, 1600, 2000, 1200),
+                    "half": (1200, 1600, 2000, 1000),
+                    "marathon": (1600, 2000, 1200, 1000),
+                    "name": "Intervalado específico",
+                },
+                "Polimento": {
+                    "distances": (200, 400, 600, 300),
+                    "name": "Ativação neuromuscular",
+                },
+            },
+            "resistente": {
+                "Base": {
+                    "distances": (200, 300, 400, 500),
+                    "name": "Velocidade e economia",
+                },
+                "Desenvolvimento": {
+                    "distances": (400, 500, 600, 800),
+                    "name": "Intervalado curto",
+                },
+                "Específica": {
+                    "5k": (600, 800, 1000, 500),
+                    "10k": (800, 1000, 1200, 600),
+                    "half": (1000, 1200, 1600, 800),
+                    "marathon": (1000, 1600, 2000, 800),
+                    "name": "Resistência de velocidade",
+                },
+                "Polimento": {
+                    "distances": (200, 300, 400, 200),
+                    "name": "Ativação de velocidade",
+                },
+            },
+            "potente": {
+                "Base": {
+                    "distances": (500, 600, 800, 400),
+                    "name": "Intervalado moderado",
+                },
+                "Desenvolvimento": {
+                    "distances": (800, 1000, 1200, 1600),
+                    "name": "Intervalado longo",
+                },
+                "Específica": {
+                    "5k": (1000, 1200, 1600, 800),
+                    "10k": (1200, 1600, 2000, 1000),
+                    "half": (1600, 2000, 1200, 1000),
+                    "marathon": (2000, 1600, 1200, 1000),
+                    "name": "Sustentação de velocidade",
+                },
+                "Polimento": {
+                    "distances": (400, 600, 500, 300),
+                    "name": "Ativação intervalada",
+                },
+            },
+        }
+
+        profile_key = (
+            normalized_profile
+            if normalized_profile in interval_catalog
+            else "equilibrado"
+        )
+
+        phase_catalog = interval_catalog[
+            profile_key
+        ][phase]
+
+        if phase == "Específica":
+            interval_distances = phase_catalog[
+                race_group
+            ]
+        else:
+            interval_distances = phase_catalog[
+                "distances"
+            ]
+
+        interval_distance = interval_distances[
+            block_position
+        ]
+        interval_name = phase_catalog["name"]
+
+        threshold_name = {
+            "Base": "Limiar controlado",
+            "Desenvolvimento": "Limiar sustentado",
+            "Específica": "Limiar específico",
+            "Polimento": "Limiar reduzido",
+        }[phase]
+
+        threshold_factor = {
+            "Base": 0.85,
+            "Desenvolvimento": 1.00,
+            "Específica": 1.05,
+            "Polimento": 0.65,
+        }[phase]
 
         adjusted_interval_reps = max(
             1,

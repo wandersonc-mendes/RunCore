@@ -668,6 +668,16 @@ def update_session(
         session.scheduled_date = payload.session_date
         session.weekday = payload.session_date.weekday()
 
+        if training.start_date:
+            day_offset = (
+                payload.session_date
+                - training.start_date
+            ).days
+            session.week = max(
+                1,
+                (day_offset // 7) + 1,
+            )
+
     session.zone = payload.zone
     session.planned_distance = payload.planned_distance
     session.repetitions = payload.repetitions

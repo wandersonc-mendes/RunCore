@@ -403,3 +403,118 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ETAPA 101A: DRAG AND DROP */
+.planning-drop-cell {
+  align-content: start;
+  display: grid;
+  gap: 7px;
+  min-height: 98px;
+  padding: 7px;
+  transition:
+    background-color .16s ease,
+    box-shadow .16s ease;
+}
+
+.planning-drop-cell.drop-target {
+  background:
+    color-mix(in srgb, var(--accent) 14%, var(--surface));
+  box-shadow:
+    inset 0 0 0 2px var(--accent);
+}
+
+.planning-session-card,
+.planning-add-session {
+  width: 100%;
+  border: 0;
+  text-align: left;
+}
+
+.planning-session-card {
+  display: grid;
+  gap: 4px;
+  min-height: 82px;
+  padding: 12px 11px;
+  border-left: 3px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: grab;
+  transition:
+    opacity .16s ease,
+    transform .16s ease,
+    box-shadow .16s ease;
+}
+
+.planning-session-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgb(0 0 0 / .12);
+}
+
+.planning-session-card:active {
+  cursor: grabbing;
+}
+
+.planning-session-card.is-dragging {
+  opacity: .38;
+}
+
+.planning-session-card.is-saving {
+  cursor: progress;
+  opacity: .58;
+  pointer-events: none;
+}
+
+.planning-session-card strong,
+.planning-session-card span,
+.planning-session-card small {
+  pointer-events: none;
+}
+
+.planning-session-card.easy {
+  background: color-mix(in srgb, #2684ff 10%, var(--surface));
+  border-left-color: #2684ff;
+}
+
+.planning-session-card.interval {
+  background: color-mix(in srgb, #ff5d5d 11%, var(--surface));
+  border-left-color: #ff5d5d;
+}
+
+.planning-session-card.tempo {
+  background: color-mix(in srgb, #f4b400 11%, var(--surface));
+  border-left-color: #f4b400;
+}
+
+.planning-session-card.long {
+  background: color-mix(in srgb, #9566ff 11%, var(--surface));
+  border-left-color: #9566ff;
+}
+
+.planning-session-card.recovery {
+  background: color-mix(in srgb, #22c997 11%, var(--surface));
+  border-left-color: #22c997;
+}
+
+.planning-session-card.progressive {
+  background: color-mix(in srgb, #18b981 11%, var(--surface));
+  border-left-color: #18b981;
+}
+
+.planning-add-session {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.planning-drop-cell.has-sessions .planning-add-session {
+  min-height: 26px;
+  opacity: .55;
+}
+
+.planning-drop-cell.has-sessions .planning-add-session:hover {
+  opacity: 1;
+}

@@ -43,6 +43,7 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import { adminPaths, coachPaths, studentPaths } from "./router/paths";
 import {
   formatWorkoutSummary,
+  stepDistanceInKm,
   workoutSummaryFromSteps,
 } from "./utils/workoutSummary";
 import "./App.css";
@@ -422,29 +423,7 @@ function SessionAdjustment({
   }
 
   function stepDistanceKm(step) {
-    if (
-      (step.prescription_type || "distance")
-      !== "distance"
-    ) {
-      return 0;
-    }
-
-    const distance = Number(step.distance || 0);
-    const repetitions = Math.max(
-      Number(step.repetitions || 0),
-      1,
-    );
-    const unit = step.distance_unit || (
-      Number(step.repetitions || 0) > 0
-        ? "m"
-        : "km"
-    );
-
-    const total = distance * repetitions;
-
-    return unit === "m"
-      ? total / 1000
-      : total;
+    return stepDistanceInKm(step);
   }
 
   function paceToSeconds(value) {
@@ -714,6 +693,10 @@ function SessionAdjustment({
                   },
                 )} km
               </strong>
+              <small>
+                Inclui aquecimento, blocos repetidos,
+                recuperações e desaquecimento.
+              </small>
             </div>
 
             <div>

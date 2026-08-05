@@ -22,11 +22,28 @@ export function stepDistanceInKm(step) {
   }
 
   const distance = Number(step?.distance || 0);
-  const repetitions = Math.max(Number(step?.repetitions || 0), 1);
-  const unit = step?.distance_unit
-    || (Number(step?.repetitions || 0) > 0 ? "m" : "km");
 
-  return distance * repetitions * (unit === "m" ? 0.001 : 1);
+  if (!Number.isFinite(distance) || distance <= 0) {
+    return 0;
+  }
+
+  const repetitionsValue = Number(
+    step?.repetitions || 0,
+  );
+  const repetitions = repetitionsValue > 0
+    ? repetitionsValue
+    : 1;
+
+  const unit = String(
+    step?.distance_unit
+    || (repetitionsValue > 0 ? "m" : "km"),
+  ).trim().toLowerCase();
+
+  const distanceInKm = unit === "m"
+    ? distance / 1000
+    : distance;
+
+  return distanceInKm * repetitions;
 }
 
 function formatStepDuration(seconds = 0) {
@@ -116,7 +133,11 @@ export function workoutSummaryFromSteps(steps = []) {
         label: `${repetitions} × ${
           distance.toLocaleString("pt-BR")
         } ${unit}`,
-        plannedDistance: distance,
+        plannedDistance: steps.reduce(
+          (total, step) =>
+            total + stepDistanceInKm(step),
+          0,
+        ),
         plannedDuration: steps.reduce(
           (total, step) =>
             total + stepDurationInSeconds(step),

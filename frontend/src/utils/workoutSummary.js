@@ -30,9 +30,14 @@ export function stepDistanceInKm(step) {
   const repetitionsValue = Number(
     step?.repetitions || 0,
   );
-  const repetitions = repetitionsValue > 0
+  const ownRepetitions = repetitionsValue > 0
     ? repetitionsValue
     : 1;
+  const groupRepetitions = Math.max(
+    Number(step?.group_repetitions || 1),
+    1,
+  );
+  const repetitions = ownRepetitions * groupRepetitions;
 
   const unit = String(
     step?.distance_unit
@@ -78,6 +83,9 @@ export function stepDurationInSeconds(step) {
 
   const repetitions = Math.max(
     Number(step?.repetitions || 0),
+    1,
+  ) * Math.max(
+    Number(step?.group_repetitions || 1),
     1,
   );
 

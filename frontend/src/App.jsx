@@ -359,8 +359,11 @@ function SessionAdjustment({
     }));
   }
 
-  function addStep(preset = null) {
-    const baseStep = preset || {
+  function createStep(overrides = {}) {
+    return {
+      group_id: null,
+      group_order: null,
+      group_repetitions: 1,
       type: "Corrida",
       prescription_type: "distance",
       intensity_type: "pace",
@@ -376,15 +379,108 @@ function SessionAdjustment({
       pace_min: "",
       pace_max: "",
       notes: "",
+      ...overrides,
     };
+  }
+
+  function addStep(preset = null) {
+    onChange((session) => ({
+      ...session,
+      steps: [
+        ...session.steps,
+        createStep(preset || {}),
+      ],
+    }));
+  }
+
+  function addRepeatGroup() {
+    const groupId = `repeat-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
+    const groupRepetitions = 4;
 
     onChange((session) => ({
       ...session,
       steps: [
         ...session.steps,
-        { ...baseStep },
+        createStep({
+          group_id: groupId,
+          group_order: 0,
+          group_repetitions: groupRepetitions,
+          type: "Corrida",
+          distance: 400,
+          distance_unit: "m",
+          notes: "Trecho de trabalho.",
+        }),
+        createStep({
+          group_id: groupId,
+          group_order: 1,
+          group_repetitions: groupRepetitions,
+          type: "Recuperação",
+          intensity_type: "free",
+          distance: 200,
+          distance_unit: "m",
+          notes: "Recuperação entre as repetições.",
+        }),
       ],
     }));
+  }
+
+  function changeGroupRepetitions(groupId, nextValue) {
+    const repetitions = Math.max(
+      1,
+      Math.min(100, Number(nextValue || 1)),
+    );
+
+    onChange((session) => ({
+      ...session,
+      steps: session.steps.map((step) =>
+        step.group_id === groupId
+          ? { ...step, group_repetitions: repetitions }
+          : step
+      ),
+    }));
+  }
+
+  function addStepToGroup(groupId) {
+    onChange((session) => {
+      const groupSteps = session.steps.filter(
+        (step) => step.group_id === groupId,
+      );
+      const repetitions = Number(
+        groupSteps[0]?.group_repetitions || 1,
+      );
+
+      return {
+        ...session,
+        steps: [
+          ...session.steps,
+          createStep({
+            group_id: groupId,
+            group_order: groupSteps.length,
+            group_repetitions: repetitions,
+          }),
+        ],
+      };
+    });
+  }
+
+  function removeRepeatGroup(groupId) {
+    onChange((session) => ({
+      ...session,
+      steps: session.steps.filter(
+        (step) => step.group_id !== groupId,
+      ),
+    }));
+  }
+
+  function isFirstGroupStep(step, index) {
+    return Boolean(
+      step.group_id
+      && !value.steps.slice(0, index).some(
+        (previous) => previous.group_id === step.group_id,
+      ),
+    );
   }
 
   function removeStep(index) {
@@ -460,6 +556,9 @@ function SessionAdjustment({
     );
     const repetitions = Math.max(
       Number(step.repetitions || 0),
+      1,
+    ) * Math.max(
+      Number(step.group_repetitions || 1),
       1,
     );
     const paces = [
@@ -746,23 +845,85 @@ function SessionAdjustment({
           </section>
 
           <div className="workout-blocks-heading">
-            <h3>Blocos do treino</h3>
+            <h3>Etapas do treino</h3>
 
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => addStep()}
-            >
-              + Adicionar bloco
-            </button>
+            <div className="workout-structure-actions">
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => addStep()}
+              >
+                + Adicionar etapa
+              </button>
+
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={addRepeatGroup}
+              >
+                ↻ Adicionar repetição
+              </button>
+            </div>
           </div>
 
           <div className="workout-block-list">
             {value.steps.map((step, index) => (
-              <section
-                className={`workout-block-card ${stepTone(step.type)}`}
-                key={step.id || index}
+              <div
+                className={
+                  step.group_id
+                    ? "workout-repeat-step"
+                    : "workout-standalone-step"
+                }
+                key={step.id || `${step.group_id || "step"}-${index}`}
               >
+                {isFirstGroupStep(step, index) && (
+                  <section className="workout-repeat-header">
+                    <div>
+                      <span className="repeat-symbol">↻</span>
+                      <strong>Repetir</strong>
+                    </div>
+
+                    <label>
+                      Quantidade
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={step.group_repetitions || 1}
+                        onChange={(event) =>
+                          changeGroupRepetitions(
+                            step.group_id,
+                            event.target.value,
+                          )
+                        }
+                      />
+                      <span>vezes</span>
+                    </label>
+
+                    <div className="repeat-header-actions">
+                      <button
+                        type="button"
+                        onClick={() => addStepToGroup(step.group_id)}
+                      >
+                        + Etapa interna
+                      </button>
+
+                      <button
+                        type="button"
+                        className="remove-repeat-group"
+                        onClick={() => removeRepeatGroup(step.group_id)}
+                      >
+                        Remover grupo
+                      </button>
+                    </div>
+                  </section>
+                )}
+
+                <section
+                  className={`workout-block-card ${stepTone(step.type)} ${
+                    step.group_id ? "inside-repeat-group" : ""
+                  }`}
+                >
                 <header>
                   <span>{index + 1}</span>
 
@@ -976,37 +1137,6 @@ function SessionAdjustment({
                   )}
 
                   <label>
-                    Repetições
-                    <input
-                      type="number"
-                      min="0"
-                      value={step.repetitions}
-                      onChange={(event) =>
-                        changeStep(
-                          index,
-                          "repetitions",
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Recuperação
-                    <input
-                      value={step.recovery || ""}
-                      placeholder="Ex.: 200 m ou 1min30 leve"
-                      onChange={(event) =>
-                        changeStep(
-                          index,
-                          "recovery",
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </label>
-
-                  <label>
                     Intensidade
                     <select
                       value={
@@ -1184,7 +1314,8 @@ function SessionAdjustment({
                     }
                   />
                 </label>
-              </section>
+                </section>
+              </div>
             ))}
           </div>
 

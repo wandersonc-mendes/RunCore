@@ -5801,3 +5801,99 @@ button {
     width: 100%;
   }
 }
+
+/* ETAPA 103B: GRUPOS DE REPETICAO */
+.workout-structure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.workout-repeat-step {
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+}
+
+.workout-repeat-step + .workout-repeat-step {
+  margin-top: -13px;
+}
+
+.workout-repeat-header {
+  align-items: center;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 14px 14px 8px 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(120px, .8fr) minmax(180px, 1fr) auto;
+  margin-bottom: 8px;
+  padding: 13px 15px;
+}
+
+.workout-repeat-header > div:first-child {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.repeat-symbol {
+  font-size: 1.35rem;
+}
+
+.workout-repeat-header label {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto 76px auto;
+}
+
+.workout-repeat-header input {
+  text-align: center;
+}
+
+.repeat-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.repeat-header-actions button {
+  min-height: 34px;
+}
+
+.remove-repeat-group {
+  color: var(--danger, #d84b4b);
+}
+
+.workout-block-card.inside-repeat-group {
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.workout-block-fields {
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(150px, 1fr)
+    minmax(190px, 1.25fr);
+}
+
+@media (max-width: 900px) {
+  .workout-repeat-header {
+    grid-template-columns: 1fr;
+  }
+
+  .repeat-header-actions {
+    justify-content: flex-start;
+  }
+
+  .workout-block-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .workout-block-fields {
+    grid-template-columns: 1fr;
+  }
+}

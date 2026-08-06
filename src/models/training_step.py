@@ -32,6 +32,21 @@ class TrainingStep(Base):
         Integer,
     )
 
+    group_id: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+    )
+
+    group_order: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    group_repetitions: Mapped[int] = mapped_column(
+        Integer,
+        default=1,
+    )
+
     type: Mapped[str] = mapped_column(
         String(30),
     )

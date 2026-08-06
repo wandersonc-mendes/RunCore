@@ -23,6 +23,11 @@ class TrainingStepService:
         for item in items:
 
             result.append({
+                "group_id": item.group_id,
+                "group_order": item.group_order,
+                "group_repetitions": (
+                    item.group_repetitions or 1
+                ),
                 "type": item.type,
                 "prescription_type": (
                     item.prescription_type
@@ -60,6 +65,20 @@ class TrainingStepService:
 
             step.session_id = session_id
             step.order = order
+            step.group_id = (
+                str(item.get("group_id")).strip()
+                if item.get("group_id")
+                else None
+            )
+            step.group_order = (
+                int(item.get("group_order"))
+                if item.get("group_order") is not None
+                else None
+            )
+            step.group_repetitions = max(
+                1,
+                int(item.get("group_repetitions") or 1),
+            )
             step.type = item["type"]
 
             prescription_type = item.get(

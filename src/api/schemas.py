@@ -147,6 +147,9 @@ class TrainingStepOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     order: int
+    group_id: str | None = None
+    group_order: int | None = None
+    group_repetitions: int = 1
     type: str
     prescription_type: Literal[
         "distance",
@@ -304,6 +307,23 @@ class TrainingSessionUpdate(BaseModel):
 
 
 class TrainingStepUpdate(BaseModel):
+
+    group_id: str | None = Field(
+        default=None,
+        max_length=64,
+    )
+
+    group_order: int | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+    )
+
+    group_repetitions: int = Field(
+        default=1,
+        ge=1,
+        le=100,
+    )
 
     type: str = Field(
         min_length=2,

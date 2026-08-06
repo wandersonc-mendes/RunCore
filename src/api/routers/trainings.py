@@ -294,6 +294,11 @@ def serialize_step(step):
     return {
         "id": step.id,
         "order": step.order,
+        "group_id": step.group_id,
+        "group_order": step.group_order,
+        "group_repetitions": (
+            step.group_repetitions or 1
+        ),
         "type": step.type,
         "prescription_type": (
             step.prescription_type
@@ -350,6 +355,12 @@ def serialized_steps_for_session(
         steps.insert(position, {
             "id": None,
             "order": interval_step["order"],
+            "group_id": interval_step.get("group_id"),
+            "group_order": interval_step.get("group_order"),
+            "group_repetitions": interval_step.get(
+                "group_repetitions",
+                1,
+            ),
             "type": "Recuperação",
             "prescription_type": "distance",
             "intensity_type": "free",

@@ -21,6 +21,12 @@ class AthleteAnalyticsService:
     PACE_BAND_SECONDS = 30
     MIN_BASELINE_SAMPLES = 3
 
+    DISTANCE_UNIT = "km"
+    DURATION_UNIT = "seconds"
+    PACE_UNIT = "seconds_per_km"
+    ACTIVITY_DATE_BASIS = "start_at_utc"
+    PACE_BASELINE_GRANULARITY = "activity_average"
+
     def __init__(
         self,
         activity_repository: ActivityRepository | None = None,
@@ -62,6 +68,7 @@ class AthleteAnalyticsService:
         return {
             "reference_date": reference_date.isoformat(),
             "activity_count": len(running),
+            "calculation_context": self.calculation_context(),
             "weekly": self.weekly_evolution(running),
             "pace_baselines": self.pace_baselines(running),
             "period_comparison": self.compare_28_day_periods(
@@ -73,6 +80,24 @@ class AthleteAnalyticsService:
                 running,
                 reference_date=reference_date,
             ),
+        }
+
+    def calculation_context(self) -> dict:
+        return {
+            "distance_unit": self.DISTANCE_UNIT,
+            "duration_unit": self.DURATION_UNIT,
+            "pace_unit": self.PACE_UNIT,
+            "pace_band_seconds": self.PACE_BAND_SECONDS,
+            "minimum_baseline_samples": (
+                self.MIN_BASELINE_SAMPLES
+            ),
+            "activity_date_basis": self.ACTIVITY_DATE_BASIS,
+            "local_activity_date_persisted": False,
+            "pace_baseline_granularity": (
+                self.PACE_BASELINE_GRANULARITY
+            ),
+            "laps_persisted": False,
+            "streams_persisted": False,
         }
 
     def weekly_evolution(self, activities: Iterable) -> list[dict]:
@@ -430,6 +455,10 @@ class AthleteAnalyticsService:
                 ),
                 "current_period_activity_count": current_count,
                 "previous_period_activity_count": previous_count,
+            },
+            "local_calendar_analysis": {
+                "available": False,
+                "reason": "local_activity_date_not_persisted",
             },
             "lap_or_stream_analysis": {
                 "available": False,

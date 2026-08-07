@@ -105,6 +105,52 @@ function formatWeekday(value) {
 }
 
 
+function formatAnalyticsDuration(seconds) {
+  const total = Math.max(
+    0,
+    Math.round(Number(seconds || 0)),
+  );
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor(
+    (total % 3600) / 60,
+  );
+  const remainder = total % 60;
+
+  return [
+    hours,
+    minutes,
+    remainder,
+  ]
+    .map((part) =>
+      String(part).padStart(2, "0")
+    )
+    .join(":");
+}
+
+
+function formatPercentDelta(value) {
+  if (value === null || value === undefined) {
+    return "—";
+  }
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    return "—";
+  }
+
+  const prefix = number > 0 ? "+" : "";
+
+  return `${prefix}${number.toLocaleString(
+    "pt-BR",
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1,
+    },
+  )}%`;
+}
+
+
 function initials(name = "") {
   return name
     .split(" ")
@@ -447,6 +493,10 @@ export default function AthleteProfileView({
   const dataCoverage = Number(
     analytics?.data_quality?.overall_coverage_percent || 0,
   );
+  const periodComparison = analytics?.period_comparison || null;
+  const currentPeriod = periodComparison?.current || {};
+  const previousPeriod = periodComparison?.previous || {};
+  const periodDelta = periodComparison?.delta || {};
 
   const goal = (
     trainingPlan?.objective
@@ -736,7 +786,8 @@ export default function AthleteProfileView({
               {" "}{analyticsError}
             </p>
           ) : analytics ? (
-            <div className="athlete-summary-grid">
+            <>
+              <div className="athlete-summary-grid">
               <article className="athlete-summary-card">
                 <span>Atividades analisadas</span>
                 <strong>
@@ -808,6 +859,142 @@ export default function AthleteProfileView({
                 </small>
               </article>
             </div>
+
+            <div>
+              <div className="athlete-section-heading">
+                <div>
+                  <h2>Comparação 28 × 28 dias</h2>
+                  <p className="muted">
+                    Período atual comparado aos 28 dias
+                    imediatamente anteriores.
+                  </p>
+                </div>
+              </div>
+
+              <div className="athlete-summary-grid">
+                <article className="athlete-summary-card">
+                  <span>Volume</span>
+                  <strong>
+                    {Number(
+                      currentPeriod.distance_km || 0,
+                    ).toLocaleString(
+                      "pt-BR",
+                      {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      },
+                    )} km
+                  </strong>
+                  <small>
+                    Anterior:{" "}
+                    {Number(
+                      previousPeriod.distance_km || 0,
+                    ).toLocaleString(
+                      "pt-BR",
+                      {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      },
+                    )} km
+                    {" · Δ "}
+                    {formatPercentDelta(
+                      periodDelta.distance_km?.percent,
+                    )}
+                  </small>
+                </article>
+
+                <article className="athlete-summary-card">
+                  <span>Atividades</span>
+                  <strong>
+                    {currentPeriod.activity_count ?? 0}
+                  </strong>
+                  <small>
+                    Anterior:{" "}
+                    {previousPeriod.activity_count ?? 0}
+                    {" · Δ "}
+                    {formatPercentDelta(
+                      periodDelta.activity_count?.percent,
+                    )}
+                  </small>
+                </article>
+
+                <article className="athlete-summary-card">
+                  <span>Tempo em movimento</span>
+                  <strong>
+                    {formatAnalyticsDuration(
+                      currentPeriod.moving_time_seconds || 0,
+                    )}
+                  </strong>
+                  <small>
+                    Anterior:{" "}
+                    {formatAnalyticsDuration(
+                      previousPeriod.moving_time_seconds || 0,
+                    )}
+                    {" · Δ "}
+                    {formatPercentDelta(
+                      periodDelta
+                        .moving_time_seconds?.percent,
+                    )}
+                  </small>
+                </article>
+
+                <article className="athlete-summary-card">
+                  <span>Ritmo médio</span>
+                  <strong>
+                    {currentPeriod.average_pace
+                      ? `${currentPeriod.average_pace}/km`
+                      : "—"}
+                  </strong>
+                  <small>
+                    Anterior:{" "}
+                    {previousPeriod.average_pace
+                      ? `${previousPeriod.average_pace}/km`
+                      : "—"}
+                    {" · Δ "}
+                    {formatPercentDelta(
+                      periodDelta
+                        .average_pace_seconds_per_km
+                        ?.percent,
+                    )}
+                  </small>
+                </article>
+
+                <article className="athlete-summary-card">
+                  <span>FC média</span>
+                  <strong>
+                    {currentPeriod.average_heartrate
+                      ?? "—"}
+                  </strong>
+                  <small>
+                    Anterior:{" "}
+                    {previousPeriod.average_heartrate
+                      ?? "—"}
+                    {" · Δ "}
+                    {formatPercentDelta(
+                      periodDelta.average_heartrate?.percent,
+                    )}
+                  </small>
+                </article>
+
+                <article className="athlete-summary-card">
+                  <span>Cadência média</span>
+                  <strong>
+                    {currentPeriod.average_cadence
+                      ?? "—"}
+                  </strong>
+                  <small>
+                    Anterior:{" "}
+                    {previousPeriod.average_cadence
+                      ?? "—"}
+                    {" · Δ "}
+                    {formatPercentDelta(
+                      periodDelta.average_cadence?.percent,
+                    )}
+                  </small>
+                </article>
+              </div>
+            </div>
+            </>
           ) : (
             <p className="muted">
               Carregando perfil analítico...

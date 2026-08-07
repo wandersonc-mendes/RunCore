@@ -498,6 +498,12 @@ export default function AthleteProfileView({
   const previousPeriod = periodComparison?.previous || {};
   const periodDelta = periodComparison?.delta || {};
   const paceBaselines = analytics?.pace_baselines || [];
+  const qualityFields = Object.entries(
+    analytics?.data_quality?.fields || {},
+  );
+  const analysisAvailability = Object.entries(
+    analytics?.analysis_availability || {},
+  );
 
   const goal = (
     trainingPlan?.objective
@@ -1059,6 +1065,145 @@ export default function AthleteProfileView({
               ) : (
                 <p className="muted">
                   Ainda não há faixas de ritmo calculadas.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="athlete-section-heading">
+                <div>
+                  <h2>Qualidade dos dados</h2>
+                  <p className="muted">
+                    Cobertura dos campos disponíveis nas
+                    atividades analisadas.
+                  </p>
+                </div>
+              </div>
+
+              {qualityFields.length ? (
+                <div className="athlete-training-list">
+                  {qualityFields.map(([field, data]) => {
+                    const labels = {
+                      date: "Data",
+                      distance: "Distância",
+                      moving_time: "Tempo em movimento",
+                      pace: "Ritmo",
+                      heart_rate: "Frequência cardíaca",
+                      cadence: "Cadência",
+                    };
+
+                    return (
+                      <article key={field}>
+                        <div>
+                          <small>
+                            {labels[field] || field}
+                          </small>
+                          <strong>
+                            {Number(
+                              data.coverage_percent || 0,
+                            ).toLocaleString(
+                              "pt-BR",
+                              {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 1,
+                              },
+                            )}%
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            Disponíveis: {data.available ?? 0}
+                          </span>
+                          <span>
+                            Ausentes: {data.missing ?? 0}
+                          </span>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="muted">
+                  Nenhum indicador de qualidade disponível.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="athlete-section-heading">
+                <div>
+                  <h2>Disponibilidade das análises</h2>
+                  <p className="muted">
+                    Estado das análises conforme os dados
+                    atualmente persistidos.
+                  </p>
+                </div>
+              </div>
+
+              {analysisAvailability.length ? (
+                <div className="athlete-training-list">
+                  {analysisAvailability.map(
+                    ([analysisKey, status]) => {
+                      const labels = {
+                        weekly_volume: "Volume semanal",
+                        weekly_duration: "Duração semanal",
+                        pace_baselines: "Baselines de ritmo",
+                        heart_rate_by_pace: "FC por ritmo",
+                        cadence_by_pace: "Cadência por ritmo",
+                        comparison_28_days:
+                          "Comparação de 28 dias",
+                        local_calendar_analysis:
+                          "Calendário em horário local",
+                        lap_or_stream_analysis:
+                          "Análise de laps/streams",
+                      };
+
+                      return (
+                        <article key={analysisKey}>
+                          <div>
+                            <small>
+                              {labels[analysisKey]
+                                || analysisKey}
+                            </small>
+                            <strong>
+                              {status.available
+                                ? "Disponível"
+                                : "Indisponível"}
+                            </strong>
+                          </div>
+
+                          <div>
+                            {!status.available
+                              && status.reason && (
+                                <span>
+                                  Motivo técnico:{" "}
+                                  {status.reason}
+                                </span>
+                              )}
+                            {status.sample_count
+                              !== undefined && (
+                                <span>
+                                  Amostras:{" "}
+                                  {status.sample_count}
+                                </span>
+                              )}
+                            {status.available_band_count
+                              !== undefined && (
+                                <span>
+                                  Faixas disponíveis:{" "}
+                                  {status.available_band_count}
+                                </span>
+                              )}
+                          </div>
+                        </article>
+                      );
+                    },
+                  )}
+                </div>
+              ) : (
+                <p className="muted">
+                  Nenhum estado de análise disponível.
                 </p>
               )}
             </div>

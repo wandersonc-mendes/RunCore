@@ -43,6 +43,66 @@ class AthleteAnalyticsServiceTests(unittest.TestCase):
     def setUp(self):
         self.service = AthleteAnalyticsService()
 
+    def test_build_for_athlete_uses_repository_history(self):
+        class FakeActivityRepository:
+            def __init__(self):
+                self.requested_athlete_id = None
+
+            def list_for_athlete(self, athlete_id):
+                self.requested_athlete_id = athlete_id
+
+                return [
+                    activity(
+                        start_at=datetime(2026, 8, 1, 7, 0),
+                        distance=10.0,
+                        moving_time=3000,
+                        elapsed_time=3060,
+                        heart_rate=150,
+                        cadence=176,
+                    ),
+                    activity(
+                        start_at=datetime(2026, 8, 3, 7, 0),
+                        distance=8.0,
+                        moving_time=2400,
+                        elapsed_time=2460,
+                        heart_rate=148,
+                        cadence=174,
+                    ),
+                ]
+
+        repository = FakeActivityRepository()
+
+        service = AthleteAnalyticsService(
+            activity_repository=repository,
+        )
+
+        profile = service.build_for_athlete(
+            42,
+            reference_date=date(2026, 8, 7),
+        )
+
+        self.assertEqual(
+            repository.requested_athlete_id,
+            42,
+        )
+        self.assertEqual(
+            profile["athlete_id"],
+            42,
+        )
+        self.assertEqual(
+            profile["activity_count"],
+            2,
+        )
+        total_weekly_distance = sum(
+            week["distance_km"]
+            for week in profile["weekly"]
+        )
+
+        self.assertEqual(
+            total_weekly_distance,
+            18.0,
+        )
+
     def test_build_profile_filters_non_running_activities(self):
         profile = self.service.build_profile(
             [

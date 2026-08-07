@@ -1043,20 +1043,8 @@ function SessionAdjustment({
                         aria-label={`Excluir etapa ${index + 1}`}
                         title="Excluir etapa"
                       >
-                        <svg
-                          aria-hidden="true"
-                          className="remove-workout-icon"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M9 3h6m-9 4h12m-10 0 .6 12h6.8L16 7M10 10v6m4-6v6"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="1.8"
-                          />
-                        </svg>
+                        <span aria-hidden="true">⌫</span>
+                        <span>Excluir</span>
                       </button>
                     )}
                   </div>

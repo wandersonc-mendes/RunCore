@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  getAthleteAnalytics,
   getAthleteProfile,
   getAthleteTrainingLoad,
   getTraining,
@@ -269,6 +270,8 @@ export default function AthleteProfileView({
   const [trainingPlan, setTrainingPlan] = useState(null);
   const [load, setLoad] = useState(null);
   const [loadError, setLoadError] = useState("");
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsError, setAnalyticsError] = useState("");
   const [tab, setTab] = useState("summary");
 
   useEffect(() => {
@@ -278,6 +281,7 @@ export default function AthleteProfileView({
       getAthleteProfile(athlete.id),
       getTraining(athlete.id),
       getAthleteTrainingLoad(athlete.id),
+      getAthleteAnalytics(athlete.id),
     ]).then((results) => {
       if (!active) return;
 
@@ -285,6 +289,7 @@ export default function AthleteProfileView({
         profileResult,
         trainingResult,
         loadResult,
+        analyticsResult,
       ] = results;
 
       setProfile(
@@ -310,6 +315,16 @@ export default function AthleteProfileView({
         setLoad(null);
         setLoadError(
           loadResult.reason?.message || "",
+        );
+      }
+
+      if (analyticsResult.status === "fulfilled") {
+        setAnalytics(analyticsResult.value);
+        setAnalyticsError("");
+      } else {
+        setAnalytics(null);
+        setAnalyticsError(
+          analyticsResult.reason?.message || "",
         );
       }
     });
@@ -428,6 +443,8 @@ export default function AthleteProfileView({
   const parq = profile.parq || {};
   const training = profile.training || {};
   const currentLoad = load?.points?.at(-1);
+  void analytics;
+  void analyticsError;
 
   const goal = (
     trainingPlan?.objective

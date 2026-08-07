@@ -507,6 +507,7 @@ export default function AthleteProfileView({
   const calculationContext = (
     analytics?.calculation_context || {}
   );
+  const weeklyEvolution = analytics?.weekly || [];
 
   const goal = (
     trainingPlan?.objective
@@ -1207,6 +1208,70 @@ export default function AthleteProfileView({
               ) : (
                 <p className="muted">
                   Nenhum estado de análise disponível.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="athlete-section-heading">
+                <div>
+                  <h2>Evolução semanal</h2>
+                  <p className="muted">
+                    Histórico objetivo das semanas com
+                    atividades de corrida importadas.
+                  </p>
+                </div>
+              </div>
+
+              {weeklyEvolution.length ? (
+                <div className="athlete-training-list">
+                  {weeklyEvolution.map((week) => (
+                    <article key={week.week_start}>
+                      <div>
+                        <small>
+                          Semana de {formatDate(
+                            week.week_start,
+                          )}
+                        </small>
+                        <strong>
+                          {Number(
+                            week.distance_km || 0,
+                          ).toLocaleString(
+                            "pt-BR",
+                            {
+                              minimumFractionDigits: 1,
+                              maximumFractionDigits: 1,
+                            },
+                          )} km
+                        </strong>
+                        <span>
+                          {week.activity_count ?? 0} atividade
+                          {(week.activity_count ?? 0) === 1
+                            ? ""
+                            : "s"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <span>
+                          Em movimento:{" "}
+                          {formatAnalyticsDuration(
+                            week.moving_time_seconds || 0,
+                          )}
+                        </span>
+                        <span>
+                          Tempo total:{" "}
+                          {formatAnalyticsDuration(
+                            week.elapsed_time_seconds || 0,
+                          )}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted">
+                  Ainda não há evolução semanal calculada.
                 </p>
               )}
             </div>

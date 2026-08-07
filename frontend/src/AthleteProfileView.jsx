@@ -833,7 +833,7 @@ export default function AthleteProfileView({
                 <span>Tempo da última semana</span>
                 <strong>
                   {latestAnalyticsWeek
-                    ? formatDuration(
+                    ? formatAnalyticsDuration(
                         latestAnalyticsWeek
                           .moving_time_seconds || 0,
                       )

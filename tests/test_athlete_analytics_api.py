@@ -13,6 +13,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 
+from api.analytics_schemas import AthleteAnalyticsResponse  # noqa: E402
 from api.routers import athletes as athletes_router  # noqa: E402
 
 
@@ -86,6 +87,23 @@ class AthleteAnalyticsApiTests(unittest.TestCase):
         athletes_router.analytics = analytics
 
         return repository, access, analytics
+
+    def test_analytics_route_uses_response_schema(self):
+        route = next(
+            route
+            for route in athletes_router.router.routes
+            if getattr(route, "path", None)
+            == "/athletes/{athlete_id}/analytics"
+        )
+
+        self.assertEqual(
+            route.response_model,
+            AthleteAnalyticsResponse,
+        )
+        self.assertIn(
+            "GET",
+            route.methods,
+        )
 
     def test_returns_404_when_athlete_does_not_exist(self):
         self.configure(

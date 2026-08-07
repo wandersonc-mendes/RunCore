@@ -504,6 +504,9 @@ export default function AthleteProfileView({
   const analysisAvailability = Object.entries(
     analytics?.analysis_availability || {},
   );
+  const calculationContext = (
+    analytics?.calculation_context || {}
+  );
 
   const goal = (
     trainingPlan?.objective
@@ -1206,6 +1209,112 @@ export default function AthleteProfileView({
                   Nenhum estado de análise disponível.
                 </p>
               )}
+            </div>
+
+            <div>
+              <div className="athlete-section-heading">
+                <div>
+                  <h2>Contexto dos cálculos</h2>
+                  <p className="muted">
+                    Convenções técnicas usadas pelo perfil
+                    analítico.
+                  </p>
+                </div>
+              </div>
+
+              <div className="athlete-training-list">
+                <article>
+                  <div>
+                    <small>Unidades</small>
+                    <strong>
+                      Distância:{" "}
+                      {calculationContext.distance_unit
+                        || "—"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Duração:{" "}
+                      {calculationContext.duration_unit
+                        || "—"}
+                    </span>
+                    <span>
+                      Pace:{" "}
+                      {calculationContext.pace_unit
+                        || "—"}
+                    </span>
+                  </div>
+                </article>
+
+                <article>
+                  <div>
+                    <small>Faixas de ritmo</small>
+                    <strong>
+                      {calculationContext.pace_band_seconds
+                        ?? "—"} s/km
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Baseline mínimo:{" "}
+                      {calculationContext
+                        .minimum_baseline_samples ?? "—"}
+                      {" "}amostras
+                    </span>
+                    <span>
+                      Granularidade:{" "}
+                      {calculationContext
+                        .pace_baseline_granularity || "—"}
+                    </span>
+                  </div>
+                </article>
+
+                <article>
+                  <div>
+                    <small>Base temporal</small>
+                    <strong>
+                      {calculationContext.activity_date_basis
+                        || "—"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Data local persistida:{" "}
+                      {calculationContext
+                        .local_activity_date_persisted
+                        ? "Sim"
+                        : "Não"}
+                    </span>
+                  </div>
+                </article>
+
+                <article>
+                  <div>
+                    <small>Dados granulares</small>
+                    <strong>
+                      Persistência atual
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Laps:{" "}
+                      {calculationContext.laps_persisted
+                        ? "Sim"
+                        : "Não"}
+                    </span>
+                    <span>
+                      Streams:{" "}
+                      {calculationContext.streams_persisted
+                        ? "Sim"
+                        : "Não"}
+                    </span>
+                  </div>
+                </article>
+              </div>
             </div>
             </>
           ) : (

@@ -6328,3 +6328,145 @@ button {
     grid-column: 1;
   }
 }
+
+
+/* ETAPA 104: DROPDOWNS PADRONIZADOS DO EDITOR */
+.editor-select {
+  min-width: 0;
+  position: relative;
+  width: 100%;
+  z-index: 4;
+}
+
+.editor-select:focus-within {
+  z-index: 30;
+}
+
+.editor-select-trigger {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-sizing: border-box;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: var(--editor-control-size, 13px);
+  font-weight: 500;
+  gap: 10px;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 0 11px;
+  text-align: left;
+  width: 100%;
+}
+
+.editor-select-trigger:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+}
+
+.editor-select-trigger:focus-visible,
+.editor-select-trigger[aria-expanded="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  outline: none;
+}
+
+.editor-select-chevron {
+  border-bottom: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  flex: 0 0 auto;
+  height: 7px;
+  margin: -4px 3px 0 8px;
+  opacity: 0.72;
+  transform: rotate(45deg);
+  transition: transform 160ms ease, margin 160ms ease;
+  width: 7px;
+}
+
+.editor-select-chevron.open {
+  margin-top: 4px;
+  transform: rotate(225deg);
+}
+
+.editor-select-menu {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  display: grid;
+  gap: 3px;
+  left: 0;
+  margin-top: 6px;
+  min-width: 100%;
+  overflow: hidden;
+  padding: 5px;
+  position: absolute;
+  top: 100%;
+  width: max-content;
+  z-index: 100;
+}
+
+.editor-select-menu button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 14px;
+  justify-content: space-between;
+  min-height: 34px;
+  padding: 7px 10px;
+  text-align: left;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.editor-select-menu button:hover,
+.editor-select-menu button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  outline: none;
+}
+
+.editor-select-menu button.active {
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.editor-select-check {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.distance-input .distance-unit-select {
+  flex: 0 0 76px;
+  width: 76px;
+}
+
+.distance-input .distance-unit-select .editor-select-menu {
+  min-width: 76px;
+  width: 76px;
+}
+
+:root[data-theme="dark"] .editor-select-trigger,
+:root[data-theme="dark"] .editor-select-menu {
+  background: #181e1b;
+}
+
+:root[data-theme="light"] .editor-select-trigger,
+:root[data-theme="light"] .editor-select-menu {
+  background: #ffffff;
+}
+
+@media (max-width: 700px) {
+  .editor-select-menu {
+    max-width: min(320px, calc(100vw - 42px));
+  }
+}

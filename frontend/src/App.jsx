@@ -147,7 +147,7 @@ function SessionAdjustment({
   saving,
   athlete,
 }) {
-  const [openTypePicker, setOpenTypePicker] = useState(null);
+  const [openSelect, setOpenSelect] = useState(null);
 
   const stepTypes = [
     "Aquecimento",
@@ -158,6 +158,88 @@ function SessionAdjustment({
     "Desaquecimento",
     "Outros",
   ];
+
+  function renderEditorSelect({
+    id,
+    value: selectedValue,
+    options,
+    onSelect,
+    ariaLabel,
+    className = "",
+  }) {
+    const selectedOption = options.find(
+      (option) => option.value === selectedValue,
+    );
+    const isOpen = openSelect === id;
+
+    return (
+      <div
+        className={`editor-select ${className}`.trim()}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setOpenSelect(null);
+          }
+        }}
+      >
+        <button
+          type="button"
+          className="editor-select-trigger"
+          aria-label={ariaLabel}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          onClick={() =>
+            setOpenSelect((current) =>
+              current === id ? null : id
+            )
+          }
+        >
+          <span>{selectedOption?.label || selectedValue}</span>
+          <span
+            className={`editor-select-chevron ${
+              isOpen ? "open" : ""
+            }`}
+            aria-hidden="true"
+          />
+        </button>
+
+        {isOpen && (
+          <div
+            className="editor-select-menu"
+            role="listbox"
+            aria-label={ariaLabel}
+          >
+            {options.map((option) => (
+              <button
+                type="button"
+                role="option"
+                aria-selected={selectedValue === option.value}
+                className={
+                  selectedValue === option.value
+                    ? "active"
+                    : ""
+                }
+                key={option.value}
+                onClick={() => {
+                  onSelect(option.value);
+                  setOpenSelect(null);
+                }}
+              >
+                <span>{option.label}</span>
+                {selectedValue === option.value && (
+                  <span
+                    className="editor-select-check"
+                    aria-hidden="true"
+                  >
+                    ✓
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const frequentBlocks = [
     {
@@ -971,70 +1053,33 @@ function SessionAdjustment({
                 <div className="workout-block-fields">
                   <label>
                     Tipo de etapa
-                    <div className="step-type-picker">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setOpenTypePicker((current) =>
-                            current === index
-                              ? null
-                              : index
-                          )
-                        }
-                      >
-                        {step.type}
-                        <span>⌄</span>
-                      </button>
-
-                      {openTypePicker === index && (
-                        <div className="step-type-menu">
-                          {stepTypes.map((type) => (
-                            <button
-                              type="button"
-                              className={
-                                step.type === type
-                                  ? "active"
-                                  : ""
-                              }
-                              key={type}
-                              onClick={() => {
-                                changeStep(
-                                  index,
-                                  "type",
-                                  type,
-                                );
-                                setOpenTypePicker(null);
-                              }}
-                            >
-                              {type}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    {renderEditorSelect({
+                      id: `step-type-${index}`,
+                      value: step.type,
+                      options: stepTypes.map((type) => ({
+                        value: type,
+                        label: type,
+                      })),
+                      ariaLabel: "Tipo de etapa",
+                      onSelect: (type) =>
+                        changeStep(index, "type", type),
+                    })}
                   </label>
 
                   <label>
                     Tipo
-                    <select
-                      value={
-                        step.prescription_type
-                        || "distance"
-                      }
-                      onChange={(event) =>
-                        changePrescriptionType(
-                          index,
-                          event.target.value,
-                        )
-                      }
-                    >
-                      <option value="distance">
-                        Distância
-                      </option>
-                      <option value="duration">
-                        Tempo
-                      </option>
-                    </select>
+                    {renderEditorSelect({
+                      id: `prescription-${index}`,
+                      value:
+                        step.prescription_type || "distance",
+                      options: [
+                        { value: "distance", label: "Distância" },
+                        { value: "duration", label: "Tempo" },
+                      ],
+                      ariaLabel: "Tipo de prescrição",
+                      onSelect: (nextValue) =>
+                        changePrescriptionType(index, nextValue),
+                    })}
                   </label>
 
                   {(step.prescription_type || "distance")
@@ -1056,26 +1101,24 @@ function SessionAdjustment({
                           }
                         />
 
-                        <select
-                          value={
+                        {renderEditorSelect({
+                          id: `distance-unit-${index}`,
+                          value:
                             step.distance_unit
-                            || (
-                              step.repetitions
-                                ? "m"
-                                : "km"
-                            )
-                          }
-                          onChange={(event) =>
+                            || (step.repetitions ? "m" : "km"),
+                          options: [
+                            { value: "km", label: "km" },
+                            { value: "m", label: "m" },
+                          ],
+                          ariaLabel: "Unidade de distância",
+                          className: "distance-unit-select",
+                          onSelect: (nextValue) =>
                             changeStep(
                               index,
                               "distance_unit",
-                              event.target.value,
-                            )
-                          }
-                        >
-                          <option value="km">km</option>
-                          <option value="m">m</option>
-                        </select>
+                              nextValue,
+                            ),
+                        })}
                       </div>
                     </label>
                   ) : (
@@ -1140,30 +1183,22 @@ function SessionAdjustment({
 
                   <label>
                     Meta de intensidade
-                    <select
-                      value={
-                        step.intensity_type || "pace"
-                      }
-                      onChange={(event) =>
-                        changeIntensityType(
-                          index,
-                          event.target.value,
-                        )
-                      }
-                    >
-                      <option value="pace">
-                        Ritmo
-                      </option>
-                      <option value="heart_rate">
-                        Frequência cardíaca
-                      </option>
-                      <option value="rpe">
-                        PSE
-                      </option>
-                      <option value="free">
-                        Livre
-                      </option>
-                    </select>
+                    {renderEditorSelect({
+                      id: `intensity-${index}`,
+                      value: step.intensity_type || "pace",
+                      options: [
+                        { value: "pace", label: "Ritmo" },
+                        {
+                          value: "heart_rate",
+                          label: "Frequência cardíaca",
+                        },
+                        { value: "rpe", label: "PSE" },
+                        { value: "free", label: "Livre" },
+                      ],
+                      ariaLabel: "Meta de intensidade",
+                      onSelect: (nextValue) =>
+                        changeIntensityType(index, nextValue),
+                    })}
                   </label>
 
                   {(step.intensity_type || "pace")

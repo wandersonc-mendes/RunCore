@@ -1217,7 +1217,9 @@ function SessionAdjustment({
                                 )
                               }
                             />
-                            <span>min/km</span>
+                            <span className="pace-inline-unit">
+                              min/km
+                            </span>
                           </div>
                         </label>
                       </div>

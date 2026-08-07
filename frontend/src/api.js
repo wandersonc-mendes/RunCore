@@ -294,6 +294,12 @@ export function getAthleteTrainingLoad(athleteId) {
   );
 }
 
+export function getAthleteAnalytics(athleteId) {
+  return request(
+    `/api/athletes/${athleteId}/analytics`,
+  );
+}
+
 export function getStudentTraining() {
   return request("/api/student/training");
 }

@@ -497,6 +497,7 @@ export default function AthleteProfileView({
   const currentPeriod = periodComparison?.current || {};
   const previousPeriod = periodComparison?.previous || {};
   const periodDelta = periodComparison?.delta || {};
+  const paceBaselines = analytics?.pace_baselines || [];
 
   const goal = (
     trainingPlan?.objective
@@ -993,6 +994,73 @@ export default function AthleteProfileView({
                   </small>
                 </article>
               </div>
+            </div>
+
+            <div>
+              <div className="athlete-section-heading">
+                <div>
+                  <h2>Baselines por faixa de ritmo</h2>
+                  <p className="muted">
+                    Agrupamento por ritmo médio da atividade.
+                    O baseline exige pelo menos três amostras.
+                  </p>
+                </div>
+              </div>
+
+              {paceBaselines.length ? (
+                <div className="athlete-training-list">
+                  {paceBaselines.map((baseline) => (
+                    <article key={baseline.key}>
+                      <div>
+                        <small>
+                          {baseline.label}
+                        </small>
+                        <strong>
+                          {baseline.average_pace
+                            ? `${baseline.average_pace}/km`
+                            : "Ritmo indisponível"}
+                        </strong>
+                        <span>
+                          {baseline.activity_count} atividade
+                          {baseline.activity_count === 1
+                            ? ""
+                            : "s"}
+                          {" · "}
+                          {Number(
+                            baseline.total_distance_km || 0,
+                          ).toLocaleString(
+                            "pt-BR",
+                            {
+                              minimumFractionDigits: 1,
+                              maximumFractionDigits: 1,
+                            },
+                          )} km
+                        </span>
+                      </div>
+
+                      <div>
+                        <small>
+                          {baseline.baseline_available
+                            ? "Baseline disponível"
+                            : "Amostra insuficiente"}
+                        </small>
+                        <span>
+                          FC média:{" "}
+                          {baseline.average_heartrate ?? "—"}
+                        </span>
+                        <span>
+                          Cadência média:{" "}
+                          {baseline.average_cadence ?? "—"}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted">
+                  Ainda não há faixas de ritmo calculadas.
+                </p>
+              )}
             </div>
             </>
           ) : (

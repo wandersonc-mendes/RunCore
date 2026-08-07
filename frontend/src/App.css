@@ -6470,3 +6470,33 @@ button {
     max-width: min(320px, calc(100vw - 42px));
   }
 }
+
+
+/* ETAPA 105: EXCLUIR ETAPA COMPACTO */
+.workout-block-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.workout-block-actions .remove-workout-block {
+  align-items: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 28px;
+  height: 28px;
+  justify-content: center;
+  min-height: 28px;
+  min-width: 28px;
+  padding: 0;
+  white-space: nowrap;
+  width: 28px;
+}
+
+.remove-workout-icon {
+  display: block;
+  height: 15px;
+  pointer-events: none;
+  width: 15px;
+}

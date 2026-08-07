@@ -850,7 +850,7 @@ function SessionAdjustment({
             <div className="workout-structure-actions">
               <button
                 type="button"
-                className="btn-ghost"
+                className="btn-ghost compact-action-button"
                 onClick={() => addStep()}
               >
                 + Adicionar etapa
@@ -858,7 +858,7 @@ function SessionAdjustment({
 
               <button
                 type="button"
-                className="btn-ghost"
+                className="btn-ghost compact-action-button"
                 onClick={addRepeatGroup}
               >
                 ↻ Adicionar repetição
@@ -903,6 +903,7 @@ function SessionAdjustment({
                     <div className="repeat-header-actions">
                       <button
                         type="button"
+                        className="compact-group-button"
                         onClick={() => addStepToGroup(step.group_id)}
                       >
                         + Etapa interna
@@ -910,7 +911,7 @@ function SessionAdjustment({
 
                       <button
                         type="button"
-                        className="remove-repeat-group"
+                        className="compact-group-button remove-repeat-group"
                         onClick={() => removeRepeatGroup(step.group_id)}
                       >
                         Remover grupo
@@ -957,10 +958,11 @@ function SessionAdjustment({
                         type="button"
                         className="remove-workout-block"
                         onClick={() => removeStep(index)}
-                        aria-label={`Remover bloco ${index + 1}`}
-                        title="Remover bloco"
+                        aria-label={`Excluir etapa ${index + 1}`}
+                        title="Excluir etapa"
                       >
-                        ×
+                        <span aria-hidden="true">⌫</span>
+                        <span>Excluir</span>
                       </button>
                     )}
                   </div>
@@ -968,7 +970,7 @@ function SessionAdjustment({
 
                 <div className="workout-block-fields">
                   <label>
-                    Tipo
+                    Tipo de etapa
                     <div className="step-type-picker">
                       <button
                         type="button"
@@ -1013,7 +1015,7 @@ function SessionAdjustment({
                   </label>
 
                   <label>
-                    Prescrição
+                    Tipo
                     <select
                       value={
                         step.prescription_type
@@ -1137,7 +1139,7 @@ function SessionAdjustment({
                   )}
 
                   <label>
-                    Intensidade
+                    Meta de intensidade
                     <select
                       value={
                         step.intensity_type || "pace"
@@ -1175,6 +1177,7 @@ function SessionAdjustment({
                         <label>
                           <span>Mais rápido</span>
                           <input
+                            className="pace-compact-input"
                             inputMode="numeric"
                             maxLength={5}
                             value={step.pace_max || ""}
@@ -1197,26 +1200,26 @@ function SessionAdjustment({
 
                         <label>
                           <span>Mais lento</span>
-                          <input
-                            inputMode="numeric"
-                            maxLength={5}
-                            value={step.pace_min || ""}
-                            placeholder="05:30"
-                            onChange={(event) =>
-                              changeStep(
-                                index,
-                                "pace_min",
-                                formatPaceInput(
-                                  event.target.value,
-                                ),
-                              )
-                            }
-                          />
+                          <div className="pace-input-with-unit">
+                            <input
+                              className="pace-compact-input"
+                              inputMode="numeric"
+                              maxLength={5}
+                              value={step.pace_min || ""}
+                              placeholder="05:30"
+                              onChange={(event) =>
+                                changeStep(
+                                  index,
+                                  "pace_min",
+                                  formatPaceInput(
+                                    event.target.value,
+                                  ),
+                                )
+                              }
+                            />
+                            <span>min/km</span>
+                          </div>
                         </label>
-
-                        <span className="pace-range-unit">
-                          min/km
-                        </span>
                       </div>
                     </div>
                   )}

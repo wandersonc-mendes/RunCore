@@ -5969,3 +5969,168 @@ button {
       auto;
   }
 }
+
+/* ETAPA 103D: PADRONIZACAO DO EDITOR */
+.workout-block-card,
+.workout-block-card label,
+.workout-block-card input,
+.workout-block-card select,
+.workout-block-card textarea,
+.workout-repeat-header,
+.workout-repeat-header label,
+.workout-repeat-header input,
+.workout-repeat-header button {
+  font-family: inherit;
+}
+
+.workout-block-card label,
+.pace-range-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.workout-block-card input,
+.workout-block-card select,
+.workout-block-card textarea {
+  font-size: 0.86rem;
+}
+
+.compact-action-button,
+.compact-group-button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: inherit;
+  display: inline-flex;
+  font-size: 0.76rem;
+  gap: 5px;
+  min-height: 32px;
+  padding: 6px 10px;
+}
+
+.compact-action-button:hover,
+.compact-group-button:hover {
+  background: color-mix(
+    in srgb,
+    currentColor 7%,
+    transparent
+  );
+}
+
+.repeat-header-actions {
+  gap: 6px;
+}
+
+.remove-repeat-group {
+  border-color: color-mix(
+    in srgb,
+    var(--danger, #d84b4b) 55%,
+    var(--border)
+  );
+  color: var(--danger, #d84b4b);
+}
+
+.remove-workout-block {
+  align-items: center;
+  border-radius: 8px;
+  display: inline-flex;
+  font-size: 0.72rem;
+  gap: 4px;
+  min-height: 28px;
+  padding: 4px 7px;
+  width: auto;
+}
+
+.remove-workout-block span:first-child {
+  font-size: 0.85rem;
+}
+
+.pace-range-field {
+  grid-column: span 2;
+  max-width: 350px;
+}
+
+.pace-range-inputs {
+  align-items: end;
+  display: grid;
+  gap: 7px;
+  grid-template-columns:
+    88px
+    auto
+    minmax(128px, 150px);
+  justify-content: start;
+}
+
+.pace-range-inputs label {
+  gap: 4px;
+}
+
+.pace-range-inputs label > span {
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.pace-compact-input {
+  box-sizing: border-box;
+  max-width: 88px;
+  min-width: 88px;
+  padding-left: 8px;
+  padding-right: 8px;
+  text-align: center;
+}
+
+.pace-input-with-unit {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  display: grid;
+  grid-template-columns: 88px auto;
+  min-height: 40px;
+  overflow: hidden;
+}
+
+.pace-input-with-unit input {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  min-height: 38px;
+  outline: 0;
+}
+
+.pace-input-with-unit > span {
+  border-left: 1px solid var(--border);
+  font-size: 0.74rem;
+  opacity: 0.78;
+  padding: 0 9px;
+  white-space: nowrap;
+}
+
+.pace-range-separator {
+  font-size: 0.78rem;
+  min-height: 40px;
+}
+
+@media (max-width: 620px) {
+  .pace-range-field {
+    grid-column: 1;
+    max-width: 100%;
+  }
+
+  .pace-range-inputs {
+    grid-template-columns:
+      82px
+      auto
+      minmax(122px, 1fr);
+  }
+
+  .pace-compact-input {
+    max-width: 82px;
+    min-width: 82px;
+  }
+
+  .pace-input-with-unit {
+    grid-template-columns: 82px auto;
+  }
+}

@@ -4,6 +4,8 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Iterable
 
+from repositories.activity_repository import ActivityRepository
+
 
 class AthleteAnalyticsService:
     # Camada determinística de cálculos do perfil analítico do atleta.
@@ -18,6 +20,35 @@ class AthleteAnalyticsService:
 
     PACE_BAND_SECONDS = 30
     MIN_BASELINE_SAMPLES = 3
+
+    def __init__(
+        self,
+        activity_repository: ActivityRepository | None = None,
+    ):
+        self.activity_repository = (
+            activity_repository
+            or ActivityRepository()
+        )
+
+    def build_for_athlete(
+        self,
+        athlete_id: int,
+        *,
+        reference_date: date | None = None,
+    ) -> dict:
+        activities = self.activity_repository.list_for_athlete(
+            athlete_id,
+        )
+
+        profile = self.build_profile(
+            activities,
+            reference_date=reference_date,
+        )
+
+        return {
+            "athlete_id": athlete_id,
+            **profile,
+        }
 
     def build_profile(
         self,

@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 
+from api.analytics_schemas import AthleteAnalyticsResponse
 from api.dependencies import require_coach
 from repositories.access_repository import AccessRepository
 from repositories.athlete_repository import AthleteRepository
@@ -26,7 +27,10 @@ def list_athletes(search: str | None = None):
     return repository.list_all()
 
 
-@router.get("/{athlete_id}/analytics")
+@router.get(
+    "/{athlete_id}/analytics",
+    response_model=AthleteAnalyticsResponse,
+)
 def get_athlete_analytics(
     athlete_id: int,
     coach=Depends(require_coach),

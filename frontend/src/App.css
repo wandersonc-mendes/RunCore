@@ -6470,3 +6470,50 @@ button {
     max-width: min(320px, calc(100vw - 42px));
   }
 }
+
+/* Athlete analytical profile */
+.analytics-profile-card {
+  display: grid;
+  gap: 28px;
+}
+
+.analytics-profile-card > div {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+
+.analytics-profile-card > .athlete-section-heading {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.analytics-profile-card .athlete-section-heading {
+  margin-bottom: 14px;
+}
+
+.analytics-profile-card .athlete-section-heading h2 {
+  margin-bottom: 4px;
+}
+
+.analytics-profile-card .athlete-summary-grid {
+  margin-bottom: 0;
+}
+
+.analytics-profile-card .athlete-training-list {
+  overflow: hidden;
+}
+
+.analytics-profile-card .athlete-training-list article:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .analytics-profile-card {
+    gap: 22px;
+  }
+
+  .analytics-profile-card > div {
+    padding-top: 20px;
+  }
+}
+

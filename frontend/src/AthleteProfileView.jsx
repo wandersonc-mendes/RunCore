@@ -780,7 +780,7 @@ export default function AthleteProfileView({
       )}
 
       {tab === "analytics" && (
-        <section className="profile-card">
+        <section className="profile-card analytics-profile-card">
           <div className="athlete-section-heading">
             <div>
               <h2>Perfil analítico</h2>

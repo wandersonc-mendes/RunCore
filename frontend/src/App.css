@@ -5897,3 +5897,75 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ETAPA 103C: FAIXA DE RITMO */
+.pace-range-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  grid-column: span 2;
+  min-width: 0;
+}
+
+.pace-range-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.pace-range-inputs {
+  align-items: end;
+  display: grid;
+  gap: 8px;
+  grid-template-columns:
+    minmax(95px, 1fr)
+    auto
+    minmax(95px, 1fr)
+    auto;
+}
+
+.pace-range-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.pace-range-inputs label > span {
+  font-size: 0.72rem;
+  opacity: 0.76;
+}
+
+.pace-range-inputs input {
+  min-width: 0;
+  text-align: center;
+}
+
+.pace-range-separator,
+.pace-range-unit {
+  align-items: center;
+  display: flex;
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.pace-range-separator {
+  font-weight: 600;
+}
+
+.pace-range-unit {
+  opacity: 0.8;
+}
+
+@media (max-width: 620px) {
+  .pace-range-field {
+    grid-column: 1;
+  }
+
+  .pace-range-inputs {
+    grid-template-columns:
+      minmax(80px, 1fr)
+      auto
+      minmax(80px, 1fr)
+      auto;
+  }
+}

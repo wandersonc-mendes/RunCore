@@ -1166,45 +1166,59 @@ function SessionAdjustment({
 
                   {(step.intensity_type || "pace")
                     === "pace" && (
-                    <>
-                      <label>
-                        Ritmo mínimo
-                        <input
-                          inputMode="numeric"
-                          maxLength={5}
-                          value={step.pace_min || ""}
-                          placeholder="05:20"
-                          onChange={(event) =>
-                            changeStep(
-                              index,
-                              "pace_min",
-                              formatPaceInput(
-                                event.target.value,
-                              ),
-                            )
-                          }
-                        />
-                      </label>
+                    <div className="pace-range-field">
+                      <span className="pace-range-title">
+                        Ritmo
+                      </span>
 
-                      <label>
-                        Ritmo máximo
-                        <input
-                          inputMode="numeric"
-                          maxLength={5}
-                          value={step.pace_max || ""}
-                          placeholder="05:00"
-                          onChange={(event) =>
-                            changeStep(
-                              index,
-                              "pace_max",
-                              formatPaceInput(
-                                event.target.value,
-                              ),
-                            )
-                          }
-                        />
-                      </label>
-                    </>
+                      <div className="pace-range-inputs">
+                        <label>
+                          <span>Mais rápido</span>
+                          <input
+                            inputMode="numeric"
+                            maxLength={5}
+                            value={step.pace_max || ""}
+                            placeholder="05:00"
+                            onChange={(event) =>
+                              changeStep(
+                                index,
+                                "pace_max",
+                                formatPaceInput(
+                                  event.target.value,
+                                ),
+                              )
+                            }
+                          />
+                        </label>
+
+                        <span className="pace-range-separator">
+                          a
+                        </span>
+
+                        <label>
+                          <span>Mais lento</span>
+                          <input
+                            inputMode="numeric"
+                            maxLength={5}
+                            value={step.pace_min || ""}
+                            placeholder="05:30"
+                            onChange={(event) =>
+                              changeStep(
+                                index,
+                                "pace_min",
+                                formatPaceInput(
+                                  event.target.value,
+                                ),
+                              )
+                            }
+                          />
+                        </label>
+
+                        <span className="pace-range-unit">
+                          min/km
+                        </span>
+                      </div>
+                    </div>
                   )}
 
                   {step.intensity_type

@@ -443,8 +443,10 @@ export default function AthleteProfileView({
   const parq = profile.parq || {};
   const training = profile.training || {};
   const currentLoad = load?.points?.at(-1);
-  void analytics;
-  void analyticsError;
+  const latestAnalyticsWeek = analytics?.weekly?.at(-1) || null;
+  const dataCoverage = Number(
+    analytics?.data_quality?.overall_coverage_percent || 0,
+  );
 
   const goal = (
     trainingPlan?.objective
@@ -566,6 +568,16 @@ export default function AthleteProfileView({
           onClick={() => setTab("health")}
         >
           Histórico
+        </button>
+
+        <button
+          type="button"
+          className={
+            tab === "analytics" ? "active" : ""
+          }
+          onClick={() => setTab("analytics")}
+        >
+          Análise
         </button>
 
         <button
@@ -703,6 +715,104 @@ export default function AthleteProfileView({
                 || "Nenhuma observação registrada."}
             </p>
           </article>
+        </section>
+      )}
+
+      {tab === "analytics" && (
+        <section className="profile-card">
+          <div className="athlete-section-heading">
+            <div>
+              <h2>Perfil analítico</h2>
+              <p className="muted">
+                Indicadores objetivos calculados a partir das
+                atividades importadas.
+              </p>
+            </div>
+          </div>
+
+          {analyticsError ? (
+            <p className="muted">
+              Não foi possível carregar o perfil analítico:
+              {" "}{analyticsError}
+            </p>
+          ) : analytics ? (
+            <div className="athlete-summary-grid">
+              <article className="athlete-summary-card">
+                <span>Atividades analisadas</span>
+                <strong>
+                  {analytics.activity_count ?? 0}
+                </strong>
+                <small>
+                  Corridas com data válida
+                </small>
+              </article>
+
+              <article className="athlete-summary-card">
+                <span>Volume da última semana</span>
+                <strong>
+                  {latestAnalyticsWeek
+                    ? `${Number(
+                        latestAnalyticsWeek.distance_km || 0,
+                      ).toLocaleString(
+                        "pt-BR",
+                        {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 1,
+                        },
+                      )} km`
+                    : "—"}
+                </strong>
+                <small>
+                  Atividades realizadas
+                </small>
+              </article>
+
+              <article className="athlete-summary-card">
+                <span>Tempo da última semana</span>
+                <strong>
+                  {latestAnalyticsWeek
+                    ? formatDuration(
+                        latestAnalyticsWeek
+                          .moving_time_seconds || 0,
+                      )
+                    : "—"}
+                </strong>
+                <small>
+                  Tempo em movimento
+                </small>
+              </article>
+
+              <article className="athlete-summary-card">
+                <span>Faixas de ritmo</span>
+                <strong>
+                  {analytics.pace_baselines?.length || 0}
+                </strong>
+                <small>
+                  Baselines por pace médio
+                </small>
+              </article>
+
+              <article className="athlete-summary-card">
+                <span>Cobertura dos dados</span>
+                <strong>
+                  {dataCoverage.toLocaleString(
+                    "pt-BR",
+                    {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 1,
+                    },
+                  )}%
+                </strong>
+                <small>
+                  Qualidade dos campos disponíveis
+                </small>
+              </article>
+            </div>
+          ) : (
+            <p className="muted">
+              Carregando perfil analítico...
+            </p>
+          )}
         </section>
       )}
 

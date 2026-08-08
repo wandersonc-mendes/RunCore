@@ -2702,7 +2702,7 @@ export default function App() {
               <p>Aluno: {selectedAthlete.name}</p>
             </div>
           </div>
-          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT/Avaliação</button><button className="btn-ghost" onClick={() => openTraining(selectedAthlete)}>Planejamento</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
+          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT/Avaliação</button><button className="btn-ghost" onClick={() => openTraining(selectedAthlete)}>Planejamento</button><button className="btn-ghost" onClick={() => openProfile(selectedAthlete)}>Voltar ao atleta</button></div>
         </header>
 
         <main className="content">

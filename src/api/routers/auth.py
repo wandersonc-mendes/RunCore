@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import HTTPException
+from fastapi import Request
 from fastapi import status
 
 from fastapi.security import HTTPAuthorizationCredentials
@@ -15,6 +16,7 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 
+from api.network_access import require_role_network_access
 from api.security import create_access_token
 from api.security import decode_access_token
 from api.security import hash_password
@@ -137,6 +139,7 @@ def normalize_email(
 
 
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(
         bearer_scheme,
     ),
@@ -188,6 +191,11 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cadastro aguardando aprovação do treinador",
         )
+
+    require_role_network_access(
+        user.role,
+        request,
+    )
 
     return user
 
@@ -319,6 +327,7 @@ def register(
 )
 def login(
     payload: LoginRequest,
+    request: Request,
 ):
 
     normalized_email = normalize_email(
@@ -364,6 +373,11 @@ def login(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cadastro aguardando aprovação do treinador",
         )
+
+    require_role_network_access(
+        user.role,
+        request,
+    )
 
     token = create_access_token(
         user_id=user.id,

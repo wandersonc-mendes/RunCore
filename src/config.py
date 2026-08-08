@@ -97,6 +97,16 @@ AUTH_TOKEN_EXPIRE_MINUTES = int(
     )
 )
 
+ADMIN_ALLOWED_NETWORKS = tuple(
+    item.strip()
+    for item in os.getenv(
+        "ADMIN_ALLOWED_NETWORKS",
+        "",
+    ).split(",")
+    if item.strip()
+)
+
+
 
 # ==========================
 # E-mail

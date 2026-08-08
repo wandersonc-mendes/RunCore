@@ -10,6 +10,7 @@ from database.bootstrap import initialize_database
 import models
 
 from api.dependencies import require_coach
+from api.origin_guard import origin_guard_middleware
 from api.routers import athletes
 from api.routers import admin
 from api.routers import auth
@@ -42,6 +43,10 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.middleware("http")(
+    origin_guard_middleware,
 )
 
 

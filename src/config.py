@@ -107,6 +107,12 @@ ADMIN_ALLOWED_NETWORKS = tuple(
 )
 
 
+CLOUDFLARE_ORIGIN_SECRET = os.getenv(
+    "CLOUDFLARE_ORIGIN_SECRET",
+    "",
+).strip()
+
+
 
 # ==========================
 # E-mail

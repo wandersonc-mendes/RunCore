@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 
+from api.access_control import require_athlete_access
 from api.dependencies import current_user
 from api.dependencies import require_coach
 from core.physiology.vdot_service import VdotService
@@ -106,7 +107,14 @@ def list_evaluations(
     athlete_id: int,
     coach=Depends(require_coach),
 ):
-    return repository.list_by_athlete(athlete_id)
+    require_athlete_access(
+        athlete_id,
+        coach,
+    )
+
+    return repository.list_by_athlete(
+        athlete_id,
+    )
 
 
 @router.post(
@@ -119,6 +127,11 @@ def create_evaluation(
     payload: EvaluationCreate,
     coach=Depends(require_coach),
 ):
+    require_athlete_access(
+        athlete_id,
+        coach,
+    )
+
     distance = distance_from_test_type(
         payload.test_type,
     )
@@ -165,6 +178,11 @@ def update_evaluation(
             detail="Avaliação não encontrada.",
         )
 
+    require_athlete_access(
+        evaluation.athlete_id,
+        coach,
+    )
+
     distance = distance_from_test_type(
         payload.test_type,
     )
@@ -201,6 +219,21 @@ def delete_evaluation(
     evaluation_id: int,
     coach=Depends(require_coach),
 ):
+    evaluation = repository.get_by_id(
+        evaluation_id,
+    )
+
+    if evaluation is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Avaliação não encontrada.",
+        )
+
+    require_athlete_access(
+        evaluation.athlete_id,
+        coach,
+    )
+
     deleted = repository.delete(
         evaluation_id,
     )

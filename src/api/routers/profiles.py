@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from api.access_control import require_athlete_access
 from api.dependencies import current_user, require_coach
 from repositories.access_repository import AccessRepository
 from repositories.athlete_details_repository import AthleteDetailsRepository
@@ -117,8 +118,16 @@ def save_profile(payload: ProfilePayload, user=Depends(current_user)):
 
 
 @router.get("/athletes/{athlete_id}")
-def get_athlete_profile(athlete_id: int, coach=Depends(require_coach)):
-    athlete = athletes.get_by_id(athlete_id)
-    if athlete is None:
-        raise HTTPException(status_code=404, detail="Atleta não encontrado.")
-    return serialize(details.get(athlete_id), athlete)
+def get_athlete_profile(
+    athlete_id: int,
+    coach=Depends(require_coach),
+):
+    athlete = require_athlete_access(
+        athlete_id,
+        coach,
+    )
+
+    return serialize(
+        details.get(athlete_id),
+        athlete,
+    )

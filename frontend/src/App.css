@@ -5527,9 +5527,19 @@ button {
   gap: 18px;
   align-items: center;
   padding: 14px 16px;
-  border: 1px solid var(--border, #dfe5e2);
+  border: 1px solid var(
+    --shell-border,
+    var(--border, #dfe5e2)
+  );
   border-radius: 13px;
-  background: var(--surface-soft, #f5f8f6);
+  background: var(
+    --shell-surface,
+    var(--surface, #f5f8f6)
+  );
+  color: var(
+    --shell-text,
+    var(--ink, #16201b)
+  );
 }
 
 .coach-goals-list article > div:first-child {
@@ -5537,15 +5547,28 @@ button {
   gap: 4px;
 }
 
+.coach-goals-list article strong {
+  color: var(
+    --shell-text,
+    var(--ink, #16201b)
+  );
+}
+
 .coach-goals-list article span {
-  color: var(--muted, #66736d);
+  color: var(
+    --shell-muted,
+    var(--muted, #66736d)
+  );
   font-size: .72rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .coach-goals-list article small {
-  color: var(--muted, #66736d);
+  color: var(
+    --shell-muted,
+    var(--muted, #66736d)
+  );
 }
 
 .coach-goal-actions {

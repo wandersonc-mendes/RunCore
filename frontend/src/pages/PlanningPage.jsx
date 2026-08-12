@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import {
   getTraining,
@@ -72,6 +73,31 @@ function formatWeekRange(days) {
   }).format(last);
 
   return `${start} - ${end}`;
+}
+
+
+function sessionWeekdayIndex(session) {
+  const configuredWeekday = Number(session?.weekday);
+
+  if (
+    Number.isInteger(configuredWeekday)
+    && configuredWeekday >= 0
+    && configuredWeekday <= 6
+  ) {
+    return configuredWeekday;
+  }
+
+  if (!session?.session_date) {
+    return null;
+  }
+
+  const nativeWeekday = new Date(
+    `${session.session_date}T12:00:00`,
+  ).getDay();
+
+  return nativeWeekday === 0
+    ? 6
+    : nativeWeekday - 1;
 }
 
 
@@ -174,17 +200,36 @@ export default function PlanningPage({
   error,
   onOpenPlanning,
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const requestedAthleteId = searchParams.get("atleta") || "all";
+  const requestedView = (
+    searchParams.get("visao") === "macrociclo"
+      ? "macrociclo"
+      : "semana"
+  );
+
   const [weekStart, setWeekStart] = useState(
     () => startOfWeek(new Date()),
   );
   const [records, setRecords] = useState([]);
   const [loadingTrainings, setLoadingTrainings] = useState(true);
-  const [athleteFilter, setAthleteFilter] = useState("all");
+  const [athleteFilter, setAthleteFilter] = useState(
+    requestedAthleteId,
+  );
+  const [planningView, setPlanningView] = useState(
+    requestedView,
+  );
   const [goalFilter, setGoalFilter] = useState("all");
   const [draggingSessionId, setDraggingSessionId] = useState(null);
   const [dropTarget, setDropTarget] = useState("");
   const [movingSessionId, setMovingSessionId] = useState(null);
   const [moveError, setMoveError] = useState("");
+
+  useEffect(() => {
+    setAthleteFilter(requestedAthleteId);
+    setPlanningView(requestedView);
+  }, [requestedAthleteId, requestedView]);
 
   useEffect(() => {
     let active = true;
@@ -281,6 +326,76 @@ export default function PlanningPage({
     return result;
   }, [visibleRecords]);
 
+  const macrocycleRecord = (
+    athleteFilter !== "all"
+      ? visibleRecords[0] || null
+      : null
+  );
+
+  const macrocycleWeeks = useMemo(() => {
+    const sessions = (
+      macrocycleRecord?.training?.sessions || []
+    );
+
+    const grouped = new Map();
+
+    sessions.forEach((session) => {
+      const weekNumber = Number(session.week || 0);
+
+      if (!grouped.has(weekNumber)) {
+        grouped.set(weekNumber, []);
+      }
+
+      grouped.get(weekNumber).push(session);
+    });
+
+    return Array.from(grouped.entries())
+      .sort(([first], [second]) => first - second)
+      .map(([week, weekSessions]) => ({
+        week,
+        sessions: [...weekSessions].sort(
+          (first, second) =>
+            String(first.session_date || "").localeCompare(
+              String(second.session_date || ""),
+            ),
+        ),
+      }));
+  }, [macrocycleRecord]);
+
+  function changePlanningView(nextView) {
+    setPlanningView(nextView);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("visao", nextView);
+
+    if (athleteFilter !== "all") {
+      nextParams.set("atleta", athleteFilter);
+    } else {
+      nextParams.delete("atleta");
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  }
+
+  function changeAthleteFilter(nextAthleteId) {
+    setAthleteFilter(nextAthleteId);
+
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (nextAthleteId === "all") {
+      nextParams.delete("atleta");
+
+      if (planningView === "macrociclo") {
+        setPlanningView("semana");
+        nextParams.set("visao", "semana");
+      }
+    } else {
+      nextParams.set("atleta", nextAthleteId);
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  }
+
   function updateSessionDateLocally(
     athleteId,
     sessionId,
@@ -371,10 +486,21 @@ export default function PlanningPage({
       <header className="planning-week-header">
         <div>
           <p className="eyebrow">PLANEJAMENTO</p>
-          <h2>Planejamento semanal</h2>
+          <h2>
+            {planningView === "macrociclo"
+              ? "Macrociclo completo"
+              : "Planejamento semanal"}
+          </h2>
           <p className="muted">
-            Arraste um treino para outro dia para
-            reorganizar a semana do atleta.
+            {planningView === "macrociclo"
+              ? (
+                "Visualize todas as semanas e sessões "
+                + "do ciclo do atleta."
+              )
+              : (
+                "Arraste um treino para outro dia para "
+                + "reorganizar a semana do atleta."
+              )}
           </p>
         </div>
 
@@ -390,8 +516,33 @@ export default function PlanningPage({
         </div>
       )}
 
+      <section className="planning-view-switcher">
+        <button
+          type="button"
+          className={planningView === "semana" ? "active" : ""}
+          onClick={() => changePlanningView("semana")}
+        >
+          Semana
+        </button>
+
+        <button
+          type="button"
+          className={planningView === "macrociclo" ? "active" : ""}
+          disabled={athleteFilter === "all"}
+          title={
+            athleteFilter === "all"
+              ? "Selecione um atleta para visualizar o macrociclo."
+              : ""
+          }
+          onClick={() => changePlanningView("macrociclo")}
+        >
+          Macrociclo
+        </button>
+      </section>
+
       <section className="planning-week-toolbar">
-        <div className="week-navigation">
+        {planningView === "semana" && (
+          <div className="week-navigation">
           <button
             type="button"
             aria-label="Semana anterior"
@@ -423,7 +574,8 @@ export default function PlanningPage({
           </button>
 
           <strong>{formatWeekRange(weekDays)}</strong>
-        </div>
+          </div>
+        )}
 
         <div className="planning-week-filters">
           <label>
@@ -448,7 +600,9 @@ export default function PlanningPage({
             <select
               value={athleteFilter}
               onChange={(event) =>
-                setAthleteFilter(event.target.value)
+                changeAthleteFilter(
+                  event.target.value,
+                )
               }
             >
               <option value="all">Todos</option>
@@ -469,7 +623,7 @@ export default function PlanningPage({
 
       {isLoading ? (
         <section className="planning-empty">
-          <h3>Carregando semana</h3>
+          <h3>Carregando planejamento</h3>
           <p>Buscando os planejamentos dos atletas.</p>
         </section>
       ) : visibleRecords.length === 0 ? (
@@ -480,6 +634,129 @@ export default function PlanningPage({
             outros planejamentos.
           </p>
         </section>
+      ) : planningView === "macrociclo" ? (
+        athleteFilter === "all" ? (
+          <section className="planning-empty">
+            <h3>Selecione um atleta</h3>
+            <p>
+              O macrociclo completo é exibido
+              individualmente por atleta.
+            </p>
+          </section>
+        ) : macrocycleWeeks.length === 0 ? (
+          <section className="planning-empty">
+            <h3>Macrociclo sem sessões</h3>
+            <p>
+              Este atleta ainda não possui treinos
+              distribuídos no ciclo.
+            </p>
+          </section>
+        ) : (
+          <section className="planning-macrocycle">
+            <header className="planning-macrocycle-summary">
+              <div>
+                <span className="planning-avatar">
+                  {initials(macrocycleRecord.athlete.name)}
+                </span>
+                <div>
+                  <strong>{macrocycleRecord.athlete.name}</strong>
+                  <small>
+                    {macrocycleRecord.training?.objective
+                      || macrocycleRecord.athlete.goal
+                      || "Sem objetivo"}
+                  </small>
+                </div>
+              </div>
+
+              <div>
+                <strong>{macrocycleWeeks.length}</strong>
+                <span>semanas no ciclo</span>
+              </div>
+            </header>
+
+            <div className="planning-macrocycle-weeks">
+              {macrocycleWeeks.map(({ week, sessions }) => (
+                <article
+                  className="planning-macro-week"
+                  key={week}
+                >
+                  <header>
+                    <div>
+                      <span>SEMANA</span>
+                      <strong>{week || "—"}</strong>
+                    </div>
+                    <small>
+                      {sessions.length} {
+                        sessions.length === 1
+                          ? "sessão"
+                          : "sessões"
+                      }
+                    </small>
+                  </header>
+
+                  <div className="planning-macro-days">
+                    {WEEKDAYS.map((weekday, weekdayIndex) => {
+                      const daySessions = sessions.filter(
+                        (session) =>
+                          sessionWeekdayIndex(session)
+                          === weekdayIndex,
+                      );
+
+                      return (
+                        <div
+                          className="planning-macro-day"
+                          key={`${week}-${weekday}`}
+                        >
+                          <span>{weekday}</span>
+
+                          {daySessions.length === 0 ? (
+                            <small className="planning-macro-rest">
+                              Livre
+                            </small>
+                          ) : (
+                            daySessions.map((session) => (
+                              <button
+                                type="button"
+                                className={
+                                  `planning-session-card ${sessionTone(session)}`
+                                }
+                                key={session.id}
+                                onClick={() =>
+                                  onOpenPlanning(
+                                    macrocycleRecord.athlete,
+                                    session,
+                                  )
+                                }
+                              >
+                                <strong>
+                                  {session.workout_name}
+                                </strong>
+                                <span>
+                                  {formatWorkoutSummary(session)}
+                                </span>
+                                <small>
+                                  {session.session_date
+                                    ? formatDay(
+                                        new Date(
+                                          `${session.session_date}T12:00:00`,
+                                        ),
+                                      )
+                                    : (
+                                      session.zone || "Treino"
+                                    )}
+                                </small>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )
       ) : (
         <div className="planning-week-scroll">
           <div className="planning-week-grid">
@@ -639,14 +916,16 @@ export default function PlanningPage({
         </div>
       )}
 
-      <footer className="planning-week-legend">
-        <span><b className="easy" />Fácil</span>
-        <span><b className="interval" />Intervalado</span>
-        <span><b className="tempo" />Tempo/Limiar</span>
-        <span><b className="long" />Longo</span>
-        <span><b className="recovery" />Regenerativo</span>
-        <span><b className="progressive" />Progressivo</span>
-      </footer>
+      {planningView === "semana" && (
+        <footer className="planning-week-legend">
+          <span><b className="easy" />Fácil</span>
+          <span><b className="interval" />Intervalado</span>
+          <span><b className="tempo" />Tempo/Limiar</span>
+          <span><b className="long" />Longo</span>
+          <span><b className="recovery" />Regenerativo</span>
+          <span><b className="progressive" />Progressivo</span>
+        </footer>
+      )}
     </section>
   );
 }

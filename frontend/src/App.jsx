@@ -2816,7 +2816,32 @@ export default function App() {
         <div className="page routed-training-page">
         <header className="topbar">
           <div className="brand"><BrandLogo /><div><h1>Planejamento de treino</h1><p>Aluno: {selectedAthlete.name}</p></div></div>
-          <div className="header-actions"><button className="btn-ghost" onClick={() => openIpt(selectedAthlete)}>IPT/Avaliação</button><button className="btn-ghost" onClick={() => setSelectedAthlete(null)}>Voltar para atletas</button></div>
+          <div className="header-actions">
+            <button
+              className="btn-ghost"
+              onClick={() => openIpt(selectedAthlete)}
+            >
+              IPT/Avaliação
+            </button>
+            <button
+              className="btn-ghost"
+              onClick={() => {
+                const athleteId = selectedAthlete.id;
+                setSelectedAthlete(null);
+                navigate(
+                  `${coachPaths.planning}?atleta=${athleteId}&visao=semana`,
+                );
+              }}
+            >
+              Visualizar planejamento
+            </button>
+            <button
+              className="btn-ghost"
+              onClick={() => setSelectedAthlete(null)}
+            >
+              Voltar para atletas
+            </button>
+          </div>
         </header>
         <main className="content">
           {error && <div className="alert">{error}</div>}

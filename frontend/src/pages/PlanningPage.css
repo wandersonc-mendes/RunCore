@@ -518,3 +518,208 @@
 .planning-drop-cell.has-sessions .planning-add-session:hover {
   opacity: 1;
 }
+
+
+/* VISUALIZACAO INDIVIDUAL: SEMANA / MACROCICLO */
+.planning-view-switcher {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px;
+  border: 1px solid var(--shell-border);
+  border-radius: 10px;
+  background: var(--shell-surface);
+}
+
+.planning-view-switcher button {
+  min-height: 36px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--shell-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.planning-view-switcher button.active {
+  background: var(--shell-accent);
+  color: #fff;
+}
+
+.planning-view-switcher button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+}
+
+.planning-macrocycle {
+  display: grid;
+  gap: 16px;
+}
+
+.planning-macrocycle-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+}
+
+.planning-macrocycle-summary > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.planning-macrocycle-summary > div:first-child > div {
+  display: grid;
+  gap: 3px;
+}
+
+.planning-macrocycle-summary small,
+.planning-macrocycle-summary > div:last-child span {
+  color: var(--shell-muted);
+  font-size: 11px;
+}
+
+.planning-macrocycle-summary > div:last-child {
+  display: grid;
+  justify-items: end;
+}
+
+.planning-macrocycle-summary > div:last-child strong {
+  color: var(--shell-accent);
+  font-size: 24px;
+}
+
+.planning-macrocycle-weeks {
+  display: grid;
+  gap: 12px;
+}
+
+.planning-macro-week {
+  overflow: hidden;
+  border: 1px solid var(--shell-border);
+  border-radius: 14px;
+  background: var(--shell-surface);
+}
+
+.planning-macro-week > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--shell-border);
+  background: var(--shell-surface-soft);
+}
+
+.planning-macro-week > header > div {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.planning-macro-week > header span,
+.planning-macro-week > header small {
+  color: var(--shell-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.planning-macro-week > header strong {
+  color: var(--shell-text);
+  font-size: 16px;
+}
+
+.planning-macro-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.planning-macro-day {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-height: 126px;
+  padding: 9px;
+  border-right: 1px solid var(--shell-border);
+}
+
+.planning-macro-day:last-child {
+  border-right: 0;
+}
+
+.planning-macro-day > span {
+  color: var(--shell-muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.planning-macro-day .planning-session-card {
+  min-height: 72px;
+  padding: 9px;
+  font-size: 10px;
+}
+
+.planning-macro-day .planning-session-card strong {
+  font-size: 10px;
+}
+
+.planning-macro-day .planning-session-card span {
+  font-size: 9px;
+}
+
+.planning-macro-rest {
+  display: grid;
+  place-items: center;
+  min-height: 70px;
+  color: var(--shell-muted);
+  opacity: .58;
+}
+
+@media (max-width: 1100px) {
+  .planning-macro-days {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .planning-macro-day {
+    border-bottom: 1px solid var(--shell-border);
+  }
+}
+
+@media (max-width: 700px) {
+  .planning-view-switcher {
+    width: 100%;
+  }
+
+  .planning-view-switcher button {
+    flex: 1;
+  }
+
+  .planning-macrocycle-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .planning-macrocycle-summary > div:last-child {
+    justify-items: start;
+  }
+
+  .planning-macro-days {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-macro-day {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--shell-border);
+  }
+}

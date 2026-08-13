@@ -543,15 +543,14 @@ def regenerate_training(
         training,
     )
 
-    if reference["vdot"] is not None:
-        persistence_service.regenerate_training(
-            training.id,
-            reference["vdot"],
-            ipt_profile=reference[
-                "ipt_profile"
-            ],
-            total_weeks=total_weeks,
-        )
+    persistence_service.regenerate_training(
+        training.id,
+        reference["vdot"],
+        ipt_profile=reference[
+            "ipt_profile"
+        ],
+        total_weeks=total_weeks,
+    )
     return serialize_training(training_repository.get_by_id(training.id))
 
 

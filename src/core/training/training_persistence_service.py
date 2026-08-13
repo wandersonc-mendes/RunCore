@@ -52,21 +52,20 @@ class TrainingPersistenceService:
             training
         )
 
-        if vdot is not None:
-            self._generate_sessions(
-                training.id,
-                vdot,
-                total_weeks,
-                ipt_profile,
-                target_distance=target_distance,
-            )
+        self._generate_sessions(
+            training.id,
+            vdot,
+            total_weeks,
+            ipt_profile,
+            target_distance=target_distance,
+        )
 
         return training
 
     def regenerate_training(
         self,
         training_id: int,
-        vdot: float,
+        vdot: float | None,
         ipt_profile: str | None = None,
         total_weeks: int | None = None,
     ):
@@ -111,18 +110,24 @@ class TrainingPersistenceService:
     def _generate_sessions(
         self,
         training_id: int,
-        vdot: float,
+        vdot: float | None,
         total_weeks: int,
         ipt_profile: str | None = None,
         target_distance: float | None = None,
     ):
 
-        cycle = TrainingCycleBuilder.base(
-            vdot,
-            total_weeks,
-            ipt_profile=ipt_profile,
-            target_distance=target_distance,
-        )
+        if vdot is None:
+            cycle = TrainingCycleBuilder.initial(
+                total_weeks=total_weeks,
+                target_distance=target_distance,
+            )
+        else:
+            cycle = TrainingCycleBuilder.base(
+                vdot,
+                total_weeks,
+                ipt_profile=ipt_profile,
+                target_distance=target_distance,
+            )
 
         sessions = (
             TrainingCycleBuilder.to_training_sessions(

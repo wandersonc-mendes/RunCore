@@ -2,10 +2,102 @@ from core.training.training_cycle import TrainingCycle
 from core.training.training_plan_service import (
     TrainingPlanService,
 )
+from core.training.training_day import TrainingDay
+from core.training.training_week import TrainingWeek
+from core.training.workout_builder import WorkoutBuilder
 from models.training_session import TrainingSession
 
 
 class TrainingCycleBuilder:
+
+    @staticmethod
+    def initial(
+        total_weeks: int = 8,
+        target_distance: float | None = None,
+    ) -> TrainingCycle:
+
+        cycle = TrainingCycle(
+            name="Base inicial sem avaliação"
+        )
+
+        total_weeks = max(1, total_weeks)
+        target = max(
+            3.0,
+            float(target_distance or 5.0),
+        )
+
+        for week_number in range(1, total_weeks + 1):
+            block_position = (week_number - 1) % 4
+            progression = ((week_number - 1) // 4) * 0.5
+
+            easy_distance = min(
+                target,
+                3.0 + progression + (block_position * 0.25),
+            )
+            long_distance = min(
+                max(4.0, target),
+                4.0 + progression + (block_position * 0.5),
+            )
+
+            if block_position == 3:
+                easy_distance = round(easy_distance * 0.85, 1)
+                long_distance = round(long_distance * 0.85, 1)
+
+            if week_number == total_weeks:
+                easy_distance = round(easy_distance * 0.75, 1)
+                long_distance = round(long_distance * 0.70, 1)
+
+            week = TrainingWeek(number=week_number)
+
+            monday = TrainingDay("Segunda")
+            monday.objective = "Adaptação aeróbica inicial"
+            monday.notes = (
+                "Esforço confortável. Ritmo livre, guiado pela "
+                "percepção e pelo teste da conversa."
+            )
+            monday.add(
+                WorkoutBuilder.easy(
+                    round(max(2.0, easy_distance), 1)
+                )
+            )
+            week.add(monday)
+
+            week.add(TrainingDay("Terça"))
+
+            wednesday = TrainingDay("Quarta")
+            wednesday.objective = "Continuidade e adaptação"
+            wednesday.notes = (
+                "Manter esforço leve. Caminhar quando necessário; "
+                "não perseguir ritmo."
+            )
+            wednesday.add(
+                WorkoutBuilder.easy(
+                    round(max(2.0, easy_distance), 1)
+                )
+            )
+            week.add(wednesday)
+
+            week.add(TrainingDay("Quinta"))
+            week.add(TrainingDay("Sexta"))
+
+            saturday = TrainingDay("Sábado")
+            saturday.objective = "Resistência aeróbica leve"
+            saturday.notes = (
+                "Sessão contínua confortável. Pode alternar corrida "
+                "e caminhada. Sem alvo de pace até avaliação."
+            )
+            saturday.add(
+                WorkoutBuilder.long(
+                    round(max(3.0, long_distance), 1)
+                )
+            )
+            week.add(saturday)
+
+            week.add(TrainingDay("Domingo"))
+
+            cycle.add(week)
+
+        return cycle
 
     @staticmethod
     def base(

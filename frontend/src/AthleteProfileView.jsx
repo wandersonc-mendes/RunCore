@@ -1763,10 +1763,13 @@ export default function AthleteProfileView({
               {" "}{activitiesError}
             </p>
           ) : activities.length ? (
-            <div className="athlete-training-list">
+            <div className="athlete-activities-list">
               {activities.map((activity) => (
-                <article key={activity.id}>
-                  <div>
+                <article
+                  className="athlete-activity-row"
+                  key={activity.id}
+                >
+                  <div className="athlete-activity-main">
                     <small>
                       {formatActivityDate(activity.start_at)}
                     </small>
@@ -1775,37 +1778,61 @@ export default function AthleteProfileView({
                     </strong>
                     <span>
                       {activity.sport_type || "Atividade"}
-                      {" · "}
-                      {formatActivityDistance(activity.distance)}
-                      {" · "}
-                      {formatAnalyticsDuration(
-                        activity.moving_time || 0,
-                      )}
                     </span>
                   </div>
 
-                  <div>
-                    <span>
-                      Ritmo: {formatActivityPace(activity)}
-                    </span>
-                    <span>
-                      FC média:{" "}
+                  <div className="athlete-activity-stat">
+                    <small>Distância</small>
+                    <strong>
+                      {formatActivityDistance(
+                        activity.distance,
+                      )}
+                    </strong>
+                  </div>
+
+                  <div className="athlete-activity-stat">
+                    <small>Tempo</small>
+                    <strong>
+                      {formatAnalyticsDuration(
+                        activity.moving_time || 0,
+                      )}
+                    </strong>
+                  </div>
+
+                  <div className="athlete-activity-stat">
+                    <small>Ritmo</small>
+                    <strong>
+                      {formatActivityPace(activity)}
+                    </strong>
+                  </div>
+
+                  <div className="athlete-activity-stat">
+                    <small>FC média</small>
+                    <strong>
                       {activity.average_heartrate
                         ? `${Math.round(
-                            Number(activity.average_heartrate),
+                            Number(
+                              activity.average_heartrate,
+                            ),
                           )} bpm`
                         : "—"}
-                    </span>
-                    <span>
-                      Cadência:{" "}
+                    </strong>
+                  </div>
+
+                  <div className="athlete-activity-stat">
+                    <small>Cadência</small>
+                    <strong>
                       {activity.average_cadence
                         ? Math.round(
                             Number(activity.average_cadence),
                           )
                         : "—"}
-                    </span>
-                    <span>
-                      Elevação:{" "}
+                    </strong>
+                  </div>
+
+                  <div className="athlete-activity-stat">
+                    <small>Elevação</small>
+                    <strong>
                       {activity.total_elevation_gain
                         !== null
                         && activity.total_elevation_gain
@@ -1816,11 +1843,20 @@ export default function AthleteProfileView({
                             ),
                           )} m`
                         : "—"}
-                    </span>
-                    <span>
+                    </strong>
+                  </div>
+
+                  <div className="athlete-activity-actions">
+                    <span
+                      className={
+                        activity.training_session_id
+                          ? "activity-link-status linked"
+                          : "activity-link-status"
+                      }
+                    >
                       {activity.training_session_id
-                        ? "✓ Vinculada ao treino planejado"
-                        : "Sem vínculo com treino planejado"}
+                        ? "Vinculado"
+                        : "Não vinculado"}
                     </span>
 
                     <button

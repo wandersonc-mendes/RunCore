@@ -1518,223 +1518,242 @@ export default function AthleteProfileView({
           </div>
 
           {selectedActivity && (
-            <div className="profile-card">
-              <div className="athlete-section-heading">
-                <div>
-                  <small>
-                    {formatActivityDate(
-                      selectedActivity.start_at,
-                    )}
-                  </small>
-                  <h2>
-                    {selectedActivity.name || "Atividade"}
-                  </h2>
-                  <p className="muted">
-                    Detalhes recebidos diretamente do Strava.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={closeActivityDetails}
-                >
-                  Fechar detalhes
-                </button>
-              </div>
-
-              {loadingActivityDetails ? (
-                <p className="muted">
-                  Carregando detalhes e voltas...
-                </p>
-              ) : activityDetailsError ? (
-                <p className="alert">
-                  {activityDetailsError}
-                </p>
-              ) : activityDetails ? (
-                <>
-                  <div className="athlete-summary-grid">
-                    <article className="athlete-summary-card">
-                      <span>Distância</span>
-                      <strong>
-                        {formatActivityDistance(
-                          activityDetails.distance,
-                        )}
-                      </strong>
-                    </article>
-
-                    <article className="athlete-summary-card">
-                      <span>Tempo em movimento</span>
-                      <strong>
-                        {formatAnalyticsDuration(
-                          activityDetails.moving_time || 0,
-                        )}
-                      </strong>
-                    </article>
-
-                    <article className="athlete-summary-card">
-                      <span>Tempo total</span>
-                      <strong>
-                        {formatAnalyticsDuration(
-                          activityDetails.elapsed_time || 0,
-                        )}
-                      </strong>
-                    </article>
-
-                    <article className="athlete-summary-card">
-                      <span>Ritmo médio</span>
-                      <strong>
-                        {formatActivityPace(
-                          activityDetails,
-                        )}
-                      </strong>
-                    </article>
-
-                    <article className="athlete-summary-card">
-                      <span>FC média / máxima</span>
-                      <strong>
-                        {activityDetails.average_heartrate
-                          ? `${Math.round(
-                              Number(
-                                activityDetails
-                                  .average_heartrate,
-                              ),
-                            )} bpm`
-                          : "—"}
-                      </strong>
-                      <small>
-                        Máx.:{" "}
-                        {activityDetails.max_heartrate
-                          ? `${Math.round(
-                              Number(
-                                activityDetails
-                                  .max_heartrate,
-                              ),
-                            )} bpm`
-                          : "—"}
-                      </small>
-                    </article>
-
-                    <article className="athlete-summary-card">
-                      <span>Cadência média</span>
-                      <strong>
-                        {activityDetails.average_cadence
-                          ? Math.round(
-                              Number(
-                                activityDetails
-                                  .average_cadence,
-                              ),
-                            )
-                          : "—"}
-                      </strong>
-                    </article>
-
-                    <article className="athlete-summary-card">
-                      <span>Elevação</span>
-                      <strong>
-                        {activityDetails.total_elevation_gain
-                          !== null
-                          && activityDetails
-                            .total_elevation_gain
-                            !== undefined
-                          ? `${Math.round(
-                              Number(
-                                activityDetails
-                                  .total_elevation_gain,
-                              ),
-                            )} m`
-                          : "—"}
-                      </strong>
-                    </article>
-                  </div>
-
-                  <div className="athlete-section-heading">
-                    <div>
-                      <h2>Voltas / laps</h2>
-                      <p className="muted">
-                        Splits registrados pelo Strava.
-                      </p>
-                    </div>
-                  </div>
-
-                  {activityDetails.laps?.length ? (
-                    <div className="athlete-training-list">
-                      {activityDetails.laps.map((lap) => (
-                        <article key={lap.number}>
-                          <div>
-                            <small>
-                              Volta {lap.number}
-                            </small>
-                            <strong>
-                              {formatActivityDistance(
-                                lap.distance,
-                              )}
-                            </strong>
-                            <span>
-                              {formatAnalyticsDuration(
-                                lap.moving_time || 0,
-                              )}
-                              {" · "}
-                              {formatActivityPace(lap)}
-                            </span>
-                          </div>
-
-                          <div>
-                            <span>
-                              FC média:{" "}
-                              {lap.average_heartrate
-                                ? `${Math.round(
-                                    Number(
-                                      lap.average_heartrate,
-                                    ),
-                                  )} bpm`
-                                : "—"}
-                            </span>
-                            <span>
-                              FC máx.:{" "}
-                              {lap.max_heartrate
-                                ? `${Math.round(
-                                    Number(
-                                      lap.max_heartrate,
-                                    ),
-                                  )} bpm`
-                                : "—"}
-                            </span>
-                            <span>
-                              Cadência:{" "}
-                              {lap.average_cadence
-                                ? Math.round(
-                                    Number(
-                                      lap.average_cadence,
-                                    ),
-                                  )
-                                : "—"}
-                            </span>
-                            <span>
-                              Elevação:{" "}
-                              {lap.elevation_gain
-                                !== null
-                                && lap.elevation_gain
-                                  !== undefined
-                                ? `${Math.round(
-                                    Number(
-                                      lap.elevation_gain,
-                                    ),
-                                  )} m`
-                                : "—"}
-                            </span>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  ) : (
+            <div
+              className="activity-details-overlay"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) {
+                  closeActivityDetails();
+                }
+              }}
+            >
+              <section
+                className="activity-details-panel"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`Detalhes de ${
+                  selectedActivity.name || "atividade"
+                }`}
+              >
+                <header className="activity-details-header">
+                  <div>
+                    <small>
+                      {formatActivityDate(
+                        selectedActivity.start_at,
+                      )}
+                    </small>
+                    <h2>
+                      {selectedActivity.name || "Atividade"}
+                    </h2>
                     <p className="muted">
-                      O Strava não retornou voltas para
-                      esta atividade.
+                      Dados detalhados recebidos do Strava.
                     </p>
-                  )}
-                </>
-              ) : null}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="activity-details-close"
+                    onClick={closeActivityDetails}
+                    aria-label="Fechar detalhes"
+                  >
+                    ×
+                  </button>
+                </header>
+
+                {loadingActivityDetails ? (
+                  <div className="activity-details-status">
+                    Carregando detalhes e voltas...
+                  </div>
+                ) : activityDetailsError ? (
+                  <p className="alert">
+                    {activityDetailsError}
+                  </p>
+                ) : activityDetails ? (
+                  <>
+                    <div className="activity-details-metrics">
+                      <div>
+                        <span>Distância</span>
+                        <strong>
+                          {formatActivityDistance(
+                            activityDetails.distance,
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Tempo</span>
+                        <strong>
+                          {formatAnalyticsDuration(
+                            activityDetails.moving_time || 0,
+                          )}
+                        </strong>
+                        <small>
+                          Total{" "}
+                          {formatAnalyticsDuration(
+                            activityDetails.elapsed_time || 0,
+                          )}
+                        </small>
+                      </div>
+
+                      <div>
+                        <span>Ritmo médio</span>
+                        <strong>
+                          {formatActivityPace(
+                            activityDetails,
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>FC</span>
+                        <strong>
+                          {activityDetails.average_heartrate
+                            ? `${Math.round(
+                                Number(
+                                  activityDetails
+                                    .average_heartrate,
+                                ),
+                              )} bpm`
+                            : "—"}
+                        </strong>
+                        <small>
+                          Máx.{" "}
+                          {activityDetails.max_heartrate
+                            ? `${Math.round(
+                                Number(
+                                  activityDetails.max_heartrate,
+                                ),
+                              )} bpm`
+                            : "—"}
+                        </small>
+                      </div>
+
+                      <div>
+                        <span>Cadência</span>
+                        <strong>
+                          {activityDetails.average_cadence
+                            ? Math.round(
+                                Number(
+                                  activityDetails.average_cadence,
+                                ),
+                              )
+                            : "—"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Elevação</span>
+                        <strong>
+                          {activityDetails.total_elevation_gain
+                            !== null
+                            && activityDetails
+                              .total_elevation_gain
+                              !== undefined
+                            ? `${Math.round(
+                                Number(
+                                  activityDetails
+                                    .total_elevation_gain,
+                                ),
+                              )} m`
+                            : "—"}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="activity-details-section">
+                      <div className="activity-details-section-title">
+                        <h3>Voltas / laps</h3>
+                        <span>
+                          {activityDetails.laps?.length || 0} voltas
+                        </span>
+                      </div>
+
+                      {activityDetails.laps?.length ? (
+                        <div className="activity-laps-scroll">
+                          <table className="activity-laps-table">
+                            <thead>
+                              <tr>
+                                <th>#</th>
+                                <th>Distância</th>
+                                <th>Tempo</th>
+                                <th>Ritmo</th>
+                                <th>FC méd.</th>
+                                <th>FC máx.</th>
+                                <th>Cad.</th>
+                                <th>Elev.</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {activityDetails.laps.map((lap) => (
+                                <tr key={lap.number}>
+                                  <td>{lap.number}</td>
+                                  <td>
+                                    {formatActivityDistance(
+                                      lap.distance,
+                                    )}
+                                  </td>
+                                  <td>
+                                    {formatAnalyticsDuration(
+                                      lap.moving_time || 0,
+                                    )}
+                                  </td>
+                                  <td>
+                                    {formatActivityPace(lap)}
+                                  </td>
+                                  <td>
+                                    {lap.average_heartrate
+                                      ? Math.round(
+                                          Number(
+                                            lap.average_heartrate,
+                                          ),
+                                        )
+                                      : "—"}
+                                  </td>
+                                  <td>
+                                    {lap.max_heartrate
+                                      ? Math.round(
+                                          Number(
+                                            lap.max_heartrate,
+                                          ),
+                                        )
+                                      : "—"}
+                                  </td>
+                                  <td>
+                                    {lap.average_cadence
+                                      ? Math.round(
+                                          Number(
+                                            lap.average_cadence,
+                                          ),
+                                        )
+                                      : "—"}
+                                  </td>
+                                  <td>
+                                    {lap.elevation_gain
+                                      !== null
+                                      && lap.elevation_gain
+                                        !== undefined
+                                      ? `${Math.round(
+                                          Number(
+                                            lap.elevation_gain,
+                                          ),
+                                        )} m`
+                                      : "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="muted">
+                          O Strava não retornou voltas para esta
+                          atividade.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : null}
+              </section>
             </div>
           )}
 

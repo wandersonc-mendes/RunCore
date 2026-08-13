@@ -426,15 +426,66 @@ def serialized_steps_for_session(
     return steps
 
 
+def session_calendar_date(
+    training_start,
+    session_week: int,
+    session_weekday: int,
+):
+    if training_start is None:
+        return None
+
+    cycle_week_monday = (
+        training_start
+        - timedelta(days=training_start.weekday())
+    )
+
+    session_date = (
+        cycle_week_monday
+        + timedelta(
+            weeks=max(session_week - 1, 0),
+            days=session_weekday,
+        )
+    )
+
+    if session_date < training_start:
+        return None
+
+    return session_date
+
+
+def calendar_week_number(
+    training_start,
+    reference_date,
+) -> int:
+    if training_start is None or reference_date <= training_start:
+        return 1
+
+    cycle_week_monday = (
+        training_start
+        - timedelta(days=training_start.weekday())
+    )
+    reference_week_monday = (
+        reference_date
+        - timedelta(days=reference_date.weekday())
+    )
+
+    return max(
+        1,
+        ((reference_week_monday - cycle_week_monday).days // 7)
+        + 1,
+    )
+
+
 def serialize_training(training):
     sessions = session_repository.list_by_training(training.id)
     steps_by_session = step_repository.list_by_sessions(
         [session.id for session in sessions]
     )
     total_weeks = max((item.week for item in sessions), default=1)
-    current_week = 1
-    if training.start_date:
-        current_week = max(1, ((date.today() - training.start_date).days // 7) + 1)
+    current_week = calendar_week_number(
+        training.start_date,
+        date.today(),
+    )
     current_week = min(current_week, total_weeks)
     return {
         "id": training.id,
@@ -462,12 +513,27 @@ def serialize_training(training):
                 "objective": session.objective or "",
                 "notes": session.notes or "",
                 "completed": session.completed,
-                "session_date": session.scheduled_date or ((training.start_date + timedelta(days=((session.week - 1) * 7) + session.weekday)) if training.start_date else None),
+                "session_date": (
+                    session.scheduled_date
+                    or session_calendar_date(
+                        training.start_date,
+                        session.week,
+                        session.weekday,
+                    )
+                ),
                 "phase": phase_for_week(session.week, total_weeks),
                 "adaptations": adaptations_for(session.zone),
                 "steps": serialized_steps_for_session(session, steps_by_session),
             }
             for session in sessions
+            if (
+                session.scheduled_date is not None
+                or session_calendar_date(
+                    training.start_date,
+                    session.week,
+                    session.weekday,
+                ) is not None
+            )
         ],
     }
 

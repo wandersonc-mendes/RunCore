@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { clearSession, connectStrava, createGoal, deleteGoal, getActivityFeedback, getStravaActivityDetails, getStravaStatus, getStudentTraining, listGoals, listStravaActivities, saveActivityFeedback, syncStravaActivities,
+import { clearSession, connectStrava, createGoal, deleteGoal, disconnectStrava, getActivityFeedback, getStravaActivityDetails, getStravaStatus, getStudentTraining, listGoals, listStravaActivities, saveActivityFeedback, syncStravaActivities,
   updateActivityTrainingSession,
 } from "./api";
 import ProfilePanel from "./ProfilePanel";
@@ -645,6 +645,7 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
   const [error, setError] = useState("");
   const [activities, setActivities] = useState([]);
   const [syncing, setSyncing] = useState(false);
+  const [disconnectingStrava, setDisconnectingStrava] = useState(false);
   const [expandedActivity, setExpandedActivity] = useState(null);
   const [activityDetails, setActivityDetails] = useState({});
   const [activityFeedbacks, setActivityFeedbacks] = useState({});
@@ -712,6 +713,47 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
       );
     };
   }, [syncing]);
+
+  async function disconnectConnectedStrava() {
+    if (
+      disconnectingStrava
+      || syncing
+    ) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Desvincular sua conta Strava do RunCore? "
+      + "As atividades já importadas serão preservadas.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDisconnectingStrava(true);
+    setError("");
+
+    try {
+      await disconnectStrava();
+
+      setStrava((current) => ({
+        ...(current || {}),
+        connected: false,
+      }));
+
+      setActivities([]);
+      setExpandedActivity(null);
+      setActivityDetails({});
+      setActivityFeedbacks({});
+      setFeedbackForms({});
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDisconnectingStrava(false);
+    }
+  }
+
 
   async function sync() {
     if (syncing) {
@@ -2008,8 +2050,62 @@ export default function StudentPortal({ user, onLogout, view = "dashboard" }) {
             </section>
 
             <article className="connection-card">
-          <div><span className="connection-logo">S</span><div><h3>Strava</h3><p>{strava?.connected ? "Conta conectada. Sincronize suas atividades quando quiser." : "Conecte sua conta para importar suas atividades."}</p></div></div>
-          {strava?.connected ? <button className="btn-primary" disabled={syncing} onClick={sync}>{syncing ? "Sincronizando..." : "Sincronizar atividades"}</button> : <button className="btn-primary" disabled={!strava?.configured} onClick={() => connectStrava().catch((err) => setError(err.message))}>{strava ? "Conectar Strava" : "Verificando..."}</button>}
+          <div>
+            <span className="connection-logo">S</span>
+            <div>
+              <h3>Strava</h3>
+              <p>
+                {strava?.connected
+                  ? "Conta conectada. Sincronize suas atividades quando quiser."
+                  : "Conecte sua conta para importar suas atividades."}
+              </p>
+            </div>
+          </div>
+
+          {strava?.connected ? (
+            <div className="strava-connection-actions">
+              <button
+                className="btn-primary"
+                disabled={
+                  syncing
+                  || disconnectingStrava
+                }
+                onClick={sync}
+              >
+                {syncing
+                  ? "Sincronizando..."
+                  : "Sincronizar atividades"}
+              </button>
+
+              <button
+                type="button"
+                className="btn-ghost"
+                disabled={
+                  syncing
+                  || disconnectingStrava
+                }
+                onClick={disconnectConnectedStrava}
+              >
+                {disconnectingStrava
+                  ? "Desvinculando..."
+                  : "Desvincular Strava"}
+              </button>
+            </div>
+          ) : (
+            <button
+              className="btn-primary"
+              disabled={!strava?.configured}
+              onClick={() =>
+                connectStrava().catch(
+                  (err) => setError(err.message),
+                )
+              }
+            >
+              {strava
+                ? "Conectar Strava"
+                : "Verificando..."}
+            </button>
+          )}
         </article>
         {strava && !strava.configured && <p className="muted">A integração Strava ainda está sendo configurada pelo treinador.</p>}
         {error && <div className="alert">{error}</div>}

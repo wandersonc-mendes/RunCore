@@ -231,6 +231,15 @@ export async function connectStrava() {
   );
 }
 
+export function disconnectStrava() {
+  return request(
+    "/api/integrations/strava/disconnect",
+    {
+      method: "DELETE",
+    },
+  );
+}
+
 export function listStravaActivities() {
   return request(
     "/api/integrations/strava/activities",

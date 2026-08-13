@@ -1,6 +1,7 @@
 import os
 import json
 import time
+from base64 import b64encode
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
 from urllib.parse import urlencode
@@ -168,6 +169,92 @@ def strava_callback(
     repository.save(integration)
 
     return RedirectResponse(f"{frontend_url}/?strava=connected")
+
+
+@router.delete("/strava/disconnect")
+def disconnect_strava(user=Depends(current_user)):
+    integration = repository.get(
+        user.id,
+        "strava",
+    )
+
+    if integration is None or not integration.active:
+        return {
+            "connected": False,
+            "message": "Conta Strava já está desconectada.",
+        }
+
+    token = (
+        integration.refresh_token
+        or integration.access_token
+    )
+
+    if token:
+        credentials = (
+            f"{os.environ['STRAVA_CLIENT_ID']}:"
+            f"{os.environ['STRAVA_CLIENT_SECRET']}"
+        )
+
+        authorization = b64encode(
+            credentials.encode(),
+        ).decode()
+
+        form = urlencode({
+            "token": token,
+            "token_type_hint": (
+                "refresh_token"
+                if integration.refresh_token
+                else "access_token"
+            ),
+        }).encode()
+
+        request = Request(
+            "https://www.strava.com/oauth/revoke",
+            data=form,
+            method="POST",
+            headers={
+                "Authorization": (
+                    f"Basic {authorization}"
+                ),
+                "Content-Type": (
+                    "application/x-www-form-urlencoded"
+                ),
+            },
+        )
+
+        try:
+            with urlopen(
+                request,
+                timeout=15,
+            ) as response:
+                if response.status != 200:
+                    raise RuntimeError(
+                        "Falha ao revogar autorização."
+                    )
+        except Exception as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=(
+                    "Não foi possível desvincular a conta "
+                    "no Strava. Tente novamente."
+                ),
+            ) from exc
+
+    integration.active = False
+    integration.access_token = ""
+    integration.refresh_token = ""
+    integration.expires_at = 0
+    integration.scopes = ""
+
+    repository.save(integration)
+
+    return {
+        "connected": False,
+        "message": (
+            "Conta Strava desvinculada com sucesso. "
+            "As atividades já importadas foram preservadas."
+        ),
+    }
 
 
 @router.get("/strava/activities")

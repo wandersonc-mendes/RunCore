@@ -5,6 +5,7 @@ import {
   getAthleteProfile,
   getAthleteTrainingLoad,
   getTraining,
+  listAthleteActivities,
 } from "./api";
 
 
@@ -125,6 +126,55 @@ function formatAnalyticsDuration(seconds) {
       String(part).padStart(2, "0")
     )
     .join(":");
+}
+
+
+function formatActivityDate(value) {
+  if (!value) return "Sem data";
+
+  const result = new Date(value);
+
+  if (Number.isNaN(result.getTime())) {
+    return "Sem data";
+  }
+
+  return new Intl.DateTimeFormat(
+    "pt-BR",
+    {
+      dateStyle: "short",
+      timeStyle: "short",
+    },
+  ).format(result);
+}
+
+
+function formatActivityPace(activity) {
+  const speed = Number(
+    activity?.average_speed || 0,
+  );
+
+  if (speed <= 0) return "—";
+
+  const secondsPerKm = Math.round(
+    1000 / speed,
+  );
+  const minutes = Math.floor(
+    secondsPerKm / 60,
+  );
+  const seconds = secondsPerKm % 60;
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}/km`;
+}
+
+
+function formatActivityDistance(value) {
+  return `${Number(value || 0).toLocaleString(
+    "pt-BR",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )} km`;
 }
 
 
@@ -318,6 +368,8 @@ export default function AthleteProfileView({
   const [loadError, setLoadError] = useState("");
   const [analytics, setAnalytics] = useState(null);
   const [analyticsError, setAnalyticsError] = useState("");
+  const [activities, setActivities] = useState([]);
+  const [activitiesError, setActivitiesError] = useState("");
   const [tab, setTab] = useState("summary");
 
   useEffect(() => {
@@ -328,6 +380,7 @@ export default function AthleteProfileView({
       getTraining(athlete.id),
       getAthleteTrainingLoad(athlete.id),
       getAthleteAnalytics(athlete.id),
+      listAthleteActivities(athlete.id),
     ]).then((results) => {
       if (!active) return;
 
@@ -336,6 +389,7 @@ export default function AthleteProfileView({
         trainingResult,
         loadResult,
         analyticsResult,
+        activitiesResult,
       ] = results;
 
       setProfile(
@@ -371,6 +425,20 @@ export default function AthleteProfileView({
         setAnalytics(null);
         setAnalyticsError(
           analyticsResult.reason?.message || "",
+        );
+      }
+
+      if (activitiesResult.status === "fulfilled") {
+        setActivities(
+          Array.isArray(activitiesResult.value)
+            ? activitiesResult.value
+            : [],
+        );
+        setActivitiesError("");
+      } else {
+        setActivities([]);
+        setActivitiesError(
+          activitiesResult.reason?.message || "",
         );
       }
     });
@@ -639,6 +707,16 @@ export default function AthleteProfileView({
           onClick={() => setTab("analytics")}
         >
           Análise
+        </button>
+
+        <button
+          type="button"
+          className={
+            tab === "activities" ? "active" : ""
+          }
+          onClick={() => setTab("activities")}
+        >
+          Atividades
         </button>
 
         <button
@@ -1385,6 +1463,95 @@ export default function AthleteProfileView({
           ) : (
             <p className="muted">
               Carregando perfil analítico...
+            </p>
+          )}
+        </section>
+      )}
+
+      {tab === "activities" && (
+        <section className="profile-card">
+          <div className="athlete-section-heading">
+            <div>
+              <h2>Atividades realizadas</h2>
+              <p className="muted">
+                Atividades importadas da conta Strava vinculada
+                a este atleta.
+              </p>
+            </div>
+          </div>
+
+          {activitiesError ? (
+            <p className="alert">
+              Não foi possível carregar as atividades:
+              {" "}{activitiesError}
+            </p>
+          ) : activities.length ? (
+            <div className="athlete-training-list">
+              {activities.map((activity) => (
+                <article key={activity.id}>
+                  <div>
+                    <small>
+                      {formatActivityDate(activity.start_at)}
+                    </small>
+                    <strong>
+                      {activity.name || "Atividade"}
+                    </strong>
+                    <span>
+                      {activity.sport_type || "Atividade"}
+                      {" · "}
+                      {formatActivityDistance(activity.distance)}
+                      {" · "}
+                      {formatAnalyticsDuration(
+                        activity.moving_time || 0,
+                      )}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span>
+                      Ritmo: {formatActivityPace(activity)}
+                    </span>
+                    <span>
+                      FC média:{" "}
+                      {activity.average_heartrate
+                        ? `${Math.round(
+                            Number(activity.average_heartrate),
+                          )} bpm`
+                        : "—"}
+                    </span>
+                    <span>
+                      Cadência:{" "}
+                      {activity.average_cadence
+                        ? Math.round(
+                            Number(activity.average_cadence),
+                          )
+                        : "—"}
+                    </span>
+                    <span>
+                      Elevação:{" "}
+                      {activity.total_elevation_gain
+                        !== null
+                        && activity.total_elevation_gain
+                        !== undefined
+                        ? `${Math.round(
+                            Number(
+                              activity.total_elevation_gain,
+                            ),
+                          )} m`
+                        : "—"}
+                    </span>
+                    <span>
+                      {activity.training_session_id
+                        ? "✓ Vinculada ao treino planejado"
+                        : "Sem vínculo com treino planejado"}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="muted">
+              Nenhuma atividade Strava importada para este atleta.
             </p>
           )}
         </section>

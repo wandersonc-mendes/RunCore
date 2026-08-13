@@ -11,6 +11,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import select, text
 
+from api.access_control import require_athlete_access
 from api.dependencies import current_user, require_coach
 from api.schemas import ActivityFeedbackPayload
 from core.auth_service import AuthService
@@ -402,6 +403,23 @@ def save_activity_feedback(activity_id: int, payload: ActivityFeedbackPayload, u
     if activity is None or athlete_id is None:
         raise HTTPException(status_code=404, detail="Atividade ou perfil de atleta não encontrado.")
     return serialize_feedback(feedbacks.save(activity.id, athlete_id, payload))
+
+
+@router.get("/athletes/{athlete_id}/activities")
+def athlete_strava_activities(
+    athlete_id: int,
+    coach=Depends(require_coach),
+):
+    require_athlete_access(
+        athlete_id,
+        coach,
+    )
+
+    items = activities.list_for_athlete(
+        athlete_id,
+    )
+
+    return list(reversed(items))[:50]
 
 
 @router.get("/athletes/{athlete_id}/training-load")

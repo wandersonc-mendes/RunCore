@@ -288,6 +288,12 @@ export function syncStravaActivities() {
   );
 }
 
+export function listAthleteActivities(athleteId) {
+  return request(
+    `/api/integrations/athletes/${athleteId}/activities`,
+  );
+}
+
 export function getAthleteTrainingLoad(athleteId) {
   return request(
     `/api/integrations/athletes/${athleteId}/training-load`,

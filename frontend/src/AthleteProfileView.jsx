@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  getAthleteActivityDetails,
   getAthleteAnalytics,
   getAthleteProfile,
   getAthleteTrainingLoad,
@@ -370,6 +371,10 @@ export default function AthleteProfileView({
   const [analyticsError, setAnalyticsError] = useState("");
   const [activities, setActivities] = useState([]);
   const [activitiesError, setActivitiesError] = useState("");
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [activityDetails, setActivityDetails] = useState(null);
+  const [activityDetailsError, setActivityDetailsError] = useState("");
+  const [loadingActivityDetails, setLoadingActivityDetails] = useState(false);
   const [tab, setTab] = useState("summary");
 
   useEffect(() => {
@@ -447,6 +452,38 @@ export default function AthleteProfileView({
       active = false;
     };
   }, [athlete.id]);
+
+  async function openActivityDetails(activity) {
+    setSelectedActivity(activity);
+    setActivityDetails(null);
+    setActivityDetailsError("");
+    setLoadingActivityDetails(true);
+
+    try {
+      const details = await getAthleteActivityDetails(
+        athlete.id,
+        activity.id,
+      );
+
+      setActivityDetails(details);
+    } catch (error) {
+      setActivityDetailsError(
+        error?.message
+          || "Não foi possível carregar os detalhes.",
+      );
+    } finally {
+      setLoadingActivityDetails(false);
+    }
+  }
+
+
+  function closeActivityDetails() {
+    setSelectedActivity(null);
+    setActivityDetails(null);
+    setActivityDetailsError("");
+    setLoadingActivityDetails(false);
+  }
+
 
   const summary = useMemo(() => {
     const sessions = [
@@ -1480,6 +1517,227 @@ export default function AthleteProfileView({
             </div>
           </div>
 
+          {selectedActivity && (
+            <div className="profile-card">
+              <div className="athlete-section-heading">
+                <div>
+                  <small>
+                    {formatActivityDate(
+                      selectedActivity.start_at,
+                    )}
+                  </small>
+                  <h2>
+                    {selectedActivity.name || "Atividade"}
+                  </h2>
+                  <p className="muted">
+                    Detalhes recebidos diretamente do Strava.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={closeActivityDetails}
+                >
+                  Fechar detalhes
+                </button>
+              </div>
+
+              {loadingActivityDetails ? (
+                <p className="muted">
+                  Carregando detalhes e voltas...
+                </p>
+              ) : activityDetailsError ? (
+                <p className="alert">
+                  {activityDetailsError}
+                </p>
+              ) : activityDetails ? (
+                <>
+                  <div className="athlete-summary-grid">
+                    <article className="athlete-summary-card">
+                      <span>Distância</span>
+                      <strong>
+                        {formatActivityDistance(
+                          activityDetails.distance,
+                        )}
+                      </strong>
+                    </article>
+
+                    <article className="athlete-summary-card">
+                      <span>Tempo em movimento</span>
+                      <strong>
+                        {formatAnalyticsDuration(
+                          activityDetails.moving_time || 0,
+                        )}
+                      </strong>
+                    </article>
+
+                    <article className="athlete-summary-card">
+                      <span>Tempo total</span>
+                      <strong>
+                        {formatAnalyticsDuration(
+                          activityDetails.elapsed_time || 0,
+                        )}
+                      </strong>
+                    </article>
+
+                    <article className="athlete-summary-card">
+                      <span>Ritmo médio</span>
+                      <strong>
+                        {formatActivityPace(
+                          activityDetails,
+                        )}
+                      </strong>
+                    </article>
+
+                    <article className="athlete-summary-card">
+                      <span>FC média / máxima</span>
+                      <strong>
+                        {activityDetails.average_heartrate
+                          ? `${Math.round(
+                              Number(
+                                activityDetails
+                                  .average_heartrate,
+                              ),
+                            )} bpm`
+                          : "—"}
+                      </strong>
+                      <small>
+                        Máx.:{" "}
+                        {activityDetails.max_heartrate
+                          ? `${Math.round(
+                              Number(
+                                activityDetails
+                                  .max_heartrate,
+                              ),
+                            )} bpm`
+                          : "—"}
+                      </small>
+                    </article>
+
+                    <article className="athlete-summary-card">
+                      <span>Cadência média</span>
+                      <strong>
+                        {activityDetails.average_cadence
+                          ? Math.round(
+                              Number(
+                                activityDetails
+                                  .average_cadence,
+                              ),
+                            )
+                          : "—"}
+                      </strong>
+                    </article>
+
+                    <article className="athlete-summary-card">
+                      <span>Elevação</span>
+                      <strong>
+                        {activityDetails.total_elevation_gain
+                          !== null
+                          && activityDetails
+                            .total_elevation_gain
+                            !== undefined
+                          ? `${Math.round(
+                              Number(
+                                activityDetails
+                                  .total_elevation_gain,
+                              ),
+                            )} m`
+                          : "—"}
+                      </strong>
+                    </article>
+                  </div>
+
+                  <div className="athlete-section-heading">
+                    <div>
+                      <h2>Voltas / laps</h2>
+                      <p className="muted">
+                        Splits registrados pelo Strava.
+                      </p>
+                    </div>
+                  </div>
+
+                  {activityDetails.laps?.length ? (
+                    <div className="athlete-training-list">
+                      {activityDetails.laps.map((lap) => (
+                        <article key={lap.number}>
+                          <div>
+                            <small>
+                              Volta {lap.number}
+                            </small>
+                            <strong>
+                              {formatActivityDistance(
+                                lap.distance,
+                              )}
+                            </strong>
+                            <span>
+                              {formatAnalyticsDuration(
+                                lap.moving_time || 0,
+                              )}
+                              {" · "}
+                              {formatActivityPace(lap)}
+                            </span>
+                          </div>
+
+                          <div>
+                            <span>
+                              FC média:{" "}
+                              {lap.average_heartrate
+                                ? `${Math.round(
+                                    Number(
+                                      lap.average_heartrate,
+                                    ),
+                                  )} bpm`
+                                : "—"}
+                            </span>
+                            <span>
+                              FC máx.:{" "}
+                              {lap.max_heartrate
+                                ? `${Math.round(
+                                    Number(
+                                      lap.max_heartrate,
+                                    ),
+                                  )} bpm`
+                                : "—"}
+                            </span>
+                            <span>
+                              Cadência:{" "}
+                              {lap.average_cadence
+                                ? Math.round(
+                                    Number(
+                                      lap.average_cadence,
+                                    ),
+                                  )
+                                : "—"}
+                            </span>
+                            <span>
+                              Elevação:{" "}
+                              {lap.elevation_gain
+                                !== null
+                                && lap.elevation_gain
+                                  !== undefined
+                                ? `${Math.round(
+                                    Number(
+                                      lap.elevation_gain,
+                                    ),
+                                  )} m`
+                                : "—"}
+                            </span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted">
+                      O Strava não retornou voltas para
+                      esta atividade.
+                    </p>
+                  )}
+                </>
+              ) : null}
+            </div>
+          )}
+
           {activitiesError ? (
             <p className="alert">
               Não foi possível carregar as atividades:
@@ -1545,6 +1803,16 @@ export default function AthleteProfileView({
                         ? "✓ Vinculada ao treino planejado"
                         : "Sem vínculo com treino planejado"}
                     </span>
+
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() =>
+                        openActivityDetails(activity)
+                      }
+                    >
+                      Ver detalhes
+                    </button>
                   </div>
                 </article>
               ))}

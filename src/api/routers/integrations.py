@@ -422,6 +422,166 @@ def athlete_strava_activities(
     return list(reversed(items))[:50]
 
 
+@router.get(
+    "/athletes/{athlete_id}/activities/{activity_id}/details"
+)
+def athlete_strava_activity_details(
+    athlete_id: int,
+    activity_id: int,
+    coach=Depends(require_coach),
+):
+    require_athlete_access(
+        athlete_id,
+        coach,
+    )
+
+    athlete_activities = activities.list_for_athlete(
+        athlete_id,
+    )
+
+    activity = next(
+        (
+            item
+            for item in athlete_activities
+            if item.id == activity_id
+        ),
+        None,
+    )
+
+    if activity is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Atividade não encontrada para este atleta.",
+        )
+
+    integration = repository.get_by_id(
+        activity.integration_id,
+    )
+
+    if integration is None or not integration.active:
+        raise HTTPException(
+            status_code=404,
+            detail="Conta Strava do atleta não está conectada.",
+        )
+
+    try:
+        integration = refresh_strava_token(
+            integration,
+        )
+
+        detail = strava_request(
+            (
+                "https://www.strava.com/api/v3/activities/"
+                f"{activity.provider_activity_id}"
+            ),
+            integration.access_token,
+        )
+
+        laps = strava_request(
+            (
+                "https://www.strava.com/api/v3/activities/"
+                f"{activity.provider_activity_id}/laps"
+            ),
+            integration.access_token,
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Não foi possível carregar os detalhes "
+                "da atividade no Strava."
+            ),
+        )
+
+    def kilometers(value):
+        return round(
+            (value or 0) / 1000,
+            3,
+        )
+
+    activity_feedback = feedbacks.get_for_activity(
+        activity.id,
+    )
+
+    analysis = ActivityAnalysisService.analyse(
+        activity,
+        laps,
+        activity_feedback,
+    )
+
+    return {
+        "activity_id": activity.id,
+        "name": activity.name,
+        "sport_type": activity.sport_type,
+        "distance": activity.distance,
+        "moving_time": activity.moving_time,
+        "start_at": activity.start_at,
+        "training_session_id": (
+            activity.training_session_id
+        ),
+        "analysis": analysis,
+        "average_heartrate": detail.get(
+            "average_heartrate"
+        ),
+        "max_heartrate": detail.get(
+            "max_heartrate"
+        ),
+        "total_elevation_gain": detail.get(
+            "total_elevation_gain"
+        ),
+        "average_cadence": detail.get(
+            "average_cadence"
+        ),
+        "max_cadence": activity.max_cadence,
+        "average_speed": detail.get(
+            "average_speed"
+        ),
+        "max_speed": detail.get(
+            "max_speed"
+        ),
+        "elapsed_time": detail.get(
+            "elapsed_time"
+        ),
+        "laps": [
+            {
+                "number": index + 1,
+                "distance": kilometers(
+                    lap.get("distance")
+                ),
+                "moving_time": lap.get(
+                    "moving_time",
+                    0,
+                ),
+                "elapsed_time": lap.get(
+                    "elapsed_time",
+                    0,
+                ),
+                "average_speed": lap.get(
+                    "average_speed"
+                ),
+                "max_speed": lap.get(
+                    "max_speed"
+                ),
+                "average_heartrate": lap.get(
+                    "average_heartrate"
+                ),
+                "max_heartrate": lap.get(
+                    "max_heartrate"
+                ),
+                "average_cadence": lap.get(
+                    "average_cadence"
+                ),
+                "elevation_gain": lap.get(
+                    "total_elevation_gain"
+                ),
+            }
+            for index, lap in enumerate(laps)
+        ],
+    }
+
+
 @router.get("/athletes/{athlete_id}/training-load")
 def athlete_training_load(athlete_id: int, coach=Depends(require_coach)):
     # Compatibilidade com atletas criados antes do vínculo treinador-atleta.

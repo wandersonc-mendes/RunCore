@@ -294,6 +294,18 @@ export function listAthleteActivities(athleteId) {
   );
 }
 
+export function getAthleteActivityDetails(
+  athleteId,
+  activityId,
+) {
+  return request(
+    `/api/integrations/athletes/${athleteId}/activities/${activityId}/details`,
+    {
+      timeout: 60000,
+    },
+  );
+}
+
 export function getAthleteTrainingLoad(athleteId) {
   return request(
     `/api/integrations/athletes/${athleteId}/training-load`,

@@ -12,6 +12,15 @@ class IntegrationRepository:
         session.close()
         return item
 
+    def get_by_id(self, integration_id):
+        session = SessionLocal()
+        item = session.get(
+            ExternalIntegration,
+            integration_id,
+        )
+        session.close()
+        return item
+
     def save(self, item):
         session = SessionLocal()
         item = session.merge(item)

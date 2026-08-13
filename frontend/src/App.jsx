@@ -147,6 +147,7 @@ function SessionAdjustment({
   onCancel,
   saving,
   athlete,
+  error,
 }) {
   const [openSelect, setOpenSelect] = useState(null);
 
@@ -779,6 +780,7 @@ function SessionAdjustment({
     <form
       className="workout-editor-v2"
       onSubmit={onSave}
+      noValidate
     >
       <header className="workout-editor-v2-header">
         <div>
@@ -807,6 +809,16 @@ function SessionAdjustment({
           </button>
         </div>
       </header>
+
+      {error && (
+        <div
+          className="workout-editor-inline-error"
+          role="alert"
+        >
+          <strong>Não foi possível salvar o treino.</strong>
+          <span>{error}</span>
+        </div>
+      )}
 
       <div className="workout-editor-v2-grid">
         <aside className="workout-editor-sidebar">
@@ -2311,6 +2323,37 @@ export default function App() {
       return;
     }
 
+    const workoutName = String(
+      workoutEdit.workout_name || "",
+    ).trim();
+    const workoutZone = String(
+      workoutEdit.zone || "",
+    ).trim();
+
+    if (workoutName.length < 2) {
+      setError(
+        "Informe um nome para o treino antes de salvar.",
+      );
+      return;
+    }
+
+    if (workoutZone.length < 2) {
+      setError(
+        "Informe a zona geral do treino antes de salvar.",
+      );
+      return;
+    }
+
+    if (
+      !Array.isArray(workoutEdit.steps)
+      || workoutEdit.steps.length === 0
+    ) {
+      setError(
+        "O treino precisa ter pelo menos uma etapa.",
+      );
+      return;
+    }
+
     const normalizedSteps = workoutEdit.steps.map(
       (step) => {
         const prescriptionType = (
@@ -2378,6 +2421,8 @@ export default function App() {
 
     const normalizedWorkout = {
       ...workoutEdit,
+      workout_name: workoutName,
+      zone: workoutZone,
       planned_distance: workoutSummary.plannedDistance,
       repetitions: workoutSummary.repetitions,
       steps: normalizedSteps,
@@ -2393,25 +2438,42 @@ export default function App() {
         normalizedWorkout,
       );
 
-      setTraining((current) => {
-        if (!current) {
-          return current;
-        }
+      const refreshedTraining = await getTraining(
+        selectedAthlete.id,
+      );
 
-        return {
-          ...current,
-          sessions: current.sessions.map((session) => (
-            session.id === normalizedWorkout.id
-              ? {
-                  ...session,
-                  ...normalizedWorkout,
-                }
-              : session
-          )),
-        };
-      });
+      const persistedWorkout = (
+        refreshedTraining?.sessions || []
+      ).find(
+        (session) =>
+          String(session.id)
+          === String(workoutEdit.id),
+      );
 
-      closeWorkoutEditor();
+      if (!persistedWorkout) {
+        throw new Error(
+          "O servidor respondeu ao salvamento, mas a sessão "
+          + "não foi encontrada ao conferir os dados persistidos.",
+        );
+      }
+
+      if (!(persistedWorkout.steps || []).length) {
+        throw new Error(
+          "O servidor respondeu ao salvamento, mas não confirmou "
+          + "as etapas do treino. Tente novamente.",
+        );
+      }
+
+      setTraining(refreshedTraining);
+      setSelectedWorkout(null);
+      setWorkoutEdit(null);
+
+      navigate(
+        coachPaths.athletePlanning(
+          selectedAthlete.id,
+        ),
+        { replace: true },
+      );
     } catch (err) {
       setError(
         err.message,
@@ -2844,6 +2906,7 @@ export default function App() {
               onCancel={closeWorkoutEditor}
               saving={savingTraining}
               athlete={selectedAthlete}
+              error={error}
             />
           ) : error ? (
             <section className="dedicated-workout-loading">

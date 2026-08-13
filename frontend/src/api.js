@@ -540,6 +540,7 @@ export function updateTrainingSession(
     {
       method: "PATCH",
       body: JSON.stringify(data),
+      timeout: 60000,
     },
   );
 }

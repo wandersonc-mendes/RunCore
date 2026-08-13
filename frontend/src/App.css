@@ -6906,3 +6906,70 @@ button {
     display: none;
   }
 }
+
+
+/* RUNCORE WORKOUT SAVE AND DELETE FIX */
+.workout-block-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.workout-block-actions .remove-workout-block {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 28px;
+  min-width: 74px;
+  padding: 0 8px;
+  white-space: nowrap;
+  width: auto;
+}
+
+.workout-block-actions .remove-workout-block span:last-child {
+  display: inline;
+  font-size: 0.72rem;
+}
+
+.workout-editor-inline-error {
+  align-items: flex-start;
+  background: color-mix(
+    in srgb,
+    var(--danger, #b3432f) 10%,
+    var(--shell-surface, #fff)
+  );
+  border: 1px solid color-mix(
+    in srgb,
+    var(--danger, #b3432f) 36%,
+    transparent
+  );
+  border-radius: 10px;
+  color: var(--danger, #b3432f);
+  display: grid;
+  gap: 3px;
+  margin: 0 20px 14px;
+  padding: 10px 12px;
+}
+
+.workout-editor-inline-error strong {
+  font-size: 0.82rem;
+}
+
+.workout-editor-inline-error span {
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  .workout-block-actions .remove-workout-block {
+    min-width: 32px;
+    padding: 0 6px;
+  }
+
+  .workout-block-actions .remove-workout-block span:last-child {
+    display: none;
+  }
+
+  .workout-editor-inline-error {
+    margin-inline: 12px;
+  }
+}

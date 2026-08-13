@@ -734,61 +734,19 @@ def sync_strava_activities(user=Depends(current_user)):
     except Exception:
         raise HTTPException(status_code=502, detail="Não foi possível sincronizar atividades com o Strava.")
 
-    imported = 0
-    for activity in data:
-        item = activities.get_by_provider_id(activity["id"])
-        if item is None:
-            item = ImportedActivity(integration_id=integration.id, provider_activity_id=str(activity["id"]))
-            imported += 1
-        # Uma mesma conta Strava pode ter sido usada durante testes em outro
-        # perfil RunCore. A sincronização atual passa a ser a proprietária dos
-        # registros importados, para que eles apareçam para o aluno conectado.
-        item.integration_id = integration.id
-        item.name = activity.get("name", "Atividade")
-        item.sport_type = activity.get("sport_type") or activity.get("type", "")
-        item.distance = round(activity.get("distance", 0) / 1000, 3)
-        item.moving_time = activity.get("moving_time", 0)
-        item.elapsed_time = activity.get("elapsed_time")
-        item.average_speed = activity.get("average_speed")
-        item.max_speed = activity.get("max_speed")
-        item.average_heartrate = activity.get("average_heartrate")
-        item.max_heartrate = activity.get("max_heartrate")
-        item.average_cadence = activity.get("average_cadence")
-        item.total_elevation_gain = activity.get("total_elevation_gain")
-        item.start_at = datetime.fromisoformat(activity["start_date"].replace("Z", "+00:00")) if activity.get("start_date") else None
-        saved_item = activities.save(item)
+    athlete_id = access.athlete_for_student(
+        user.id,
+    )
 
-        sport_type = str(
-            activity.get("sport_type")
-            or activity.get("type")
-            or ""
-        ).lower()
+    imported = activities.sync_strava_batch(
+        integration.id,
+        data,
+        athlete_id=athlete_id,
+    )
 
-        local_start = activity.get(
-            "start_date_local",
-        )
-        local_day = None
-
-        if local_start:
-            local_day = datetime.fromisoformat(
-                local_start.replace(
-                    "Z",
-                    "+00:00",
-                )
-            ).date()
-
-        if sport_type in {
-            "run",
-            "virtualrun",
-            "trailrun",
-        }:
-            athlete_id = access.athlete_for_student(
-                user.id,
-            )
-            activities.link_training_session(
-                saved_item.id,
-                athlete_id,
-                local_day,
-            )
-
-    return {"imported": imported, "activities": activities.list_for_integration(integration.id)}
+    return {
+        "imported": imported,
+        "activities": activities.list_for_integration(
+            integration.id,
+        ),
+    }

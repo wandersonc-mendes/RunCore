@@ -75,9 +75,14 @@ async function request(path, options = {}) {
     });
   } catch (error) {
     if (error?.name === "AbortError") {
+      const timeoutSeconds = Math.ceil(
+        timeoutMilliseconds / 1000,
+      );
+
       throw new Error(
-        "A API demorou mais de 20 segundos para salvar. "
-        + "A operação foi interrompida para evitar que a tela fique travada.",
+        `A API demorou mais de ${timeoutSeconds} segundos `
+        + "para responder. A operação foi interrompida "
+        + "para evitar que a tela fique travada.",
       );
     }
 

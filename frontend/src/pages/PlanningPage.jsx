@@ -333,14 +333,77 @@ export default function PlanningPage({
   );
 
   const macrocycleWeeks = useMemo(() => {
-    const sessions = (
-      macrocycleRecord?.training?.sessions || []
+    const training = macrocycleRecord?.training;
+
+    if (!training) {
+      return [];
+    }
+
+    const sessions = training.sessions || [];
+    const configuredWeeks = Math.max(
+      0,
+      Number(training.total_weeks || 0),
     );
 
-    const grouped = new Map();
+    let dateBasedWeeks = 0;
+
+    if (training.start_date && training.target_date) {
+      const start = new Date(
+        `${training.start_date}T00:00:00`,
+      );
+      const target = new Date(
+        `${training.target_date}T00:00:00`,
+      );
+
+      if (
+        !Number.isNaN(start.getTime())
+        && !Number.isNaN(target.getTime())
+        && target >= start
+      ) {
+        const dayMs = 24 * 60 * 60 * 1000;
+        const inclusiveDays = Math.floor(
+          (target.getTime() - start.getTime()) / dayMs,
+        ) + 1;
+
+        dateBasedWeeks = Math.max(
+          1,
+          Math.ceil(inclusiveDays / 7),
+        );
+      }
+    }
+
+    const sessionWeeks = sessions.reduce(
+      (highestWeek, session) =>
+        Math.max(
+          highestWeek,
+          Number(session.week || 0),
+        ),
+      0,
+    );
+
+    const totalWeeks = Math.max(
+      configuredWeeks,
+      dateBasedWeeks,
+      sessionWeeks,
+    );
+
+    if (totalWeeks < 1) {
+      return [];
+    }
+
+    const grouped = new Map(
+      Array.from(
+        { length: totalWeeks },
+        (_, index) => [index + 1, []],
+      ),
+    );
 
     sessions.forEach((session) => {
       const weekNumber = Number(session.week || 0);
+
+      if (weekNumber < 1) {
+        return;
+      }
 
       if (!grouped.has(weekNumber)) {
         grouped.set(weekNumber, []);

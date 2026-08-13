@@ -2419,52 +2419,97 @@ export default function App() {
       normalizedSteps,
     );
 
-    const normalizedWorkout = {
-      ...workoutEdit,
+    const savePayload = {
+      session_date: workoutEdit.session_date || null,
       workout_name: workoutName,
       zone: workoutZone,
       planned_distance: workoutSummary.plannedDistance,
       repetitions: workoutSummary.repetitions,
-      steps: normalizedSteps,
+      objective: String(
+        workoutEdit.objective || "",
+      ),
+      notes: String(
+        workoutEdit.notes || "",
+      ),
+      steps: normalizedSteps.map((step) => ({
+        group_id: step.group_id || null,
+        group_order: step.group_order ?? null,
+        group_repetitions: Number(
+          step.group_repetitions || 1,
+        ),
+        type: String(step.type || "Corrida"),
+        prescription_type:
+          step.prescription_type || "distance",
+        intensity_type:
+          step.intensity_type || "pace",
+        distance: Number(step.distance || 0),
+        distance_unit:
+          step.distance_unit || "km",
+        duration: Number(step.duration || 0),
+        repetitions: Number(
+          step.repetitions || 0,
+        ),
+        recovery: String(
+          step.recovery || "",
+        ),
+        pace_min: String(
+          step.pace_min || "",
+        ),
+        pace_max: String(
+          step.pace_max || "",
+        ),
+        heart_rate_min:
+          step.heart_rate_min ?? null,
+        heart_rate_max:
+          step.heart_rate_max ?? null,
+        rpe_min: step.rpe_min ?? null,
+        rpe_max: step.rpe_max ?? null,
+        notes: String(step.notes || ""),
+      })),
     };
 
     setSavingTraining(true);
     setError(null);
 
     try {
-      await updateTrainingSession(
+      const persistedWorkout = await updateTrainingSession(
         selectedAthlete.id,
         workoutEdit.id,
-        normalizedWorkout,
+        savePayload,
       );
 
-      const refreshedTraining = await getTraining(
-        selectedAthlete.id,
-      );
-
-      const persistedWorkout = (
-        refreshedTraining?.sessions || []
-      ).find(
-        (session) =>
-          String(session.id)
-          === String(workoutEdit.id),
-      );
-
-      if (!persistedWorkout) {
+      if (
+        !persistedWorkout
+        || String(persistedWorkout.id)
+          !== String(workoutEdit.id)
+      ) {
         throw new Error(
-          "O servidor respondeu ao salvamento, mas a sessão "
-          + "não foi encontrada ao conferir os dados persistidos.",
+          "O servidor não confirmou a sessão salva.",
         );
       }
 
       if (!(persistedWorkout.steps || []).length) {
         throw new Error(
-          "O servidor respondeu ao salvamento, mas não confirmou "
-          + "as etapas do treino. Tente novamente.",
+          "O servidor não confirmou as etapas do treino.",
         );
       }
 
-      setTraining(refreshedTraining);
+      setTraining((current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          sessions: current.sessions.map((session) => (
+            String(session.id)
+              === String(persistedWorkout.id)
+              ? persistedWorkout
+              : session
+          )),
+        };
+      });
+
       setSelectedWorkout(null);
       setWorkoutEdit(null);
 

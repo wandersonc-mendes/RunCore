@@ -765,6 +765,7 @@ def create_session(
 
 @router.patch(
     "/sessions/{session_id}",
+    response_model=TrainingSessionOut,
     status_code=status.HTTP_200_OK,
 )
 def update_session(
@@ -823,7 +824,41 @@ def update_session(
         ],
     )
 
+    refreshed = session_repository.get_by_id(
+        session.id
+    )
+
+    total_weeks = max(
+        (
+            item.week
+            for item in session_repository.list_by_training(
+                training.id
+            )
+        ),
+        default=1,
+    )
+
     return {
-        "message": "Treino salvo com sucesso.",
-        "session_id": session.id,
+        "id": refreshed.id,
+        "week": refreshed.week,
+        "weekday": refreshed.weekday,
+        "workout_name": refreshed.workout_name,
+        "zone": refreshed.zone,
+        "planned_distance": refreshed.planned_distance,
+        "repetitions": refreshed.repetitions,
+        "recovery": refreshed.recovery,
+        "objective": refreshed.objective or "",
+        "notes": refreshed.notes or "",
+        "completed": refreshed.completed,
+        "session_date": refreshed.scheduled_date,
+        "phase": phase_for_week(
+            refreshed.week,
+            total_weeks,
+        ),
+        "adaptations": adaptations_for(
+            refreshed.zone
+        ),
+        "steps": serialized_steps_for_session(
+            refreshed
+        ),
     }

@@ -1,9 +1,10 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from database.database import SessionLocal
 from models.training_session import (
     TrainingSession,
 )
+from models.training_step import TrainingStep
 
 
 class TrainingSessionRepository:
@@ -87,15 +88,30 @@ class TrainingSessionRepository:
         session = SessionLocal()
 
         try:
-            items = session.scalars(
-                select(TrainingSession)
+            session_ids = (
+                select(TrainingSession.id)
                 .where(
-                    TrainingSession.training_id == training_id
+                    TrainingSession.training_id
+                    == training_id
                 )
-            ).all()
+            )
 
-            for item in items:
-                session.delete(item)
+            session.execute(
+                delete(TrainingStep)
+                .where(
+                    TrainingStep.session_id.in_(
+                        session_ids
+                    )
+                )
+            )
+
+            session.execute(
+                delete(TrainingSession)
+                .where(
+                    TrainingSession.training_id
+                    == training_id
+                )
+            )
 
             session.commit()
         except Exception:

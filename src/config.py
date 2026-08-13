@@ -83,10 +83,27 @@ ALLOWED_ORIGINS = list(
 # Autenticação
 # ==========================
 
+DEV_AUTH_SECRET = (
+    "runcore-dev-secret-change-in-production"
+)
+
 AUTH_SECRET_KEY = os.getenv(
     "AUTH_SECRET",
-    "runcore-dev-secret-change-in-production",
+    "",
+).strip()
+
+IS_RAILWAY = bool(
+    os.getenv("RAILWAY_ENVIRONMENT")
+    or os.getenv("RAILWAY_PROJECT_ID")
 )
+
+if not AUTH_SECRET_KEY:
+    if IS_RAILWAY:
+        raise RuntimeError(
+            "AUTH_SECRET é obrigatório no Railway."
+        )
+
+    AUTH_SECRET_KEY = DEV_AUTH_SECRET
 
 AUTH_ALGORITHM = "HS256"
 

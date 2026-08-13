@@ -36,6 +36,7 @@ class TrainingPersistenceService:
         target_date: date | None = None,
         total_weeks: int = 8,
         ipt_profile: str | None = None,
+        training_days: list[int] | None = None,
     ):
 
         training = Training()
@@ -58,6 +59,7 @@ class TrainingPersistenceService:
             total_weeks,
             ipt_profile,
             target_distance=target_distance,
+            training_days=training_days,
         )
 
         return training
@@ -68,6 +70,7 @@ class TrainingPersistenceService:
         vdot: float | None,
         ipt_profile: str | None = None,
         total_weeks: int | None = None,
+        training_days: list[int] | None = None,
     ):
 
         sessions = (
@@ -105,6 +108,7 @@ class TrainingPersistenceService:
             total_weeks,
             ipt_profile,
             target_distance=target_distance,
+            training_days=training_days,
         )
 
     def _generate_sessions(
@@ -114,12 +118,14 @@ class TrainingPersistenceService:
         total_weeks: int,
         ipt_profile: str | None = None,
         target_distance: float | None = None,
+        training_days: list[int] | None = None,
     ):
 
         if vdot is None:
             cycle = TrainingCycleBuilder.initial(
                 total_weeks=total_weeks,
                 target_distance=target_distance,
+                training_days=training_days,
             )
         else:
             cycle = TrainingCycleBuilder.base(

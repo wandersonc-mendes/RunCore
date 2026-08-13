@@ -222,6 +222,12 @@ class TrainingCreate(BaseModel):
         le=52,
     )
 
+    training_days: list[int] = Field(
+        default_factory=lambda: [0, 2, 5],
+        min_length=3,
+        max_length=3,
+    )
+
 
 class TrainingSessionCreate(BaseModel):
 

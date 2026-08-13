@@ -170,6 +170,50 @@ def get_latest_ipt_profile(athlete_id: int) -> str | None:
     return assessment["profile"]
 
 
+def normalize_training_days(
+    training_days: list[int] | None,
+) -> list[int] | None:
+    if training_days is None:
+        return None
+
+    normalized = sorted(set(training_days))
+
+    if (
+        len(normalized) != 3
+        or any(day < 0 or day > 6 for day in normalized)
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Selecione exatamente 3 dias diferentes "
+                "da semana para o planejamento inicial."
+            ),
+        )
+
+    return normalized
+
+
+def parse_training_days(
+    raw_value: str | None,
+) -> list[int] | None:
+    if raw_value is None or not raw_value.strip():
+        return None
+
+    try:
+        values = [
+            int(item.strip())
+            for item in raw_value.split(",")
+            if item.strip()
+        ]
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="Dias de treino inválidos.",
+        ) from exc
+
+    return normalize_training_days(values)
+
+
 def weeks_between_dates(start_date, target_date) -> int:
     days = (target_date - start_date).days
 
@@ -478,6 +522,9 @@ def create_training(athlete_id: int, payload: TrainingCreate):
         target_date=target_date,
         total_weeks=total_weeks,
         ipt_profile=reference["ipt_profile"],
+        training_days=normalize_training_days(
+            payload.training_days,
+        ),
     )
     return serialize_training(training_repository.get_by_id(training.id))
 
@@ -486,6 +533,7 @@ def create_training(athlete_id: int, payload: TrainingCreate):
 def regenerate_training(
     athlete_id: int,
     goal_id: int | None = Query(default=None),
+    training_days: str | None = Query(default=None),
 ):
     get_athlete(athlete_id)
     reference = training_reference(
@@ -550,6 +598,9 @@ def regenerate_training(
             "ipt_profile"
         ],
         total_weeks=total_weeks,
+        training_days=parse_training_days(
+            training_days,
+        ),
     )
     return serialize_training(training_repository.get_by_id(training.id))
 

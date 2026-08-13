@@ -6540,3 +6540,51 @@ button {
   }
 }
 
+
+
+.training-days-picker {
+  border: 1px solid var(--shell-border);
+  border-radius: 12px;
+  margin: 16px 0;
+  padding: 12px 14px 14px;
+}
+
+.training-days-picker legend {
+  color: var(--shell-text);
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.training-days-picker legend small {
+  color: var(--shell-muted);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.training-days-picker > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.training-days-picker label {
+  align-items: center;
+  border: 1px solid var(--shell-border);
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.training-days-picker label.selected {
+  border-color: var(--accent);
+}
+
+.training-days-picker input {
+  margin: 0;
+}
+
+.training-days-picker.compact {
+  margin: 0 16px 0 auto;
+}

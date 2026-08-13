@@ -14,6 +14,7 @@ class TrainingCycleBuilder:
     def initial(
         total_weeks: int = 8,
         target_distance: float | None = None,
+        training_days: list[int] | None = None,
     ) -> TrainingCycle:
 
         cycle = TrainingCycle(
@@ -25,6 +26,28 @@ class TrainingCycleBuilder:
             3.0,
             float(target_distance or 5.0),
         )
+
+        selected_days = sorted(
+            set(training_days or [0, 2, 5])
+        )
+
+        if (
+            len(selected_days) != 3
+            or any(day < 0 or day > 6 for day in selected_days)
+        ):
+            raise ValueError(
+                "Selecione exatamente 3 dias diferentes da semana."
+            )
+
+        weekday_names = [
+            "Segunda",
+            "Terça",
+            "Quarta",
+            "Quinta",
+            "Sexta",
+            "Sábado",
+            "Domingo",
+        ]
 
         for week_number in range(1, total_weeks + 1):
             block_position = (week_number - 1) % 4
@@ -49,51 +72,49 @@ class TrainingCycleBuilder:
 
             week = TrainingWeek(number=week_number)
 
-            monday = TrainingDay("Segunda")
-            monday.objective = "Adaptação aeróbica inicial"
-            monday.notes = (
-                "Esforço confortável. Ritmo livre, guiado pela "
-                "percepção e pelo teste da conversa."
-            )
-            monday.add(
-                WorkoutBuilder.easy(
-                    round(max(2.0, easy_distance), 1)
-                )
-            )
-            week.add(monday)
+            workouts_by_day = {
+                selected_days[0]: {
+                    "workout": WorkoutBuilder.easy(
+                        round(max(2.0, easy_distance), 1)
+                    ),
+                    "objective": "Adaptação aeróbica inicial",
+                    "notes": (
+                        "Esforço confortável. Ritmo livre, guiado pela "
+                        "percepção e pelo teste da conversa."
+                    ),
+                },
+                selected_days[1]: {
+                    "workout": WorkoutBuilder.easy(
+                        round(max(2.0, easy_distance), 1)
+                    ),
+                    "objective": "Continuidade e adaptação",
+                    "notes": (
+                        "Manter esforço leve. Caminhar quando necessário; "
+                        "não perseguir ritmo."
+                    ),
+                },
+                selected_days[2]: {
+                    "workout": WorkoutBuilder.long(
+                        round(max(3.0, long_distance), 1)
+                    ),
+                    "objective": "Resistência aeróbica leve",
+                    "notes": (
+                        "Sessão contínua confortável. Pode alternar corrida "
+                        "e caminhada. Sem alvo de pace até avaliação."
+                    ),
+                },
+            }
 
-            week.add(TrainingDay("Terça"))
+            for weekday, day_name in enumerate(weekday_names):
+                day = TrainingDay(day_name)
+                prescription = workouts_by_day.get(weekday)
 
-            wednesday = TrainingDay("Quarta")
-            wednesday.objective = "Continuidade e adaptação"
-            wednesday.notes = (
-                "Manter esforço leve. Caminhar quando necessário; "
-                "não perseguir ritmo."
-            )
-            wednesday.add(
-                WorkoutBuilder.easy(
-                    round(max(2.0, easy_distance), 1)
-                )
-            )
-            week.add(wednesday)
+                if prescription is not None:
+                    day.objective = prescription["objective"]
+                    day.notes = prescription["notes"]
+                    day.add(prescription["workout"])
 
-            week.add(TrainingDay("Quinta"))
-            week.add(TrainingDay("Sexta"))
-
-            saturday = TrainingDay("Sábado")
-            saturday.objective = "Resistência aeróbica leve"
-            saturday.notes = (
-                "Sessão contínua confortável. Pode alternar corrida "
-                "e caminhada. Sem alvo de pace até avaliação."
-            )
-            saturday.add(
-                WorkoutBuilder.long(
-                    round(max(3.0, long_distance), 1)
-                )
-            )
-            week.add(saturday)
-
-            week.add(TrainingDay("Domingo"))
+                week.add(day)
 
             cycle.add(week)
 

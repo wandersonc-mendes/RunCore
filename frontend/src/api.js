@@ -460,9 +460,20 @@ export function createTraining(
 export function regenerateTraining(
   athleteId,
   goalId = null,
+  trainingDays = null,
 ) {
-  const query = goalId
-    ? `?goal_id=${encodeURIComponent(goalId)}`
+  const params = new URLSearchParams();
+
+  if (goalId) {
+    params.set("goal_id", goalId);
+  }
+
+  if (Array.isArray(trainingDays) && trainingDays.length) {
+    params.set("training_days", trainingDays.join(","));
+  }
+
+  const query = params.toString()
+    ? `?${params.toString()}`
     : "";
 
   return request(

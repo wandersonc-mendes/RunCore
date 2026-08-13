@@ -60,6 +60,7 @@ const emptyEvaluation = {
 };
 
 const weekdays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+const defaultTrainingDays = [0, 2, 4];
 
 function asNumber(value) {
   return value === "" ? 0 : Number(value);
@@ -1453,7 +1454,7 @@ export default function App() {
   const [deletingGoalId, setDeletingGoalId] = useState(null);
   const [applyingGoalId, setApplyingGoalId] = useState(null);
   const [goalMessage, setGoalMessage] = useState("");
-  const [trainingForm, setTrainingForm] = useState({ name: "Planejamento Principal", objective: "", target_distance: "", start_date: new Date().toISOString().slice(0, 10), target_date: "", total_weeks: "8" });
+  const [trainingForm, setTrainingForm] = useState({ name: "Planejamento Principal", objective: "", target_distance: "", start_date: new Date().toISOString().slice(0, 10), target_date: "", total_weeks: "8", training_days: defaultTrainingDays });
   const [workoutEdit, setWorkoutEdit] = useState(null);
   const [error, setError] = useState(null);
   const [invitations, setInvitations] = useState({ pending: [], sent: [] });
@@ -1719,11 +1720,26 @@ export default function App() {
         start_date: new Date().toISOString().slice(0, 10),
         target_date: "",
         total_weeks: "8",
+        training_days: defaultTrainingDays,
       });
       setLoading(true);
       getTraining(athlete.id)
         .then((loadedTraining) => {
           setTraining(loadedTraining);
+
+          const loadedTrainingDays = Array.from(
+            new Set(
+              (loadedTraining?.sessions || [])
+                .map((session) => session.weekday),
+            ),
+          ).sort((first, second) => first - second);
+
+          if (loadedTrainingDays.length === 3) {
+            setTrainingForm((current) => ({
+              ...current,
+              training_days: loadedTrainingDays,
+            }));
+          }
 
           if (requestedWorkoutId) {
             const requestedWorkout = (
@@ -2012,6 +2028,7 @@ export default function App() {
         new Date().toISOString().slice(0, 10),
       target_date: "",
       total_weeks: "8",
+      training_days: defaultTrainingDays,
     });
 
     setLoading(true);
@@ -2024,6 +2041,21 @@ export default function App() {
       ]);
 
       setTraining(trainingData);
+
+      const currentTrainingDays = Array.from(
+        new Set(
+          (trainingData?.sessions || [])
+            .map((session) => session.weekday),
+        ),
+      ).sort((first, second) => first - second);
+
+      if (currentTrainingDays.length === 3) {
+        setTrainingForm((current) => ({
+          ...current,
+          training_days: currentTrainingDays,
+        }));
+      }
+
       setAthleteGoals(
         [...goalsData].sort((first, second) =>
           first.target_date.localeCompare(
@@ -2173,6 +2205,7 @@ export default function App() {
       const updated = await regenerateTraining(
         selectedAthlete.id,
         goal.id,
+        trainingForm.training_days,
       );
 
       setTraining(updated);
@@ -2195,15 +2228,57 @@ export default function App() {
   }
 
 
+  function toggleTrainingDay(dayIndex) {
+    setTrainingForm((current) => {
+      const selected = current.training_days || [];
+      const exists = selected.includes(dayIndex);
+
+      if (exists) {
+        return {
+          ...current,
+          training_days: selected.filter(
+            (item) => item !== dayIndex,
+          ),
+        };
+      }
+
+      if (selected.length >= 3) {
+        return current;
+      }
+
+      return {
+        ...current,
+        training_days: [...selected, dayIndex]
+          .sort((first, second) => first - second),
+      };
+    });
+  }
+
   async function handleCreateTraining(regenerate = false) {
     if (savingTraining) return;
 
     setSavingTraining(true);
     setError(null);
     try {
+      if ((trainingForm.training_days || []).length !== 3) {
+        throw new Error(
+          "Selecione exatamente 3 dias de treino.",
+        );
+      }
+
       const data = regenerate
-        ? await regenerateTraining(selectedAthlete.id)
-        : await createTraining(selectedAthlete.id, { ...trainingForm, target_distance: Number(trainingForm.target_distance), total_weeks: trainingForm.target_date ? null : Number(trainingForm.total_weeks) });
+        ? await regenerateTraining(
+          selectedAthlete.id,
+          null,
+          trainingForm.training_days,
+        )
+        : await createTraining(selectedAthlete.id, {
+          ...trainingForm,
+          target_distance: Number(trainingForm.target_distance),
+          total_weeks: trainingForm.target_date
+            ? null
+            : Number(trainingForm.total_weeks),
+        });
       setTraining(data);
     } catch (err) {
       setError(err.message);
@@ -3026,10 +3101,10 @@ export default function App() {
           </section>
 
           {loading ? <p className="muted">Carregando...</p> : !training ? (
-            <section className="card training-config"><p className="eyebrow">NOVO MACROCICLO</p><h2>Monte o ciclo a partir da meta do aluno</h2><p className="muted">Use a data da prova para calcular as semanas disponíveis ou informe a duração do ciclo.</p><div className="form-grid"><label>Planejamento<input value={trainingForm.name} onChange={(event) => setTrainingForm((form) => ({ ...form, name: event.target.value }))} /></label><label>Objetivo principal<input required value={trainingForm.objective} onChange={(event) => setTrainingForm((form) => ({ ...form, objective: event.target.value }))} placeholder="Ex.: Meia Maratona de Vitória" /></label><label>Distância-alvo (km)<input required type="number" min="0.1" step="0.1" value={trainingForm.target_distance} onChange={(event) => setTrainingForm((form) => ({ ...form, target_distance: event.target.value }))} placeholder="21.1" /></label><label>Início do ciclo<input required type="date" value={trainingForm.start_date} onChange={(event) => setTrainingForm((form) => ({ ...form, start_date: event.target.value }))} /></label><label>Data da prova (opcional)<input type="date" value={trainingForm.target_date} onChange={(event) => setTrainingForm((form) => ({ ...form, target_date: event.target.value }))} /></label><label>Semanas disponíveis {trainingForm.target_date && <small>(calculadas entre o início e a prova)</small>}<input disabled={Boolean(trainingForm.target_date)} type="number" min="1" max="52" value={trainingForm.total_weeks} onChange={(event) => setTrainingForm((form) => ({ ...form, total_weeks: event.target.value }))} /></label></div><button className="btn-primary" disabled={savingTraining || !trainingForm.objective || !trainingForm.target_distance} onClick={() => handleCreateTraining()}>{savingTraining ? "Gerando ciclo..." : "Gerar macrociclo"}</button></section>
+            <section className="card training-config"><p className="eyebrow">NOVO MACROCICLO</p><h2>Monte o ciclo a partir da meta do aluno</h2><p className="muted">Use a data da prova para calcular as semanas disponíveis ou informe a duração do ciclo.</p><div className="form-grid"><label>Planejamento<input value={trainingForm.name} onChange={(event) => setTrainingForm((form) => ({ ...form, name: event.target.value }))} /></label><label>Objetivo principal<input required value={trainingForm.objective} onChange={(event) => setTrainingForm((form) => ({ ...form, objective: event.target.value }))} placeholder="Ex.: Meia Maratona de Vitória" /></label><label>Distância-alvo (km)<input required type="number" min="0.1" step="0.1" value={trainingForm.target_distance} onChange={(event) => setTrainingForm((form) => ({ ...form, target_distance: event.target.value }))} placeholder="21.1" /></label><label>Início do ciclo<input required type="date" value={trainingForm.start_date} onChange={(event) => setTrainingForm((form) => ({ ...form, start_date: event.target.value }))} /></label><label>Data da prova (opcional)<input type="date" value={trainingForm.target_date} onChange={(event) => setTrainingForm((form) => ({ ...form, target_date: event.target.value }))} /></label><label>Semanas disponíveis {trainingForm.target_date && <small>(calculadas entre o início e a prova)</small>}<input disabled={Boolean(trainingForm.target_date)} type="number" min="1" max="52" value={trainingForm.total_weeks} onChange={(event) => setTrainingForm((form) => ({ ...form, total_weeks: event.target.value }))} /></label></div><fieldset className="training-days-picker"><legend>Dias de treino <small>selecione 3</small></legend><div>{weekdays.map((day, index) => <label key={day} className={trainingForm.training_days.includes(index) ? "selected" : ""}><input type="checkbox" checked={trainingForm.training_days.includes(index)} onChange={() => toggleTrainingDay(index)} /><span>{day.slice(0, 3)}</span></label>)}</div></fieldset><button className="btn-primary" disabled={savingTraining || !trainingForm.objective || !trainingForm.target_distance} onClick={() => handleCreateTraining()}>{savingTraining ? "Gerando ciclo..." : "Gerar macrociclo"}</button></section>
           ) : (
             <>
-              <section className="card training-summary"><div><p className="eyebrow">MACROCICLO · FASE ATUAL: {training.current_phase}</p><h2>{training.name}</h2><p>Meta: {training.target_distance} km</p><small>Semana {training.current_week} de {training.total_weeks} · início {formatTestDate(training.start_date)}{training.target_date ? ` · prova ${formatTestDate(training.target_date)}` : ""}</small></div><button className="btn-ghost" disabled={savingTraining} onClick={() => handleCreateTraining(true)}>{savingTraining ? "Atualizando..." : "Atualizar planilha"}</button></section>
+              <section className="card training-summary"><div><p className="eyebrow">MACROCICLO · FASE ATUAL: {training.current_phase}</p><h2>{training.name}</h2><p>Meta: {training.target_distance} km</p><small>Semana {training.current_week} de {training.total_weeks} · início {formatTestDate(training.start_date)}{training.target_date ? ` · prova ${formatTestDate(training.target_date)}` : ""}</small></div>{training.methodology === "Observação inicial" && <fieldset className="training-days-picker compact"><legend>Dias de treino</legend><div>{weekdays.map((day, index) => <label key={day} className={trainingForm.training_days.includes(index) ? "selected" : ""}><input type="checkbox" checked={trainingForm.training_days.includes(index)} onChange={() => toggleTrainingDay(index)} /><span>{day.slice(0, 3)}</span></label>)}</div></fieldset>}<button className="btn-ghost" disabled={savingTraining} onClick={() => handleCreateTraining(true)}>{savingTraining ? "Atualizando..." : "Atualizar planilha"}</button></section>
               {Object.entries(sessionsByWeek).map(([week, sessions]) => (
                 <section key={week} className="week-section"><h2>Semana {week} <small>· {sessions[0]?.phase}</small></h2><div className="session-grid">{sessions.map((session) => <article className="card session-card" key={session.id}><span className="session-day">{weekdays[session.weekday]} · {formatTestDate(session.session_date)}</span><h3>{session.workout_name}</h3><p className="zone">{session.zone}</p><p>{formatWorkoutSummary(session)}</p><button
   className="btn-link open-workout"

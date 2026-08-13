@@ -926,16 +926,23 @@ function SessionAdjustment({
             </label>
 
             <label>
-              Zona geral
+              Classificação da sessão
               <input
-                value={value.zone}
-                onChange={(event) =>
-                  onChange((item) => ({
-                    ...item,
-                    zone: event.target.value,
-                  }))
+                readOnly
+                value={
+                  value.zone
+                  || "Avaliação necessária"
+                }
+                title={
+                  "Calculada automaticamente a partir "
+                  + "das etapas do treino e da avaliação "
+                  + "vigente do atleta."
                 }
               />
+              <small>
+                Calculada automaticamente pelas etapas
+                e pela avaliação do atleta.
+              </small>
             </label>
           </section>
 
@@ -2326,20 +2333,9 @@ export default function App() {
     const workoutName = String(
       workoutEdit.workout_name || "",
     ).trim();
-    const workoutZone = String(
-      workoutEdit.zone || "",
-    ).trim();
-
     if (workoutName.length < 2) {
       setError(
         "Informe um nome para o treino antes de salvar.",
-      );
-      return;
-    }
-
-    if (workoutZone.length < 2) {
-      setError(
-        "Informe a zona geral do treino antes de salvar.",
       );
       return;
     }
@@ -2422,7 +2418,9 @@ export default function App() {
     const savePayload = {
       session_date: workoutEdit.session_date || null,
       workout_name: workoutName,
-      zone: workoutZone,
+      zone:
+        workoutEdit.zone
+        || "Avaliação necessária",
       planned_distance: workoutSummary.plannedDistance,
       repetitions: workoutSummary.repetitions,
       objective: String(

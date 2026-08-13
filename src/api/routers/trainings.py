@@ -22,6 +22,9 @@ from repositories.training_repository import TrainingRepository
 from repositories.training_session_repository import TrainingSessionRepository
 from repositories.training_step_repository import TrainingStepRepository
 from core.training.training_step_service import TrainingStepService
+from core.training.session_intensity_service import (
+    SessionIntensityService,
+)
 
 
 router = APIRouter(prefix="/athletes/{athlete_id}/training", tags=["training"])
@@ -370,6 +373,20 @@ def serialize_step(step):
     }
 
 
+def automatic_session_intensity(
+    athlete_id,
+    steps,
+):
+    evaluation = get_optional_evaluation(
+        athlete_id,
+    )
+
+    return SessionIntensityService.classify(
+        steps,
+        evaluation,
+    )
+
+
 def serialized_steps_for_session(
     session,
     steps_by_session=None,
@@ -506,7 +523,16 @@ def serialize_training(training):
                 "week": session.week,
                 "weekday": session.weekday,
                 "workout_name": session.workout_name,
-                "zone": session.zone,
+                "zone": automatic_session_intensity(
+                    training.athlete_id,
+                    [
+                        serialize_step(step)
+                        for step in steps_by_session.get(
+                            session.id,
+                            [],
+                        )
+                    ],
+                ),
                 "planned_distance": session.planned_distance,
                 "repetitions": session.repetitions,
                 "recovery": session.recovery,
@@ -703,7 +729,7 @@ def create_session(
     session.week = week
     session.weekday = payload.session_date.weekday()
     session.workout_name = payload.workout_name
-    session.zone = payload.zone
+    session.zone = "Avaliação necessária"
     session.planned_distance = payload.planned_distance
     session.completed_distance = 0
     session.planned_duration = 0
@@ -718,13 +744,21 @@ def create_session(
 
     created = session_repository.create(session)
 
+    step_payloads = [
+        step.model_dump()
+        for step in payload.steps
+    ]
+
     step_service.save(
         created.id,
-        [
-            step.model_dump()
-            for step in payload.steps
-        ],
+        step_payloads,
     )
+
+    created.zone = automatic_session_intensity(
+        athlete_id,
+        step_payloads,
+    )
+    session_repository.update(created)
 
     refreshed = session_repository.get_by_id(created.id)
     total_weeks = max(
@@ -806,7 +840,6 @@ def update_session(
                 (day_offset // 7) + 1,
             )
 
-    session.zone = payload.zone
     session.planned_distance = payload.planned_distance
     session.repetitions = payload.repetitions
     session.objective = payload.objective
@@ -816,13 +849,21 @@ def update_session(
         session
     )
 
+    step_payloads = [
+        step.model_dump()
+        for step in payload.steps
+    ]
+
     step_service.save(
         session.id,
-        [
-            step.model_dump()
-            for step in payload.steps
-        ],
+        step_payloads,
     )
+
+    session.zone = automatic_session_intensity(
+        athlete_id,
+        step_payloads,
+    )
+    session_repository.update(session)
 
     refreshed = session_repository.get_by_id(
         session.id

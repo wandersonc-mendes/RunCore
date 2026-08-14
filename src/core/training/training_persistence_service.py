@@ -10,6 +10,9 @@ from repositories.training_repository import (
 from repositories.training_session_repository import (
     TrainingSessionRepository,
 )
+from core.training.training_step_service import (
+    TrainingStepService,
+)
 
 
 class TrainingPersistenceService:
@@ -22,6 +25,10 @@ class TrainingPersistenceService:
 
         self.session_repository = (
             TrainingSessionRepository()
+        )
+
+        self.step_service = (
+            TrainingStepService()
         )
 
     def create_training(
@@ -190,6 +197,62 @@ class TrainingPersistenceService:
         self.session_repository.create_many(
             sessions
         )
+
+        for training_session in sessions:
+            repetitions = int(
+                training_session.repetitions or 0
+            )
+
+            distance_unit = (
+                "m"
+                if repetitions > 0
+                else "km"
+            )
+
+            rpe_by_zone = {
+                "Easy": (2, 4),
+                "Marathon": (4, 6),
+                "Threshold": (6, 8),
+                "Interval": (8, 9),
+                "Repetition": (9, 10),
+            }
+
+            rpe_min, rpe_max = rpe_by_zone.get(
+                str(training_session.zone),
+                (3, 5),
+            )
+
+            recovery = (
+                str(training_session.recovery)
+                if training_session.recovery
+                else ""
+            )
+
+            self.step_service.save(
+                training_session.id,
+                [
+                    {
+                        "type": "Parte principal",
+                        "prescription_type": "distance",
+                        "intensity_type": "rpe",
+                        "distance": (
+                            training_session.planned_distance
+                            or 0
+                        ),
+                        "distance_unit": distance_unit,
+                        "duration": 0,
+                        "repetitions": repetitions,
+                        "recovery": recovery,
+                        "pace_min": "",
+                        "pace_max": "",
+                        "heart_rate_min": None,
+                        "heart_rate_max": None,
+                        "rpe_min": rpe_min,
+                        "rpe_max": rpe_max,
+                        "notes": "",
+                    }
+                ],
+            )
 
     def delete_training(
         self,

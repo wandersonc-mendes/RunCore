@@ -94,7 +94,7 @@ class TrainingCycleBuilder:
                     ),
                 },
                 selected_days[2]: {
-                    "workout": WorkoutBuilder.long(
+                    "workout": WorkoutBuilder.easy(
                         round(max(3.0, long_distance), 1)
                     ),
                     "objective": "Resistência aeróbica leve",

@@ -46,7 +46,7 @@ class TrainingPersistenceService:
         training.methodology = methodology
         training.objective = objective
         training.target_distance = target_distance
-        training.start_date = start_date
+        training.start_date = start_date or date.today()
         training.target_date = target_date
 
         training = self.training_repository.create(
@@ -92,11 +92,19 @@ class TrainingPersistenceService:
         training = self.training_repository.get_by_id(
             training_id
         )
-        target_distance = (
-            training.target_distance
-            if training
-            else None
-        )
+
+        if training is None:
+            raise ValueError(
+                "Planejamento não encontrado."
+            )
+
+        if training.start_date is None:
+            training.start_date = date.today()
+            training = self.training_repository.update(
+                training
+            )
+
+        target_distance = training.target_distance
 
         self.session_repository.delete_by_training(
             training_id

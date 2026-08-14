@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from math import exp
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from api.schemas import (
     TrainingCreate,
@@ -10,6 +10,8 @@ from api.schemas import (
     TrainingSessionOut,
     TrainingSessionUpdate,
 )
+from api.access_control import require_athlete_access
+from api.dependencies import require_coach
 from core.training.training_persistence_service import TrainingPersistenceService
 from repositories.athlete_repository import AthleteRepository
 from repositories.evaluation_repository import EvaluationRepository
@@ -27,7 +29,23 @@ from core.training.session_intensity_service import (
 )
 
 
-router = APIRouter(prefix="/athletes/{athlete_id}/training", tags=["training"])
+def require_training_athlete_access(
+    athlete_id: int,
+    coach=Depends(require_coach),
+):
+    return require_athlete_access(
+        athlete_id,
+        coach,
+    )
+
+
+router = APIRouter(
+    prefix="/athletes/{athlete_id}/training",
+    tags=["training"],
+    dependencies=[
+        Depends(require_training_athlete_access),
+    ],
+)
 athlete_repository = AthleteRepository()
 evaluation_repository = EvaluationRepository()
 ipt_repository = IptRepository()

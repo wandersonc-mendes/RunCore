@@ -1616,19 +1616,9 @@ export default function App() {
   }, [location.pathname]);
 
   useEffect(() => {
-    function unlockPageScroll() {
-      document.body.style.removeProperty("overflow");
-      document.body.style.removeProperty("overflow-y");
-      document.documentElement.style.removeProperty("overflow");
-      document.documentElement.style.removeProperty("overflow-y");
-    }
-
     if (!selectedWorkout) {
-      unlockPageScroll();
       return undefined;
     }
-
-    document.body.style.overflow = "hidden";
 
     function closeOnEscape(event) {
       if (event.key === "Escape") {
@@ -1639,7 +1629,6 @@ export default function App() {
     window.addEventListener("keydown", closeOnEscape);
 
     return () => {
-      unlockPageScroll();
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [selectedWorkout]);

@@ -1,7 +1,8 @@
 from datetime import date, timedelta
 from math import exp
+from time import perf_counter
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from api.schemas import (
     TrainingCreate,
@@ -516,21 +517,40 @@ def calendar_week_number(
     )
 
 
-def serialize_training(training):
+def serialize_training(training, performance=None):
+    stage_started = perf_counter()
     sessions = session_repository.list_by_training(training.id)
+    if performance is not None:
+        performance["sessions"] = (
+            perf_counter() - stage_started
+        ) * 1000
+
+    stage_started = perf_counter()
     steps_by_session = step_repository.list_by_sessions(
         [session.id for session in sessions]
     )
+    if performance is not None:
+        performance["steps"] = (
+            perf_counter() - stage_started
+        ) * 1000
+
+    stage_started = perf_counter()
     evaluation = get_optional_evaluation(
         training.athlete_id,
     )
+    if performance is not None:
+        performance["evaluation"] = (
+            perf_counter() - stage_started
+        ) * 1000
+
+    stage_started = perf_counter()
     total_weeks = max((item.week for item in sessions), default=1)
     current_week = calendar_week_number(
         training.start_date,
         date.today(),
     )
     current_week = min(current_week, total_weeks)
-    return {
+    result = {
         "id": training.id,
         "athlete_id": training.athlete_id,
         "name": training.name,
@@ -590,12 +610,55 @@ def serialize_training(training):
         ],
     }
 
+    if performance is not None:
+        performance["serialization"] = (
+            perf_counter() - stage_started
+        ) * 1000
+
+    return result
+
 
 @router.get("", response_model=TrainingOut | None)
-def get_active_training(athlete_id: int):
+def get_active_training(
+    athlete_id: int,
+    response: Response,
+):
+    performance = {}
+    request_started = perf_counter()
+
+    stage_started = perf_counter()
     get_athlete(athlete_id)
-    training = training_repository.get_active_by_athlete(athlete_id)
-    return serialize_training(training) if training else None
+    performance["athlete"] = (
+        perf_counter() - stage_started
+    ) * 1000
+
+    stage_started = perf_counter()
+    training = training_repository.get_active_by_athlete(
+        athlete_id
+    )
+    performance["training"] = (
+        perf_counter() - stage_started
+    ) * 1000
+
+    result = (
+        serialize_training(
+            training,
+            performance=performance,
+        )
+        if training
+        else None
+    )
+
+    performance["endpoint"] = (
+        perf_counter() - request_started
+    ) * 1000
+
+    response.headers["Server-Timing"] = ", ".join(
+        f"{name};dur={duration:.2f}"
+        for name, duration in performance.items()
+    )
+
+    return result
 
 
 @router.post("", response_model=TrainingOut, status_code=status.HTTP_201_CREATED)

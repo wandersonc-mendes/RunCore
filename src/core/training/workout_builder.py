@@ -99,11 +99,14 @@ class WorkoutBuilder:
         )
 
     @staticmethod
-    def long(distance: float):
+    def long(
+        distance: float,
+        zone: str = TrainingZone.MARATHON.value,
+    ):
 
         return WorkoutBuilder._build(
             name="Longão",
-            zone=TrainingZone.MARATHON.value,
+            zone=zone,
             distance=distance,
             estimated_rpe=5,
         )

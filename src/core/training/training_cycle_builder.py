@@ -94,8 +94,9 @@ class TrainingCycleBuilder:
                     ),
                 },
                 selected_days[2]: {
-                    "workout": WorkoutBuilder.easy(
-                        round(max(3.0, long_distance), 1)
+                    "workout": WorkoutBuilder.long(
+                        round(max(3.0, long_distance), 1),
+                        zone=TrainingZone.EASY.value,
                     ),
                     "objective": "Resistência aeróbica leve",
                     "notes": (

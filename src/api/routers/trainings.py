@@ -734,13 +734,23 @@ def create_session(
             detail="O atleta não possui planejamento ativo.",
         )
 
-    if training.start_date:
-        day_offset = (
-            payload.session_date - training.start_date
-        ).days
-        week = max(1, (day_offset // 7) + 1)
-    else:
-        week = 1
+    if (
+        training.start_date
+        and payload.session_date
+        < training.start_date
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "A sessão não pode ser anterior "
+                "ao início do planejamento."
+            ),
+        )
+
+    week = calendar_week_number(
+        training.start_date,
+        payload.session_date,
+    )
 
     session = TrainingSession()
     session.training_id = training.id
@@ -846,18 +856,25 @@ def update_session(
     session.workout_name = payload.workout_name
 
     if payload.session_date:
+        if (
+            training.start_date
+            and payload.session_date
+            < training.start_date
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "A sessão não pode ser anterior "
+                    "ao início do planejamento."
+                ),
+            )
+
         session.scheduled_date = payload.session_date
         session.weekday = payload.session_date.weekday()
-
-        if training.start_date:
-            day_offset = (
-                payload.session_date
-                - training.start_date
-            ).days
-            session.week = max(
-                1,
-                (day_offset // 7) + 1,
-            )
+        session.week = calendar_week_number(
+            training.start_date,
+            payload.session_date,
+        )
 
     session.planned_distance = payload.planned_distance
     session.repetitions = payload.repetitions

@@ -11,7 +11,7 @@
   --shell-danger: #c94545;
   --shell-shadow: 0 12px 30px rgba(16,35,27,.08);
 }
-.app-shell { min-height:100vh; background:var(--shell-bg); color:var(--shell-text); }
+.app-shell { min-height:100vh; height:auto; overflow:visible; background:var(--shell-bg); color:var(--shell-text); }
 .app-sidebar { position:fixed; inset:0 auto 0 0; z-index:40; width:248px; overflow-y:auto; border-right:1px solid var(--shell-sidebar-border); background:radial-gradient(circle at 20% 10%,rgba(24,133,95,.18),transparent 35%),var(--shell-sidebar); }
 .app-sidebar-brand { display:grid; place-items:center; min-height:112px; padding:18px; border-bottom:1px solid var(--shell-sidebar-border); }
 .app-sidebar-brand img { width:150px; max-width:100%; }
@@ -20,7 +20,7 @@
 .app-sidebar-link:hover { color:#fff; background:rgba(255,255,255,.06); transform:translateX(2px); }
 .app-sidebar-link.active { color:#fff; background:linear-gradient(90deg,rgba(24,133,95,.88),rgba(31,151,107,.7)); box-shadow:0 10px 24px rgba(11,91,62,.22); }
 .app-sidebar-icon { display:grid; place-items:center; width:22px; font-size:19px; }
-.app-shell-main { min-height:100vh; margin-left:248px; }
+.app-shell-main { min-height:100vh; height:auto; margin-left:248px; overflow:visible; }
 .app-topbar { position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; min-height:82px; padding:14px 30px; border-bottom:1px solid var(--shell-border); background:rgba(255,255,255,.92); backdrop-filter:blur(14px); }
 .app-topbar-heading,.app-topbar-actions,.app-user-trigger { display:flex; align-items:center; }
 .app-topbar-heading { gap:13px; }
@@ -40,7 +40,7 @@
 .app-user-dropdown button:hover { background:var(--shell-surface-soft); }
 .app-user-dropdown button.danger { color:var(--shell-danger); }
 .app-user-dropdown hr { width:100%; border:0; border-top:1px solid var(--shell-border); }
-.app-shell-content { padding:28px 30px 50px; }
+.app-shell-content { min-height:calc(100vh - 82px); height:auto; overflow:visible; padding:28px 30px 50px; }
 .app-shell-backdrop { display:none; }
 @media (max-width:900px) {
   .app-sidebar { transform:translateX(-102%); transition:transform .18s ease; }
@@ -539,4 +539,25 @@
 /* RUNCORE WHITE SUN ICON 58D */
 :root[data-theme="dark"] .app-theme-toggle img {
   filter: brightness(0) invert(1);
+}
+
+
+/* APP SHELL VERTICAL SCROLL CONTRACT */
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  overflow-y: auto;
+}
+
+.app-shell {
+  overflow-y: visible;
+}
+
+.app-shell-main,
+.app-shell-content {
+  min-width: 0;
 }

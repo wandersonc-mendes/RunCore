@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from core.training.training_cycle_builder import (
     TrainingCycleBuilder,
@@ -60,6 +60,7 @@ class TrainingPersistenceService:
             ipt_profile,
             target_distance=target_distance,
             training_days=training_days,
+            start_date=training.start_date,
         )
 
         return training
@@ -117,6 +118,7 @@ class TrainingPersistenceService:
             ipt_profile,
             target_distance=target_distance,
             training_days=training_days,
+            start_date=training.start_date,
         )
 
     def _generate_sessions(
@@ -127,6 +129,7 @@ class TrainingPersistenceService:
         ipt_profile: str | None = None,
         target_distance: float | None = None,
         training_days: list[int] | None = None,
+        start_date: date | None = None,
     ):
 
         if vdot is None:
@@ -149,6 +152,40 @@ class TrainingPersistenceService:
                 cycle,
             )
         )
+
+        if start_date is not None:
+            cycle_week_monday = (
+                start_date
+                - timedelta(
+                    days=start_date.weekday()
+                )
+            )
+
+            scheduled_sessions = []
+
+            for training_session in sessions:
+                scheduled_date = (
+                    cycle_week_monday
+                    + timedelta(
+                        weeks=max(
+                            training_session.week - 1,
+                            0,
+                        ),
+                        days=training_session.weekday,
+                    )
+                )
+
+                if scheduled_date < start_date:
+                    continue
+
+                training_session.scheduled_date = (
+                    scheduled_date
+                )
+                scheduled_sessions.append(
+                    training_session
+                )
+
+            sessions = scheduled_sessions
 
         self.session_repository.create_many(
             sessions

@@ -3,6 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from api.access_control import require_athlete_access
 from api.dependencies import current_user, require_coach
 from models.goal import Goal
 from repositories.athlete_repository import AthleteRepository
@@ -27,26 +28,10 @@ def managed_athlete(
     athlete_id: int,
     coach,
 ):
-    athlete = athletes.get_by_id(
+    athlete = require_athlete_access(
         athlete_id,
+        coach,
     )
-
-    if athlete is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Atleta não encontrado.",
-        )
-
-    if (
-        athlete.coach_user_id != coach.id
-        and coach.role != "admin"
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Você não possui acesso a este atleta."
-            ),
-        )
 
     if athlete.user_id is None:
         raise HTTPException(

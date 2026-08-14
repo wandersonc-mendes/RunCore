@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
@@ -45,6 +45,13 @@ export default function AppShell({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("overflow-y");
+    document.documentElement.style.removeProperty("overflow");
+    document.documentElement.style.removeProperty("overflow-y");
+  }, [location.pathname]);
 
   return (
     <div className="app-shell">

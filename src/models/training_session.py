@@ -100,6 +100,11 @@ class TrainingSession(Base):
         default=False,
     )
 
+    manual_override: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime,
         nullable=True,

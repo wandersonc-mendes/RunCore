@@ -758,6 +758,7 @@ def create_session(
     session.objective = payload.objective
     session.notes = payload.notes
     session.completed = False
+    session.manual_override = True
     session.scheduled_date = payload.session_date
 
     created = session_repository.create(session)
@@ -862,6 +863,7 @@ def update_session(
     session.repetitions = payload.repetitions
     session.objective = payload.objective
     session.notes = payload.notes
+    session.manual_override = True
 
     session_repository.update(
         session

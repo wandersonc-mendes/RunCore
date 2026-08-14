@@ -87,6 +87,23 @@ class TrainingPersistenceService:
             )
         )
 
+        preserved_dates = {
+            training_session.scheduled_date
+            for training_session in sessions
+            if (
+                training_session.scheduled_date
+                is not None
+                and (
+                    training_session.manual_override
+                    or training_session.completed
+                    or (
+                        training_session.scheduled_date
+                        < date.today()
+                    )
+                )
+            )
+        }
+
         current_total_weeks = max(
             (
                 session.week
@@ -114,8 +131,9 @@ class TrainingPersistenceService:
 
         target_distance = training.target_distance
 
-        self.session_repository.delete_by_training(
-            training_id
+        self.session_repository.delete_regenerable_by_training(
+            training_id,
+            date.today(),
         )
 
         self._generate_sessions(
@@ -126,6 +144,7 @@ class TrainingPersistenceService:
             target_distance=target_distance,
             training_days=training_days,
             start_date=training.start_date,
+            excluded_dates=preserved_dates,
         )
 
     def _generate_sessions(
@@ -137,6 +156,7 @@ class TrainingPersistenceService:
         target_distance: float | None = None,
         training_days: list[int] | None = None,
         start_date: date | None = None,
+        excluded_dates: set[date] | None = None,
     ):
 
         if vdot is None:
@@ -183,6 +203,13 @@ class TrainingPersistenceService:
                 )
 
                 if scheduled_date < start_date:
+                    continue
+
+                if (
+                    excluded_dates
+                    and scheduled_date
+                    in excluded_dates
+                ):
                     continue
 
                 training_session.scheduled_date = (

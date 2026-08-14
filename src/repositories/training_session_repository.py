@@ -120,6 +120,61 @@ class TrainingSessionRepository:
         finally:
             session.close()
 
+    def delete_regenerable_by_training(
+        self,
+        training_id,
+        today,
+    ):
+        session = SessionLocal()
+
+        try:
+            regenerable_ids = (
+                select(TrainingSession.id)
+                .where(
+                    TrainingSession.training_id
+                    == training_id,
+                    TrainingSession.manual_override.is_(
+                        False
+                    ),
+                    TrainingSession.completed.is_(
+                        False
+                    ),
+                    (
+                        TrainingSession.scheduled_date
+                        >= today
+                    )
+                    | (
+                        TrainingSession.scheduled_date
+                        .is_(None)
+                    ),
+                )
+            )
+
+            session.execute(
+                delete(TrainingStep)
+                .where(
+                    TrainingStep.session_id.in_(
+                        regenerable_ids
+                    )
+                )
+            )
+
+            session.execute(
+                delete(TrainingSession)
+                .where(
+                    TrainingSession.id.in_(
+                        regenerable_ids
+                    )
+                )
+            )
+
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def delete(self, session_id):
 
         session = SessionLocal()

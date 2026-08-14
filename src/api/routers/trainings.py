@@ -391,13 +391,18 @@ def serialize_step(step):
     }
 
 
+_EVALUATION_UNSET = object()
+
+
 def automatic_session_intensity(
     athlete_id,
     steps,
+    evaluation=_EVALUATION_UNSET,
 ):
-    evaluation = get_optional_evaluation(
-        athlete_id,
-    )
+    if evaluation is _EVALUATION_UNSET:
+        evaluation = get_optional_evaluation(
+            athlete_id,
+        )
 
     return SessionIntensityService.classify(
         steps,
@@ -516,6 +521,9 @@ def serialize_training(training):
     steps_by_session = step_repository.list_by_sessions(
         [session.id for session in sessions]
     )
+    evaluation = get_optional_evaluation(
+        training.athlete_id,
+    )
     total_weeks = max((item.week for item in sessions), default=1)
     current_week = calendar_week_number(
         training.start_date,
@@ -550,6 +558,7 @@ def serialize_training(training):
                             [],
                         )
                     ],
+                    evaluation=evaluation,
                 ),
                 "planned_distance": session.planned_distance,
                 "repetitions": session.repetitions,

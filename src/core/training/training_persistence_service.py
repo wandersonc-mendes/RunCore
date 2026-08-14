@@ -250,9 +250,19 @@ class TrainingPersistenceService:
             )
 
             recovery = (
-                str(training_session.recovery)
+                (
+                    f"{training_session.recovery} m"
+                    if repetitions > 0
+                    else str(training_session.recovery)
+                )
                 if training_session.recovery
                 else ""
+            )
+
+            step_distance = getattr(
+                training_session,
+                "_generated_step_distance",
+                training_session.planned_distance or 0,
             )
 
             self.step_service.save(
@@ -262,10 +272,7 @@ class TrainingPersistenceService:
                         "type": "Parte principal",
                         "prescription_type": "distance",
                         "intensity_type": "rpe",
-                        "distance": (
-                            training_session.planned_distance
-                            or 0
-                        ),
+                        "distance": step_distance,
                         "distance_unit": distance_unit,
                         "duration": 0,
                         "repetitions": repetitions,

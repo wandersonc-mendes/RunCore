@@ -285,15 +285,40 @@ class TrainingCycleBuilder:
                 session.workout_name = workout.name
                 session.zone = workout.zone
 
-                session.planned_distance = (
+                repetitions = int(
+                    workout.repetitions or 0
+                )
+                step_distance = float(
                     workout.distance or 0
+                )
+                recovery_distance = float(
+                    workout.recovery or 0
+                )
+
+                if repetitions > 0:
+                    session.planned_distance = round(
+                        (
+                            (
+                                step_distance
+                                + recovery_distance
+                            )
+                            * repetitions
+                        )
+                        / 1000,
+                        3,
+                    )
+                else:
+                    session.planned_distance = (
+                        step_distance
+                    )
+
+                session._generated_step_distance = (
+                    step_distance
                 )
 
                 session.planned_duration = 0
 
-                session.repetitions = (
-                    workout.repetitions or 0
-                )
+                session.repetitions = repetitions
 
                 session.recovery = (
                     workout.recovery or 0

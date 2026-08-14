@@ -1616,8 +1616,15 @@ export default function App() {
   }, [location.pathname]);
 
   useEffect(() => {
+    function unlockPageScroll() {
+      document.body.style.removeProperty("overflow");
+      document.body.style.removeProperty("overflow-y");
+      document.documentElement.style.removeProperty("overflow");
+      document.documentElement.style.removeProperty("overflow-y");
+    }
+
     if (!selectedWorkout) {
-      document.body.style.overflow = "";
+      unlockPageScroll();
       return undefined;
     }
 
@@ -1632,7 +1639,7 @@ export default function App() {
     window.addEventListener("keydown", closeOnEscape);
 
     return () => {
-      document.body.style.overflow = "";
+      unlockPageScroll();
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [selectedWorkout]);

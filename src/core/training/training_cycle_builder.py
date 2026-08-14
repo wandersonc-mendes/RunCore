@@ -5,6 +5,7 @@ from core.training.training_plan_service import (
 from core.training.training_day import TrainingDay
 from core.training.training_week import TrainingWeek
 from core.training.workout_builder import WorkoutBuilder
+from core.training.training_zone import TrainingZone
 from models.training_session import TrainingSession
 
 

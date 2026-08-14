@@ -671,11 +671,10 @@ def athlete_strava_activity_details(
 
 @router.get("/athletes/{athlete_id}/training-load")
 def athlete_training_load(athlete_id: int, coach=Depends(require_coach)):
-    # Compatibilidade com atletas criados antes do vínculo treinador-atleta.
-    # Se o treinador já consegue abrir o cadastro, ele passa a ter a carga
-    # disponível sem precisar recriar ou aprovar o atleta novamente.
-    if not access.coach_has_athlete(coach.id, athlete_id):
-        access.link_coach_to_athlete(coach.id, athlete_id)
+    require_athlete_access(
+        athlete_id,
+        coach,
+    )
 
     session = SessionLocal()
     rows = session.execute(

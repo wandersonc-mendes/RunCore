@@ -35,3 +35,4 @@ class ImportedActivity(Base):
     total_elevation_gain: Mapped[float | None] = mapped_column(Float, nullable=True)
     start_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     imported_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

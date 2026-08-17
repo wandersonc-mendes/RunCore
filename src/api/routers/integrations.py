@@ -80,7 +80,7 @@ def strava_webhook_verify_token():
 def process_strava_webhook_event(event):
     if (
         event.get("object_type") != "activity"
-        or event.get("aspect_type") != "create"
+        or event.get("aspect_type") not in {"create", "delete"}
     ):
         return
 
@@ -96,6 +96,13 @@ def process_strava_webhook_event(event):
     )
     if integration is None:
         logger.warning("Evento Strava sem integração ativa correspondente.")
+        return
+
+    if event.get("aspect_type") == "delete":
+        activities.mark_strava_activity_deleted(
+            integration.id,
+            object_id,
+        )
         return
 
     try:
@@ -762,6 +769,7 @@ def athlete_training_load(athlete_id: int, coach=Depends(require_coach)):
         FROM activity_feedbacks
         JOIN imported_activities ON imported_activities.id = activity_feedbacks.activity_id
         WHERE activity_feedbacks.athlete_id = :athlete_id
+          AND imported_activities.deleted_at IS NULL
           AND imported_activities.start_at >= :start_at
         ORDER BY imported_activities.start_at ASC
         """),
@@ -820,9 +828,14 @@ def sync_strava_activities(user=Depends(current_user)):
         data,
         athlete_id=athlete_id,
     )
+    removed = activities.mark_recent_missing_strava_activities(
+        integration.id,
+        data,
+    )
 
     return {
         "imported": imported,
+        "removed": removed,
         "activities": activities.list_for_integration(
             integration.id,
         ),

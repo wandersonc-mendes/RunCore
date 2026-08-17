@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from database.database import SessionLocal
 from models.athlete import Athlete
@@ -12,6 +12,60 @@ from models.training_session import TrainingSession
 
 
 class ActivityRepository:
+
+    def mark_strava_activity_deleted(
+        self,
+        integration_id,
+        provider_activity_id,
+    ):
+        with SessionLocal() as session:
+            result = session.execute(
+                update(ImportedActivity)
+                .where(
+                    ImportedActivity.integration_id == integration_id,
+                    ImportedActivity.provider_activity_id
+                    == str(provider_activity_id),
+                )
+                .values(deleted_at=datetime.now())
+            )
+            session.commit()
+            return result.rowcount > 0
+
+    def mark_recent_missing_strava_activities(
+        self,
+        integration_id,
+        strava_activities,
+    ):
+        provider_ids = {
+            str(item["id"])
+            for item in strava_activities
+            if item.get("id") is not None
+        }
+        start_dates = [
+            datetime.fromisoformat(
+                item["start_date"].replace("Z", "+00:00")
+            ).replace(tzinfo=None)
+            for item in strava_activities
+            if item.get("start_date")
+        ]
+        if not provider_ids or not start_dates:
+            return 0
+
+        with SessionLocal() as session:
+            result = session.execute(
+                update(ImportedActivity)
+                .where(
+                    ImportedActivity.integration_id == integration_id,
+                    ImportedActivity.start_at >= min(start_dates),
+                    ImportedActivity.provider_activity_id.not_in(
+                        provider_ids,
+                    ),
+                    ImportedActivity.deleted_at.is_(None),
+                )
+                .values(deleted_at=datetime.now())
+            )
+            session.commit()
+            return result.rowcount
 
     def sync_strava_batch(
         self,
@@ -135,6 +189,7 @@ class ActivityRepository:
                     imported += 1
 
                 item.integration_id = integration_id
+                item.deleted_at = None
                 item.name = activity.get(
                     "name",
                     "Atividade",
@@ -328,7 +383,7 @@ class ActivityRepository:
 
     def list_for_integration(self, integration_id):
         session = SessionLocal()
-        items = session.scalars(select(ImportedActivity).where(ImportedActivity.integration_id == integration_id).order_by(ImportedActivity.start_at.desc()).limit(20)).all()
+        items = session.scalars(select(ImportedActivity).where(ImportedActivity.integration_id == integration_id, ImportedActivity.deleted_at.is_(None)).order_by(ImportedActivity.start_at.desc()).limit(20)).all()
         session.close()
         return items
 
@@ -369,6 +424,7 @@ class ActivityRepository:
                 .where(
                     ExternalIntegration.user_id
                     == user_id,
+                    ImportedActivity.deleted_at.is_(None),
                 )
                 .order_by(
                     ImportedActivity.start_at.asc(),
@@ -387,6 +443,7 @@ class ActivityRepository:
             select(ImportedActivity).where(
                 ImportedActivity.id == activity_id,
                 ImportedActivity.integration_id == integration_id,
+                ImportedActivity.deleted_at.is_(None),
             )
         ).first()
         session.close()

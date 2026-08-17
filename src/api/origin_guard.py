@@ -7,7 +7,10 @@ from config import CLOUDFLARE_ORIGIN_SECRET
 
 
 ORIGIN_SECRET_HEADER = "X-RunCore-Origin-Secret"
-ORIGIN_GUARD_EXEMPT_PATHS = {"/health"}
+ORIGIN_GUARD_EXEMPT_PATHS = {
+    "/health",
+    "/api/integrations/strava/webhook",
+}
 
 
 def origin_request_is_allowed(request: Request) -> bool:

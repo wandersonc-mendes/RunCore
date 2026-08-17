@@ -87,13 +87,25 @@ def process_strava_webhook_event(event):
     owner_id = event.get("owner_id")
     object_id = event.get("object_id")
     if not isinstance(owner_id, int) or not isinstance(object_id, int):
+        logger.warning("Evento Strava ignorado por IDs inválidos.")
         return
 
     integration = repository.get_by_external_user_id(
         "strava",
         str(owner_id),
     )
-    if integration is None or not integration.active:
+    if integration is None:
+        logger.warning(
+            "Evento Strava sem integração para owner_id=%s.",
+            owner_id,
+        )
+        return
+
+    if not integration.active:
+        logger.info(
+            "Evento Strava ignorado para integração inativa: owner_id=%s.",
+            owner_id,
+        )
         return
 
     try:
@@ -103,10 +115,15 @@ def process_strava_webhook_event(event):
             integration.access_token,
         )
         athlete_id = access.athlete_for_student(integration.user_id)
-        activities.sync_strava_batch(
+        imported = activities.sync_strava_batch(
             integration.id,
             [activity],
             athlete_id=athlete_id,
+        )
+        logger.info(
+            "Evento Strava processado: activity_id=%s, imported=%s.",
+            object_id,
+            imported,
         )
     except Exception:
         logger.exception(
@@ -236,6 +253,7 @@ def strava_callback(
             external_user_id=str(result["athlete"]["id"]),
         )
 
+    integration.external_user_id = str(result["athlete"]["id"])
     integration.access_token = result["access_token"]
     integration.refresh_token = result["refresh_token"]
     integration.expires_at = result["expires_at"]

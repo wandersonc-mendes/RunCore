@@ -32,6 +32,10 @@ class IntegrationRepository:
                     ExternalIntegration.provider == provider,
                     ExternalIntegration.external_user_id
                     == str(external_user_id),
+                    ExternalIntegration.active.is_(True),
+                ).order_by(
+                    ExternalIntegration.created_at.desc(),
+                    ExternalIntegration.id.desc(),
                 )
             ).first()
             if item is not None:

@@ -308,6 +308,16 @@ export function listAthleteActivities(athleteId) {
   );
 }
 
+export function syncAthleteStravaActivities(athleteId) {
+  return request(
+    `/api/integrations/athletes/${athleteId}/strava/sync`,
+    {
+      method: "POST",
+      timeout: 60000,
+    },
+  );
+}
+
 export function getAthleteActivityDetails(
   athleteId,
   activityId,

@@ -7,6 +7,7 @@ import {
   getAthleteTrainingLoad,
   getTraining,
   listAthleteActivities,
+  syncAthleteStravaActivities,
 } from "./api";
 
 
@@ -371,6 +372,8 @@ export default function AthleteProfileView({
   const [analyticsError, setAnalyticsError] = useState("");
   const [activities, setActivities] = useState([]);
   const [activitiesError, setActivitiesError] = useState("");
+  const [syncingActivities, setSyncingActivities] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [activityDetails, setActivityDetails] = useState(null);
   const [activityDetailsError, setActivityDetailsError] = useState("");
@@ -473,6 +476,36 @@ export default function AthleteProfileView({
       );
     } finally {
       setLoadingActivityDetails(false);
+    }
+  }
+
+  async function syncActivities() {
+    setSyncingActivities(true);
+    setActivitiesError("");
+    setSyncMessage("");
+
+    try {
+      const result = await syncAthleteStravaActivities(
+        athlete.id,
+      );
+      const refreshed = await listAthleteActivities(
+        athlete.id,
+      );
+
+      setActivities(
+        Array.isArray(refreshed) ? refreshed : [],
+      );
+      setSyncMessage(
+        `${result.imported || 0} importada(s) e `
+        + `${result.updated || 0} atualizada(s).`,
+      );
+    } catch (error) {
+      setActivitiesError(
+        error?.message
+          || "Não foi possível sincronizar o Strava.",
+      );
+    } finally {
+      setSyncingActivities(false);
     }
   }
 
@@ -1515,7 +1548,24 @@ export default function AthleteProfileView({
                 a este atleta.
               </p>
             </div>
+
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={syncingActivities}
+              onClick={syncActivities}
+            >
+              {syncingActivities
+                ? "Sincronizando..."
+                : "Sincronizar Strava"}
+            </button>
           </div>
+
+          {syncMessage && (
+            <p className="muted" role="status">
+              {syncMessage}
+            </p>
+          )}
 
           {selectedActivity && (
             <div

@@ -594,6 +594,88 @@ def athlete_strava_activities(
     return list(reversed(items))[:50]
 
 
+@router.post("/athletes/{athlete_id}/strava/sync")
+def sync_athlete_strava_activities(
+    athlete_id: int,
+    coach=Depends(require_coach),
+):
+    athlete = require_athlete_access(
+        athlete_id,
+        coach,
+    )
+
+    if athlete.user_id is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Este atleta ainda não possui um usuário "
+                "vinculado no RunCore."
+            ),
+        )
+
+    integration = repository.get(
+        athlete.user_id,
+        "strava",
+    )
+
+    if integration is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Este atleta não possui uma conta Strava conectada.",
+        )
+
+    if not integration.active:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "A integração Strava deste atleta está inativa. "
+                "Peça ao atleta para reconectar a conta."
+            ),
+        )
+
+    try:
+        integration = refresh_strava_token(
+            integration,
+        )
+        data = strava_request(
+            (
+                "https://www.strava.com/api/v3/athlete/"
+                "activities?per_page=20"
+            ),
+            integration.access_token,
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception(
+            "Falha na sincronização manual do Strava para o atleta %s.",
+            athlete_id,
+        )
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Não foi possível sincronizar as atividades deste "
+                "atleta com o Strava."
+            ),
+        )
+
+    provider_ids = {
+        str(item["id"])
+        for item in data
+        if item.get("id") is not None
+    }
+    imported = activities.sync_strava_batch(
+        integration.id,
+        data,
+        athlete_id=athlete_id,
+    )
+
+    return {
+        "imported": imported,
+        "updated": max(len(provider_ids) - imported, 0),
+    }
+
+
 @router.get(
     "/athletes/{athlete_id}/activities/{activity_id}/details"
 )

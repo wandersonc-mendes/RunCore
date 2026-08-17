@@ -78,6 +78,14 @@ def strava_webhook_verify_token():
 
 
 def process_strava_webhook_event(event):
+    print(
+        "STRAVA_WEBHOOK_PROCESS_START "
+        f"object_type={event.get('object_type')} "
+        f"aspect_type={event.get('aspect_type')} "
+        f"object_id={event.get('object_id')} "
+        f"owner_id={event.get('owner_id')}",
+        flush=True,
+    )
     if (
         event.get("object_type") != "activity"
         or event.get("aspect_type") != "create"
@@ -100,6 +108,10 @@ def process_strava_webhook_event(event):
         str(owner_id),
     )
     if integration is None:
+        print(
+            f"STRAVA_WEBHOOK_INTEGRATION_NOT_FOUND owner_id={owner_id}",
+            flush=True,
+        )
         logger.warning(
             "Evento Strava sem integração para owner_id=%s.",
             owner_id,
@@ -125,12 +137,21 @@ def process_strava_webhook_event(event):
             [activity],
             athlete_id=athlete_id,
         )
+        print(
+            "STRAVA_WEBHOOK_PROCESS_OK "
+            f"object_id={object_id} imported={imported}",
+            flush=True,
+        )
         logger.info(
             "Evento Strava processado: activity_id=%s, imported=%s.",
             object_id,
             imported,
         )
     except Exception:
+        print(
+            f"STRAVA_WEBHOOK_PROCESS_ERROR object_id={object_id}",
+            flush=True,
+        )
         logger.exception(
             "Falha ao processar evento Strava da atividade %s.",
             object_id,
@@ -161,6 +182,14 @@ def receive_strava_webhook(
     event: dict,
     background_tasks: BackgroundTasks,
 ):
+    print(
+        "STRAVA_WEBHOOK_RECEIVED "
+        f"object_type={event.get('object_type')} "
+        f"aspect_type={event.get('aspect_type')} "
+        f"object_id={event.get('object_id')} "
+        f"owner_id={event.get('owner_id')}",
+        flush=True,
+    )
     logger.warning(
         "Webhook Strava recebido: object_type=%s, aspect_type=%s, "
         "object_id=%s, owner_id=%s.",

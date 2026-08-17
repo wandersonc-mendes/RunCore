@@ -1,5 +1,7 @@
 import os
 import json
+import logging
+import secrets
 import time
 from base64 import b64encode
 from datetime import datetime, timedelta
@@ -7,7 +9,7 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import select, text
@@ -27,6 +29,9 @@ from repositories.activity_feedback_repository import ActivityFeedbackRepository
 from repositories.access_repository import AccessRepository
 from database.database import SessionLocal
 from models.activity_feedback import ActivityFeedback
+
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
@@ -66,6 +71,76 @@ def strava_config_status():
         "client_secret": bool(os.getenv("STRAVA_CLIENT_SECRET")),
         "redirect_uri": bool(strava_redirect_uri()),
     }
+
+
+def strava_webhook_verify_token():
+    return os.getenv("STRAVA_WEBHOOK_VERIFY_TOKEN", "")
+
+
+def process_strava_webhook_event(event):
+    if (
+        event.get("object_type") != "activity"
+        or event.get("aspect_type") != "create"
+    ):
+        return
+
+    owner_id = event.get("owner_id")
+    object_id = event.get("object_id")
+    if not isinstance(owner_id, int) or not isinstance(object_id, int):
+        return
+
+    integration = repository.get_by_external_user_id(
+        "strava",
+        str(owner_id),
+    )
+    if integration is None or not integration.active:
+        return
+
+    try:
+        integration = refresh_strava_token(integration)
+        activity = strava_request(
+            f"https://www.strava.com/api/v3/activities/{object_id}",
+            integration.access_token,
+        )
+        athlete_id = access.athlete_for_student(integration.user_id)
+        activities.sync_strava_batch(
+            integration.id,
+            [activity],
+            athlete_id=athlete_id,
+        )
+    except Exception:
+        logger.exception(
+            "Falha ao processar evento Strava da atividade %s.",
+            object_id,
+        )
+
+
+@router.get("/strava/webhook")
+def validate_strava_webhook(
+    mode: str = Query(alias="hub.mode"),
+    challenge: str = Query(alias="hub.challenge"),
+    verify_token: str = Query(alias="hub.verify_token"),
+):
+    expected_token = strava_webhook_verify_token()
+    if (
+        not expected_token
+        or mode != "subscribe"
+        or not secrets.compare_digest(verify_token, expected_token)
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Verificação de webhook inválida.",
+        )
+    return {"hub.challenge": challenge}
+
+
+@router.post("/strava/webhook")
+def receive_strava_webhook(
+    event: dict,
+    background_tasks: BackgroundTasks,
+):
+    background_tasks.add_task(process_strava_webhook_event, event)
+    return {"received": True}
 
 
 def strava_request(url, token):

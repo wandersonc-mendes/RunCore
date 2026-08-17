@@ -82,6 +82,11 @@ def process_strava_webhook_event(event):
         event.get("object_type") != "activity"
         or event.get("aspect_type") != "create"
     ):
+        logger.warning(
+            "Evento Strava ignorado: object_type=%s, aspect_type=%s.",
+            event.get("object_type"),
+            event.get("aspect_type"),
+        )
         return
 
     owner_id = event.get("owner_id")
@@ -156,6 +161,14 @@ def receive_strava_webhook(
     event: dict,
     background_tasks: BackgroundTasks,
 ):
+    logger.warning(
+        "Webhook Strava recebido: object_type=%s, aspect_type=%s, "
+        "object_id=%s, owner_id=%s.",
+        event.get("object_type"),
+        event.get("aspect_type"),
+        event.get("object_id"),
+        event.get("owner_id"),
+    )
     background_tasks.add_task(process_strava_webhook_event, event)
     return {"received": True}
 

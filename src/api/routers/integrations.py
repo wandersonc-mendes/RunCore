@@ -78,23 +78,10 @@ def strava_webhook_verify_token():
 
 
 def process_strava_webhook_event(event):
-    print(
-        "STRAVA_WEBHOOK_PROCESS_START "
-        f"object_type={event.get('object_type')} "
-        f"aspect_type={event.get('aspect_type')} "
-        f"object_id={event.get('object_id')} "
-        f"owner_id={event.get('owner_id')}",
-        flush=True,
-    )
     if (
         event.get("object_type") != "activity"
         or event.get("aspect_type") != "create"
     ):
-        logger.warning(
-            "Evento Strava ignorado: object_type=%s, aspect_type=%s.",
-            event.get("object_type"),
-            event.get("aspect_type"),
-        )
         return
 
     owner_id = event.get("owner_id")
@@ -108,21 +95,7 @@ def process_strava_webhook_event(event):
         str(owner_id),
     )
     if integration is None:
-        print(
-            f"STRAVA_WEBHOOK_INTEGRATION_NOT_FOUND owner_id={owner_id}",
-            flush=True,
-        )
-        logger.warning(
-            "Evento Strava sem integração para owner_id=%s.",
-            owner_id,
-        )
-        return
-
-    if not integration.active:
-        logger.info(
-            "Evento Strava ignorado para integração inativa: owner_id=%s.",
-            owner_id,
-        )
+        logger.warning("Evento Strava sem integração ativa correspondente.")
         return
 
     try:
@@ -132,29 +105,12 @@ def process_strava_webhook_event(event):
             integration.access_token,
         )
         athlete_id = access.athlete_for_student(integration.user_id)
-        imported = activities.sync_strava_batch(
+        activities.sync_strava_batch(
             integration.id,
             [activity],
             athlete_id=athlete_id,
         )
-        print(
-            "STRAVA_WEBHOOK_PROCESS_OK "
-            f"object_id={object_id} imported={imported}",
-            flush=True,
-        )
-        logger.info(
-            "Evento Strava processado: activity_id=%s, imported=%s.",
-            object_id,
-            imported,
-        )
-    except Exception as exc:
-        print(
-            "STRAVA_WEBHOOK_PROCESS_ERROR "
-            f"object_id={object_id} "
-            f"error_type={type(exc).__name__} "
-            f"error={exc}",
-            flush=True,
-        )
+    except Exception:
         logger.exception(
             "Falha ao processar evento Strava da atividade %s.",
             object_id,
@@ -185,22 +141,6 @@ def receive_strava_webhook(
     event: dict,
     background_tasks: BackgroundTasks,
 ):
-    print(
-        "STRAVA_WEBHOOK_RECEIVED "
-        f"object_type={event.get('object_type')} "
-        f"aspect_type={event.get('aspect_type')} "
-        f"object_id={event.get('object_id')} "
-        f"owner_id={event.get('owner_id')}",
-        flush=True,
-    )
-    logger.warning(
-        "Webhook Strava recebido: object_type=%s, aspect_type=%s, "
-        "object_id=%s, owner_id=%s.",
-        event.get("object_type"),
-        event.get("aspect_type"),
-        event.get("object_id"),
-        event.get("owner_id"),
-    )
     background_tasks.add_task(process_strava_webhook_event, event)
     return {"received": True}
 

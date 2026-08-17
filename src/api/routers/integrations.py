@@ -147,9 +147,12 @@ def process_strava_webhook_event(event):
             object_id,
             imported,
         )
-    except Exception:
+    except Exception as exc:
         print(
-            f"STRAVA_WEBHOOK_PROCESS_ERROR object_id={object_id}",
+            "STRAVA_WEBHOOK_PROCESS_ERROR "
+            f"object_id={object_id} "
+            f"error_type={type(exc).__name__} "
+            f"error={exc}",
             flush=True,
         )
         logger.exception(

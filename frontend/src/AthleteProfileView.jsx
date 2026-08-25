@@ -9,6 +9,7 @@ import {
   listAthleteActivities,
   syncAthleteStravaActivities,
 } from "./api";
+import ActivityStreamVisuals from "./ActivityStreamVisuals";
 
 
 const questions = [
@@ -1709,6 +1710,66 @@ export default function AthleteProfileView({
                         </strong>
                       </div>
                     </div>
+
+                    <div className="activity-external-links">
+                      <a
+                        className="btn-ghost"
+                        href={activityDetails.strava_profile_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Ver perfil no Strava
+                      </a>
+                      <a
+                        className="btn-ghost"
+                        href={activityDetails.strava_activity_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Ver atividade no Strava
+                      </a>
+                    </div>
+
+                    <div className="activity-details-section">
+                      <div className="activity-details-section-title">
+                        <h3>Análise do percurso</h3>
+                        <span>Dados disponíveis no Strava</span>
+                      </div>
+                      <ActivityStreamVisuals
+                        streams={activityDetails.streams}
+                      />
+                    </div>
+
+                    {activityDetails.streams?.splits?.length > 0 && (
+                      <div className="activity-details-section">
+                        <div className="activity-details-section-title">
+                          <h3>Splits por quilômetro</h3>
+                          <span>Calculados pelo RunCore</span>
+                        </div>
+                        <div className="activity-laps-scroll compact">
+                          <table className="activity-laps-table">
+                            <thead>
+                              <tr>
+                                <th>Km</th>
+                                <th>Distância</th>
+                                <th>Tempo</th>
+                                <th>Ritmo</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {activityDetails.streams.splits.map((split) => (
+                                <tr key={split.number}>
+                                  <td>{split.number}</td>
+                                  <td>{formatActivityDistance(split.distance)}</td>
+                                  <td>{formatAnalyticsDuration(split.moving_time)}</td>
+                                  <td>{formatActivityPace(split)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="activity-details-section">
                       <div className="activity-details-section-title">

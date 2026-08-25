@@ -6713,6 +6713,78 @@ button {
   font-size: 12px;
 }
 
+.activity-external-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.activity-external-links a {
+  text-decoration: none;
+}
+
+.activity-stream-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.activity-stream-card {
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.activity-stream-card header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.activity-stream-card h4 {
+  margin: 0;
+}
+
+.activity-stream-card header span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.activity-stream-card svg {
+  display: block;
+  height: auto;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.activity-stream-card svg line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.activity-stream-card svg path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.activity-route-map svg path {
+  stroke-width: 4;
+}
+
+.activity-stream-note {
+  margin: 0;
+}
+
+.activity-laps-scroll.compact {
+  max-height: 300px;
+}
+
 .activity-laps-scroll {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -6772,6 +6844,10 @@ button {
 
   .activity-details-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .activity-stream-grid {
+    grid-template-columns: 1fr;
   }
 }
 

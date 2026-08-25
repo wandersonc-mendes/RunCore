@@ -6765,6 +6765,20 @@ button {
   stroke-width: 1;
 }
 
+.activity-stream-card svg .activity-chart-grid {
+  stroke-dasharray: 4 5;
+}
+
+.activity-chart-label {
+  fill: var(--muted);
+  font-size: 12px;
+}
+
+.activity-chart-label-y {
+  dominant-baseline: middle;
+  text-anchor: end;
+}
+
 .activity-stream-card svg path {
   fill: none;
   stroke: var(--accent);

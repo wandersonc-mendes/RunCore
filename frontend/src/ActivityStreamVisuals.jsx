@@ -1,6 +1,9 @@
 const WIDTH = 720;
 const HEIGHT = 210;
-const PADDING = 24;
+const CHART_LEFT = 78;
+const CHART_RIGHT = 16;
+const CHART_TOP = 14;
+const CHART_BOTTOM = 34;
 
 function sample(items, limit = 300) {
   if (items.length <= limit) return items;
@@ -11,7 +14,7 @@ function sample(items, limit = 300) {
   );
 }
 
-function chartPoints(points, valueForPoint) {
+function chartPoints(points, valueForPoint, invertY = false) {
   const values = sample(points)
     .map((point) => ({
       x: Number(point.distance ?? point.time),
@@ -26,12 +29,17 @@ function chartPoints(points, valueForPoint) {
   const maxX = Math.max(...xValues);
   const minY = Math.min(...yValues);
   const maxY = Math.max(...yValues);
-  const scaleX = (value) => PADDING + (
-    ((value - minX) / (maxX - minX || 1)) * (WIDTH - PADDING * 2)
+  const scaleX = (value) => CHART_LEFT + (
+    ((value - minX) / (maxX - minX || 1))
+    * (WIDTH - CHART_LEFT - CHART_RIGHT)
   );
-  const scaleY = (value) => HEIGHT - PADDING - (
-    ((value - minY) / (maxY - minY || 1)) * (HEIGHT - PADDING * 2)
-  );
+  const scaleY = (value) => {
+    const ratio = (value - minY) / (maxY - minY || 1);
+    const position = invertY ? ratio : 1 - ratio;
+    return CHART_TOP + (
+      position * (HEIGHT - CHART_TOP - CHART_BOTTOM)
+    );
+  };
 
   return {
     path: values.map(
@@ -39,6 +47,10 @@ function chartPoints(points, valueForPoint) {
     ).join(" "),
     min: minY,
     max: maxY,
+    minX,
+    maxX,
+    scaleX,
+    scaleY,
   };
 }
 
@@ -49,9 +61,28 @@ function formatPaceSeconds(value) {
   return `${minutes}:${String(seconds).padStart(2, "0")}/km`;
 }
 
-function StreamChart({ title, points, valueForPoint, formatValue }) {
-  const chart = chartPoints(points, valueForPoint);
+function formatDistanceAxis(value) {
+  if (value >= 1000) {
+    return `${(value / 1000).toLocaleString("pt-BR", {
+      maximumFractionDigits: 1,
+    })} km`;
+  }
+  return `${Math.round(value)} m`;
+}
+
+function StreamChart({
+  title,
+  points,
+  valueForPoint,
+  formatValue,
+  invertY = false,
+}) {
+  const chart = chartPoints(points, valueForPoint, invertY);
   if (!chart) return null;
+  const middleY = (chart.min + chart.max) / 2;
+  const yTicks = [chart.min, middleY, chart.max];
+  const middleX = (chart.minX + chart.maxX) / 2;
+  const xTicks = [chart.minX, middleX, chart.maxX];
 
   return (
     <article className="activity-stream-card">
@@ -60,7 +91,35 @@ function StreamChart({ title, points, valueForPoint, formatValue }) {
         <span>{formatValue(chart.min)} – {formatValue(chart.max)}</span>
       </header>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={`Gráfico de ${title.toLowerCase()}`}>
-        <line x1={PADDING} y1={HEIGHT - PADDING} x2={WIDTH - PADDING} y2={HEIGHT - PADDING} />
+        {yTicks.map((value) => (
+          <g key={`y-${value}`}>
+            <line
+              className="activity-chart-grid"
+              x1={CHART_LEFT}
+              y1={chart.scaleY(value)}
+              x2={WIDTH - CHART_RIGHT}
+              y2={chart.scaleY(value)}
+            />
+            <text
+              className="activity-chart-label activity-chart-label-y"
+              x={CHART_LEFT - 8}
+              y={chart.scaleY(value)}
+            >
+              {formatValue(value)}
+            </text>
+          </g>
+        ))}
+        {xTicks.map((value, index) => (
+          <text
+            className="activity-chart-label activity-chart-label-x"
+            key={`x-${value}`}
+            x={chart.scaleX(value)}
+            y={HEIGHT - 8}
+            textAnchor={index === 0 ? "start" : index === 2 ? "end" : "middle"}
+          >
+            {formatDistanceAxis(value)}
+          </text>
+        ))}
         <path d={chart.path} />
       </svg>
     </article>
@@ -84,13 +143,13 @@ function RouteMap({ points }) {
   const minLongitude = Math.min(...longitudes);
   const maxLongitude = Math.max(...longitudes);
   const path = coordinates.map((point, index) => {
-    const x = PADDING + (
+    const x = CHART_LEFT + (
       ((Number(point[1]) - minLongitude) / (maxLongitude - minLongitude || 1))
-      * (WIDTH - PADDING * 2)
+      * (WIDTH - CHART_LEFT - CHART_RIGHT)
     );
-    const y = HEIGHT - PADDING - (
+    const y = HEIGHT - CHART_BOTTOM - (
       ((Number(point[0]) - minLatitude) / (maxLatitude - minLatitude || 1))
-      * (HEIGHT - PADDING * 2)
+      * (HEIGHT - CHART_TOP - CHART_BOTTOM)
     );
     return `${index ? "L" : "M"} ${x} ${y}`;
   }).join(" ");
@@ -125,6 +184,7 @@ export default function ActivityStreamVisuals({ streams }) {
                 : Number.NaN
             )}
             formatValue={formatPaceSeconds}
+            invertY
           />
         )}
         {available.altitude && (

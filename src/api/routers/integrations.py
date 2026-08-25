@@ -48,6 +48,11 @@ DEFAULT_STRAVA_REDIRECT_URI = (
     "https://api.runcoreapp.com.br"
     "/api/integrations/strava/callback"
 )
+STRAVA_API_BASE_URL = "https://api-v3.strava.com"
+STRAVA_STREAM_KEYS = (
+    "time", "distance", "latlng", "altitude",
+    "velocity_smooth", "heartrate", "cadence",
+)
 
 
 def strava_redirect_uri():
@@ -108,7 +113,7 @@ def process_strava_webhook_event(event):
     try:
         integration = refresh_strava_token(integration)
         activity = strava_request(
-            f"https://www.strava.com/api/v3/activities/{object_id}",
+            strava_api_url(f"activities/{object_id}"),
             integration.access_token,
         )
         athlete_id = access.athlete_for_student(integration.user_id)
@@ -164,6 +169,155 @@ def strava_request(url, token):
         except json.JSONDecodeError:
             message = body
         raise HTTPException(status_code=502, detail=f"Strava respondeu {exc.code}: {message[:180]}")
+
+
+def strava_api_url(path):
+    return f"{STRAVA_API_BASE_URL}/{path.lstrip('/')}"
+
+
+def normalize_strava_streams(payload):
+    if isinstance(payload, list):
+        payload = {
+            item.get("type"): item
+            for item in payload
+            if isinstance(item, dict) and item.get("type")
+        }
+    if not isinstance(payload, dict):
+        return {}
+
+    streams = {}
+    for key in STRAVA_STREAM_KEYS:
+        stream = payload.get(key)
+        if isinstance(stream, dict) and isinstance(stream.get("data"), list):
+            streams[key] = stream["data"]
+    return streams
+
+
+def calculate_kilometer_splits(streams):
+    distances = streams.get("distance", [])
+    times = streams.get("time", [])
+    point_count = min(len(distances), len(times))
+    if point_count < 2:
+        return []
+
+    splits = []
+    start_distance = float(distances[0] or 0)
+    start_time = float(times[0] or 0)
+    target_distance = (int(start_distance // 1000) + 1) * 1000
+
+    for index in range(1, point_count):
+        previous_distance = float(distances[index - 1] or 0)
+        current_distance = float(distances[index] or 0)
+        if current_distance <= previous_distance:
+            continue
+        previous_time = float(times[index - 1] or 0)
+        current_time = float(times[index] or 0)
+
+        while target_distance <= current_distance:
+            ratio = (
+                (target_distance - previous_distance)
+                / (current_distance - previous_distance)
+            )
+            target_time = previous_time + ratio * (current_time - previous_time)
+            duration = max(target_time - start_time, 0)
+            distance = target_distance - start_distance
+            splits.append({
+                "number": len(splits) + 1,
+                "distance": round(distance / 1000, 3),
+                "moving_time": round(duration),
+                "average_speed": distance / duration if duration > 0 else None,
+            })
+            start_distance = target_distance
+            start_time = target_time
+            target_distance += 1000
+
+    final_distance = float(distances[point_count - 1] or 0)
+    final_time = float(times[point_count - 1] or 0)
+    remaining_distance = final_distance - start_distance
+    remaining_time = final_time - start_time
+    if remaining_distance >= 100 and remaining_time > 0:
+        splits.append({
+            "number": len(splits) + 1,
+            "distance": round(remaining_distance / 1000, 3),
+            "moving_time": round(remaining_time),
+            "average_speed": remaining_distance / remaining_time,
+        })
+    return splits
+
+
+def serialize_activity_streams(streams):
+    point_count = max((len(values) for values in streams.values()), default=0)
+    points = []
+    for index in range(point_count):
+        point = {}
+        for key in STRAVA_STREAM_KEYS:
+            values = streams.get(key, [])
+            if index < len(values):
+                point[key] = values[index]
+        points.append(point)
+
+    pace_is_derived = False
+    if (
+        not streams.get("velocity_smooth")
+        and streams.get("time")
+        and streams.get("distance")
+    ):
+        pace_is_derived = True
+        for index in range(1, len(points)):
+            elapsed = float(points[index].get("time") or 0) - float(
+                points[index - 1].get("time") or 0
+            )
+            distance = float(points[index].get("distance") or 0) - float(
+                points[index - 1].get("distance") or 0
+            )
+            if elapsed > 0 and distance >= 0:
+                points[index]["velocity_smooth"] = distance / elapsed
+
+    return {
+        "points": points,
+        "available": {
+            key: bool(streams.get(key)) or (
+                key == "velocity_smooth" and pace_is_derived
+            )
+            for key in STRAVA_STREAM_KEYS
+        },
+        "pace_is_derived": pace_is_derived,
+        "splits": calculate_kilometer_splits(streams),
+        "physiology_ready": bool(
+            streams.get("time")
+            and streams.get("distance")
+            and streams.get("heartrate")
+        ),
+    }
+
+
+def load_strava_activity_data(integration, activity):
+    integration = refresh_strava_token(integration)
+    provider_activity_id = activity.provider_activity_id
+    detail = strava_request(
+        strava_api_url(f"activities/{provider_activity_id}"),
+        integration.access_token,
+    )
+    laps = strava_request(
+        strava_api_url(f"activities/{provider_activity_id}/laps"),
+        integration.access_token,
+    )
+    query = urlencode({
+        "keys": ",".join(STRAVA_STREAM_KEYS),
+        "key_by_type": "true",
+    })
+    try:
+        stream_payload = strava_request(
+            strava_api_url(f"activities/{provider_activity_id}/streams?{query}"),
+            integration.access_token,
+        )
+    except HTTPException:
+        logger.warning(
+            "Streams indisponíveis para a atividade Strava %s.",
+            provider_activity_id,
+        )
+        stream_payload = {}
+    return detail, laps, normalize_strava_streams(stream_payload)
 
 
 def refresh_strava_token(integration):
@@ -489,15 +643,7 @@ def strava_activity_details(activity_id: int, user=Depends(current_user)):
         raise HTTPException(status_code=404, detail="Atividade não encontrada.")
 
     try:
-        integration = refresh_strava_token(integration)
-        detail = strava_request(
-            f"https://www.strava.com/api/v3/activities/{activity.provider_activity_id}",
-            integration.access_token,
-        )
-        laps = strava_request(
-            f"https://www.strava.com/api/v3/activities/{activity.provider_activity_id}/laps",
-            integration.access_token,
-        )
+        detail, laps, streams = load_strava_activity_data(integration, activity)
     except Exception:
         raise HTTPException(status_code=502, detail="Não foi possível carregar os detalhes da atividade no Strava.")
 
@@ -524,6 +670,9 @@ def strava_activity_details(activity_id: int, user=Depends(current_user)):
         "average_speed": detail.get("average_speed"),
         "max_speed": detail.get("max_speed"),
         "elapsed_time": detail.get("elapsed_time"),
+        "strava_profile_url": f"https://www.strava.com/athletes/{integration.external_user_id}",
+        "strava_activity_url": f"https://www.strava.com/activities/{activity.provider_activity_id}",
+        "streams": serialize_activity_streams(streams),
         "laps": [
             {
                 "number": index + 1,
@@ -639,7 +788,7 @@ def sync_athlete_strava_activities(
         )
         data = strava_request(
             (
-                "https://www.strava.com/api/v3/athlete/"
+                f"{STRAVA_API_BASE_URL}/athlete/"
                 "activities?per_page=20"
             ),
             integration.access_token,
@@ -719,25 +868,7 @@ def athlete_strava_activity_details(
         )
 
     try:
-        integration = refresh_strava_token(
-            integration,
-        )
-
-        detail = strava_request(
-            (
-                "https://www.strava.com/api/v3/activities/"
-                f"{activity.provider_activity_id}"
-            ),
-            integration.access_token,
-        )
-
-        laps = strava_request(
-            (
-                "https://www.strava.com/api/v3/activities/"
-                f"{activity.provider_activity_id}/laps"
-            ),
-            integration.access_token,
-        )
+        detail, laps, streams = load_strava_activity_data(integration, activity)
     except HTTPException:
         raise
     except Exception:
@@ -798,6 +929,15 @@ def athlete_strava_activity_details(
         "elapsed_time": detail.get(
             "elapsed_time"
         ),
+        "strava_profile_url": (
+            "https://www.strava.com/athletes/"
+            f"{integration.external_user_id}"
+        ),
+        "strava_activity_url": (
+            "https://www.strava.com/activities/"
+            f"{activity.provider_activity_id}"
+        ),
+        "streams": serialize_activity_streams(streams),
         "laps": [
             {
                 "number": index + 1,
@@ -895,7 +1035,10 @@ def sync_strava_activities(user=Depends(current_user)):
         raise HTTPException(status_code=404, detail="Conta Strava não conectada.")
     try:
         integration = refresh_strava_token(integration)
-        data = strava_request("https://www.strava.com/api/v3/athlete/activities?per_page=20", integration.access_token)
+        data = strava_request(
+            strava_api_url("athlete/activities?per_page=20"),
+            integration.access_token,
+        )
     except HTTPException:
         raise
     except Exception:

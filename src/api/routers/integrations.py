@@ -48,7 +48,7 @@ DEFAULT_STRAVA_REDIRECT_URI = (
     "https://api.runcoreapp.com.br"
     "/api/integrations/strava/callback"
 )
-STRAVA_API_BASE_URL = "https://api-v3.strava.com"
+STRAVA_API_BASE_URL = "https://www.strava.com/api/v3"
 STRAVA_STREAM_KEYS = (
     "time", "distance", "latlng", "altitude",
     "velocity_smooth", "heartrate", "cadence",

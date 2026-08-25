@@ -147,6 +147,12 @@ class StravaActivityStreamsTests(unittest.TestCase):
         self.assertEqual(result["heartrate"], [120, 125])
         self.assertNotIn("unknown", result)
 
+    def test_uses_production_compatible_strava_api_base(self):
+        self.assertEqual(
+            router.strava_api_url("athlete/activities"),
+            "https://www.strava.com/api/v3/athlete/activities",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

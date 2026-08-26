@@ -427,7 +427,7 @@
 
 /* RUNCORE MASTER STUDENT REMOVAL SAFE */
 .admin-actions-column {
-  width: 92px;
+  width: 164px;
   text-align: right !important;
   white-space: nowrap;
 }
@@ -451,4 +451,10 @@
 
 .admin-action-unavailable {
   color: var(--muted);
+}
+
+.admin-action-guidance {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }

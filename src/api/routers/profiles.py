@@ -1,3 +1,5 @@
+from math import isfinite
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
@@ -33,9 +35,16 @@ REQUIRED_PERSONAL_FIELDS = {
     "name": "Nome completo",
     "birth_date": "Data de nascimento",
     "sex": "Sexo",
+    "weight": "Peso",
+    "height": "Altura",
     "phone": "Celular",
     "city": "Cidade",
     "state": "Estado",
+}
+
+BODY_MEASUREMENT_LIMITS = {
+    "weight": ("Peso", 20, 300),
+    "height": ("Altura", 0.8, 2.5),
 }
 
 REQUIRED_TRAINING_FIELDS = {
@@ -79,6 +88,30 @@ def profile_completion(personal, parq, training):
     }
 
 
+def validate_body_measurements(personal):
+    for field, (label, minimum, maximum) in BODY_MEASUREMENT_LIMITS.items():
+        value = personal.get(field)
+
+        if value is None or value == "":
+            continue
+
+        try:
+            number = float(str(value).strip().replace(",", "."))
+        except (TypeError, ValueError) as error:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Informe {label.lower()} em formato numérico.",
+            ) from error
+
+        if not isfinite(number) or not minimum <= number <= maximum:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"{label} deve estar entre {minimum:g} e {maximum:g}."
+                ),
+            )
+
+
 def serialize(item, athlete=None):
     personal = dict(item.personal) if item else {}
     parq = dict(item.parq) if item else {}
@@ -113,6 +146,7 @@ def get_profile(user=Depends(current_user)):
 @router.put("")
 def save_profile(payload: ProfilePayload, user=Depends(current_user)):
     athlete_id = athlete_id_for(user)
+    validate_body_measurements(payload.personal)
     athletes.update_phone(athlete_id, payload.personal.get("phone", ""))
     return serialize(details.save(athlete_id, payload.personal, payload.parq, payload.training), athletes.get_by_id(athlete_id))
 

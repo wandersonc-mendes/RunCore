@@ -675,11 +675,43 @@ export default function AdminUsersPage({ currentUser }) {
     }
   }
 
+  async function handleStudentAccessChange(user) {
+    const willDeactivate = user.is_active;
+
+    if (willDeactivate && !window.confirm(
+      `Desativar o acesso de ${user.name}?\n\n`
+      + "O aluno não poderá entrar no RunCore. Todo o histórico, incluindo "
+      + "treinos, avaliações, atividades e integrações, será preservado.",
+    )) {
+      return;
+    }
+
+    setError("");
+    setMessage("");
+
+    try {
+      await updateManagedUser(user.id, {
+        name: user.name,
+        role: user.role,
+        is_active: !user.is_active,
+      });
+      setMessage(
+        willDeactivate
+          ? `Acesso de ${user.name} desativado. Todo o histórico foi preservado.`
+          : `Acesso de ${user.name} reativado com sucesso.`,
+      );
+      await loadUsers();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
 
   async function handleRemoveStudent(user) {
     const confirmed = window.confirm(
-      `Remover definitivamente o aluno ${user.name} (${user.email})?\n\n`
-      + "O acesso, o cadastro de atleta e os dados vinculados serão excluídos.",
+      `Excluir definitivamente o usuário de ${user.name} (${user.email})?\n\n`
+      + "Esta ação só será concluída se não existir nenhum histórico ou "
+      + "vínculo. Nenhum dado vinculado será apagado.",
     );
 
     if (!confirmed) {
@@ -797,24 +829,36 @@ export default function AdminUsersPage({ currentUser }) {
                           type="button"
                           className={user.is_active ? "admin-status active" : "admin-status"}
                           disabled={user.id === currentUser.id}
-                          onClick={() => handleAccessChange(user, {
-                            is_active: !user.is_active,
-                          })}
+                          onClick={() => (
+                            user.role === "student"
+                              ? handleStudentAccessChange(user)
+                              : handleAccessChange(user, {
+                                is_active: !user.is_active,
+                              })
+                          )}
                         >
-                          {user.is_active ? "Ativo" : "Inativo"}
+                          {user.role === "student"
+                            ? (user.is_active ? "Desativar acesso" : "Reativar acesso")
+                            : (user.is_active ? "Ativo" : "Inativo")}
                         </button>
                       </td>
 
                       {currentUser.role === "master" && (
                         <td className="admin-actions-column">
                           {user.role === "student" ? (
-                            <button
-                              type="button"
-                              className="admin-remove-student"
-                              onClick={() => handleRemoveStudent(user)}
-                            >
-                              Remover
-                            </button>
+                            user.is_active ? (
+                              <span className="admin-action-guidance">
+                                Desative primeiro
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                className="admin-remove-student"
+                                onClick={() => handleRemoveStudent(user)}
+                              >
+                                Excluir definitivamente
+                              </button>
+                            )
                           ) : (
                             <span className="admin-action-unavailable">—</span>
                           )}

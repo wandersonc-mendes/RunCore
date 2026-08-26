@@ -13,7 +13,6 @@ from sqlalchemy.exc import IntegrityError
 from api.dependencies import require_admin
 from api.security import hash_password
 from models.user import User
-from repositories.athlete_repository import AthleteRepository
 from repositories.user_repository import UserRepository
 
 
@@ -23,7 +22,6 @@ router = APIRouter(
 )
 
 user_repository = UserRepository()
-athlete_repository = AthleteRepository()
 
 
 class ManagedUserOut(BaseModel):
@@ -206,13 +204,17 @@ def delete_student(
             detail="Esta ação permite remover apenas usuários do tipo Aluno.",
         )
 
+    if target.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Desative o acesso do aluno antes de solicitar a exclusão "
+                "definitiva. O histórico será preservado na desativação."
+            ),
+        )
+
     try:
-        athlete = athlete_repository.get_by_user_id(user_id)
-
-        if athlete is not None:
-            athlete_repository.delete(athlete.id)
-
-        if not user_repository.archive_student(user_id):
+        if not user_repository.delete(user_id):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Usuário não encontrado.",
@@ -221,15 +223,17 @@ def delete_student(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
-                "O aluno possui vínculos que impedem a exclusão definitiva. "
-                "Desative o acesso e revise os dados vinculados."
+                "Este aluno possui histórico no RunCore e não pode ser "
+                "excluído definitivamente. O acesso permanece desativado e "
+                "treinos, avaliações, atividades e integrações foram "
+                "preservados."
             ),
         ) from error
 
     return {
         "message": (
-            f"Aluno {target.name} removido com sucesso. "
-            "O acesso foi revogado e o e-mail original foi liberado."
+            f"Aluno {target.name} excluído definitivamente. "
+            "Nenhum histórico vinculado foi encontrado."
         ),
         "user_id": user_id,
     }

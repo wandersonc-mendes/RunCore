@@ -201,6 +201,10 @@ export default function LoginScreen({
         : null,
     });
 
+    if (registeringStudent) {
+      cleanUrl();
+    }
+
     if (
       registeringStudent
       && result.pending_approval

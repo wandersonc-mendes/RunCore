@@ -57,6 +57,24 @@ function dateKey(date) {
 }
 
 
+function ageFromBirthDate(value, today = new Date()) {
+  const birthDate = dateValue(value);
+
+  if (!birthDate || birthDate > today) return null;
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const birthdayThisYear = new Date(
+    today.getFullYear(),
+    birthDate.getMonth(),
+    birthDate.getDate(),
+  );
+
+  if (today < birthdayThisYear) age -= 1;
+
+  return age;
+}
+
+
 function startOfWeek(date) {
   const result = new Date(date);
   const weekday = result.getDay();
@@ -655,6 +673,7 @@ export default function AthleteProfileView({
     || athlete.goal
     || "Objetivo não informado"
   );
+  const age = ageFromBirthDate(personal.birth_date);
 
   const targetDate = trainingPlan?.target_date;
 
@@ -914,6 +933,24 @@ export default function AthleteProfileView({
               {load
                 ? "PSE × duração"
                 : "Sem feedback suficiente"}
+            </small>
+          </article>
+
+          <article className="athlete-summary-card">
+            <span>Dados físicos</span>
+            <strong>
+              {age === null ? "Idade não informada" : `${age} anos`}
+            </strong>
+            <small>
+              {personal.weight && personal.height
+                ? `${Number(personal.weight).toLocaleString(
+                    "pt-BR",
+                    { maximumFractionDigits: 1 },
+                  )} kg · ${Number(personal.height).toLocaleString(
+                    "pt-BR",
+                    { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                  )} m`
+                : "Complete os dados no perfil"}
             </small>
           </article>
 
@@ -2167,7 +2204,29 @@ export default function AthleteProfileView({
             />
             <Item
               label="Nascimento"
-              value={personal.birth_date}
+              value={formatDate(personal.birth_date)}
+            />
+            <Item
+              label="Idade"
+              value={age === null ? null : `${age} anos`}
+            />
+            <Item
+              label="Peso"
+              value={personal.weight
+                ? `${Number(personal.weight).toLocaleString(
+                    "pt-BR",
+                    { maximumFractionDigits: 1 },
+                  )} kg`
+                : null}
+            />
+            <Item
+              label="Altura"
+              value={personal.height
+                ? `${Number(personal.height).toLocaleString(
+                    "pt-BR",
+                    { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                  )} m`
+                : null}
             />
             <Item
               label="Cidade / UF"

@@ -186,7 +186,7 @@ class UserRepository:
 
             return user
 
-    def archive_student(
+    def delete(
         self,
         user_id: int,
     ) -> bool:
@@ -201,10 +201,7 @@ class UserRepository:
             if user is None:
                 return False
 
-            user.name = f"Aluno removido #{user.id}"
-            user.email = f"__removed__{user.id}@runcore.local"
-            user.is_active = False
-
+            session.delete(user)
             session.commit()
 
             return True
